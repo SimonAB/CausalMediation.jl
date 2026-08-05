@@ -20,7 +20,10 @@ D = H^{a_t} · ρ(a_m) · (Y − Q(A,M,W,Z))
 where `H^{a}` is the treatment density / propensity clever covariate for policy `a`,
 and `ρ(a_m) = g(M|a_m,Z,W) / g(M|A,Z,W)` (with optional moc density factors).
 
-Binary A and continuous MTP both use the full `D` (see `estimators.jl`).
+Binary A uses the full `D`. Continuous MTP `:onestep` / `:tmle` use the
+plugin plus the outcome-residual term only (see `estimators.jl`); the
+`H_am · (Q − Q̄)` piece is omitted when density ratios near one would cancel
+the plugin.
 
 # References
 

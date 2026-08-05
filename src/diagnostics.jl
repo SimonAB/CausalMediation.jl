@@ -116,6 +116,9 @@ end
 
 """
     mediation_stability_markdown(sweep; title) -> String
+
+Render a Markdown table of TE SEs and sign-stability from a
+[`mediation_n_mc_sweep`](@ref) result (via [`mediation_stability_summary`](@ref)).
 """
 function mediation_stability_markdown(
     sweep::DataFrame;

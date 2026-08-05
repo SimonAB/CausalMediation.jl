@@ -21,6 +21,8 @@ end
 
 """
     simulate_continuous_mtp_mediation(n; ...) -> (df, truth)
+
+Continuous-exposure mediation DGP for MTP δ-grids (forwards to CausalTargeted).
 """
 function simulate_continuous_mtp_mediation(n::Int; kwargs...)
     return CausalTargeted.simulate_continuous_mtp_mediation(n; kwargs...)
@@ -28,6 +30,8 @@ end
 
 """
     simulate_intermediate_confounding_mediation(n; ...) -> (df, truth)
+
+Mediation DGP with a post-treatment intermediate confounder `L` (`moc`).
 """
 function simulate_intermediate_confounding_mediation(n::Int; kwargs...)
     return CausalTargeted.simulate_intermediate_confounding_mediation(n; kwargs...)

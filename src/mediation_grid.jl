@@ -4,10 +4,15 @@ using Base.Threads
 using Logging
 
 """
-    run_mediation_grid(data, trt, outcome; covar, mediators, kwargs...) -> DataFrame
+    run_mediation_grid(data, trt, outcome; covar, mediators, moc, deltas, estimator, effect, kwargs...) -> DataFrame
 
-Interventional mediation δ-grid. Supports optional `moc` intermediate confounders
-and `estimator ∈ (:plugin, :onestep, :tmle)`.
+Mediation δ-grid as a `DataFrame` (rows for TE / NDE / NIE × δ × stratum).
+Supports optional `moc` intermediate confounders and
+`estimator ∈ (:plugin, :onestep, :tmle)`.
+
+Prefer [`run_mediation`](@ref) with a [`MediationSpec`](@ref) when you already
+have an identification certificate. Pass `effect` to select natural / organic /
+RT / controlled-direct families (default `InterventionalMediation()`).
 """
 function run_mediation_grid(
     data::DataFrame,

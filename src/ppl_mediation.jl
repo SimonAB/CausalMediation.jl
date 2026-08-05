@@ -4,6 +4,11 @@ using GLM
 
 """
     prepare_ppl_mediation_spec(g, treatment, outcome, data, covar, mediators; node_names) -> NamedTuple
+    prepare_ppl_mediation_spec(treatment, outcome, data, covar, mediators; kwargs...) -> NamedTuple
+
+Prepare a NamedTuple for PPL / RxInfer-style mediation workflows. With a graph
+and `node_names`, delegates to CausalDynamics `prepare_for_rxinfer` when
+available; otherwise returns a generic identifiable spec.
 """
 function prepare_ppl_mediation_spec(
     g,
@@ -51,6 +56,9 @@ end
 
 """
     conjugate_mediation_bootstrap(df, trt, outcome, covar, mediators; n_boot, rng) -> DataFrame
+
+Linear-Gaussian bootstrap NDE / NIE / TE (pedagogical / sensitivity check, not
+the main EIF path).
 """
 function conjugate_mediation_bootstrap(
     df::DataFrame,
@@ -116,6 +124,9 @@ end
 
 """
     run_mediation_scalar_ppl(data, trt, outcome; mediators, covar, method, kwargs...) -> DataFrame
+
+Scalar mediation via `:eif` (default, [`run_mediation_scalar`](@ref)) or
+`:conjugate_bootstrap`.
 """
 function run_mediation_scalar_ppl(
     data::DataFrame,

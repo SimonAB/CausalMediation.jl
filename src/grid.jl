@@ -3,11 +3,21 @@
 using Base.Threads
 
 """
-    run_mediation(spec, data; folds, learners, estimator, deltas, kwargs...) -> MediationResult
+    run_mediation(spec, data; folds, learners, estimator, deltas, n_mc, kwargs...) -> MediationResult
 
-Canonical mediation entry point. Dispatches on `spec.effect`.
+Canonical mediation entry point. Dispatches on `spec.effect` and returns a
+[`MediationResult`](@ref) whose `table` is the δ-grid from
+[`run_mediation_grid`](@ref).
 
-`estimator` is one of `:plugin`, `:onestep`, `:tmle`.
+# Keyword arguments
+
+- `estimator`: `:plugin`, `:onestep` (default), or `:tmle`
+- `deltas`: MTP shift grid (defaults to CausalTargeted `default_deltas()`)
+- `n_mc`: nested mediator Monte Carlo draws per unit (default `32`)
+- `folds`, `learners`, `parallel`, `cache_nuisances`: Super Learner / cross-fit controls from CausalTargeted
+
+Natural effects with nonempty `spec.moc` are refused by
+[`assert_natural_admissible!`](@ref).
 """
 function run_mediation(
     spec::MediationSpec,

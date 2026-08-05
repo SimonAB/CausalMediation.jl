@@ -4,6 +4,9 @@ Cross-fitted mediation for the CDCS Julia stack: interventional (RI), natural,
 organic, controlled direct, and recanting-twin effects, with intermediate
 confounding (`moc`) and continuous MTP one-step / TMLE estimators.
 
+**Documentation:** [simonab.github.io/CausalMediation.jl](https://simonab.github.io/CausalMediation.jl/dev/)
+(after the Documentation workflow has run on `main`).
+
 ## Install
 
 Until the package is on General:
@@ -39,12 +42,18 @@ With intermediate confounders:
 spec = MediationSpec(:A, :Y; mediators = [:M], covariates = [:W], moc = [:L])
 ```
 
-## Documentation
+## Documentation (local)
 
-- Design: [DESIGN.md](DESIGN.md)
-- Boundaries: [BOUNDARIES.md](BOUNDARIES.md)
-- Naming vs R `crumble`: [NAMING.md](NAMING.md)
-- Registration: [REGISTRATION.md](REGISTRATION.md)
+```bash
+julia --project=docs -e 'using Pkg; Pkg.develop(path="."); Pkg.instantiate()'
+julia --project=docs docs/make.jl
+```
+
+Pages: home, getting started, comparison, methods, naming, API, references.
+
+Design notes in-repo: [DESIGN.md](DESIGN.md) · [BOUNDARIES.md](BOUNDARIES.md) ·
+[NAMING.md](NAMING.md) · [REGISTRATION.md](REGISTRATION.md) ·
+[ECOSYSTEM_COMPARISON.md](ECOSYSTEM_COMPARISON.md).
 
 ## License
 

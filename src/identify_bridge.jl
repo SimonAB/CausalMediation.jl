@@ -5,8 +5,12 @@ using CausalDynamics
 """
     plan_mediation(spec, id_result; shift) -> MediationSpec
 
-Certificate-first planning: merge adjustment / mediators / moc from
-`IdentificationResult` into a concrete `MediationSpec` (mirrors `plan_mtp`).
+Certificate-first planning: merge adjustment / mediators / `moc` from a
+CausalDynamics `IdentificationResult` into a concrete [`MediationSpec`](@ref)
+(mirrors CausalTargeted `plan_mtp`).
+
+Empty fields on `spec` are filled from the certificate; nonempty fields are kept.
+Optional `shift` replaces both `policy_d0` and `policy_d1`.
 """
 function plan_mediation(
     spec::MediationSpec,
@@ -34,8 +38,12 @@ end
 """
     spec_from_identification(id_result; effect, policy_d0, policy_d1) -> MediationSpec
 
-Build a `MediationSpec` from an `IdentificationResult` whose query is a
-`MediationQuery`.
+Build a [`MediationSpec`](@ref) from an `IdentificationResult` whose query is a
+CausalDynamics `MediationQuery`.
+
+Uses `id_result.adjustment`, `.mediators`, and `.moc`. When `effect` is the
+default `:interventional` and the query carries a different `effect_kind`, that
+kind is preferred.
 """
 function spec_from_identification(
     id_result::IdentificationResult;

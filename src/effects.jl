@@ -30,10 +30,20 @@ ControlledDirect(pairs::Pair{Symbol, <:Real}...) =
     ControlledDirect(Dict{Symbol, Float64}(k => Float64(v) for (k, v) in pairs))
 
 """
-    MediationSpec
+    MediationSpec(treatment, outcome; mediators, covariates, moc, policy_d0, policy_d1, effect)
 
 Typed mediation estimand: treatment, outcome, mediators, baseline covariates,
 intermediate confounders (`moc`), shift policies, and effect family.
+
+# Arguments
+
+- `mediators`: mediator column symbols (required)
+- `covariates`: baseline adjustment set (often from `IdentificationResult.adjustment`)
+- `moc`: intermediate confounders; must be empty for `NaturalMediation`
+- `policy_d0` / `policy_d1`: CausalTargeted `ShiftPolicy` for the two arms
+- `effect`: `InterventionalMediation()` by default
+
+See also [`plan_mediation`](@ref), [`run_mediation`](@ref), [`assumptions`](@ref).
 """
 struct MediationSpec
     treatment::Symbol
@@ -66,6 +76,10 @@ end
     MediationResult
 
 Point estimates, SEs, influence curves, and diagnostics for a mediation run.
+
+Fields include `estimates` / `se` (typically `:te`, `:nde`, `:nie`), a full
+δ-grid `table` (`DataFrame`), and `diagnostics` (`n_mc`, `estimator`, …).
+Use [`decompose`](@ref) for a compact TE/NDE/NIE (or path) NamedTuple.
 """
 struct MediationResult
     spec::MediationSpec

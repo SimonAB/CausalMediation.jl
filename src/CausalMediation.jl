@@ -7,11 +7,17 @@ natural, organic, controlled direct, and recanting-twin path-specific effects.
 Depends on CausalDynamics for identification certificates and CausalTargeted
 for Super Learner, `ShiftPolicy`, fold helpers, and MTP density ratios.
 
+# Entry points
+
+- `MediationSpec` / `run_mediation` — typed estimate
+- `run_mediation_grid` — δ-grid `DataFrame` API
+- `plan_mediation` / `spec_from_identification` — ID bridge
+- `decompose` — TE / NDE / NIE (or path) extraction
+
 # Documentation
 
-- Design: `DESIGN.md`
-- Boundaries: `BOUNDARIES.md`
-- Naming vs R `crumble`: `NAMING.md`
+- Documenter site: <https://simonab.github.io/CausalMediation.jl/dev/>
+- Design: `DESIGN.md` · Boundaries: `BOUNDARIES.md` · Naming: `NAMING.md`
 """
 module CausalMediation
 

@@ -25,6 +25,9 @@ end
 
 """
     build_mediation_fold_cache(df, outcome, trt, covar, mediators, folds, rng; learners, moc) -> MediationFoldCache
+
+Cross-fit Super Learner fits for outcome, mediators, optional `moc`, and
+exposure, reused across δ values on a mediation grid.
 """
 function build_mediation_fold_cache(
     df::DataFrame,
