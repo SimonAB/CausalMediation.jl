@@ -5,6 +5,7 @@ authors:
   given-names: "Simon A."
   orcid: "https://orcid.org/0000-0002-4949-1117"
 title: "CausalMediation.jl"
+doi: 10.5281/zenodo.21812342
 version: 0.1.0
 url: "https://github.com/SimonAB/CausalMediation.jl"
 license: MIT

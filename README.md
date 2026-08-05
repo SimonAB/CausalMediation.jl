@@ -1,5 +1,7 @@
 # CausalMediation.jl
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21812342.svg)](https://doi.org/10.5281/zenodo.21812342)
+
 Cross-fitted mediation for the CDCS Julia stack: interventional (RI), natural,
 organic, controlled direct, and recanting-twin effects, with intermediate
 confounding (`moc`) and continuous MTP one-step / TMLE estimators.
@@ -58,3 +60,18 @@ Design notes in-repo: [DESIGN.md](DESIGN.md) · [BOUNDARIES.md](BOUNDARIES.md) �
 ## License
 
 MIT © Simon A. Babayan
+
+## Citation
+
+```bibtex
+@software{Babayan2026_CausalMediation,
+  author  = {Babayan, Simon A.},
+  title   = {CausalMediation.jl},
+  year    = {2026},
+  version = {v0.1.0},
+  doi     = {10.5281/zenodo.21812342},
+  url     = {https://github.com/SimonAB/CausalMediation.jl}
+}
+```
+
+Concept DOI (all versions): [10.5281/zenodo.21812341](https://doi.org/10.5281/zenodo.21812341).
