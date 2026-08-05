@@ -1,0 +1,21 @@
+{
+  "title": "CausalMediation.jl: advanced causal mediation for the Julia scientific stack",
+  "description": "Cross-fitted interventional, natural, organic, controlled direct, and recanting-twin mediation with intermediate confounding (moc) and continuous MTP EIF estimators.",
+  "creators": [
+    {
+      "name": "Babayan, Simon A.",
+      "affiliation": "University of Glasgow",
+      "orcid": "0000-0002-4949-1117"
+    }
+  ],
+  "license": "MIT",
+  "upload_type": "software",
+  "access_right": "open",
+  "keywords": [
+    "causal inference",
+    "mediation analysis",
+    "TMLE",
+    "Julia",
+    "EIF"
+  ]
+}

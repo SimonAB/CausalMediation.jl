@@ -1,0 +1,12 @@
+[deps]
+CausalDynamics = "823b1367-efac-4af0-bbfc-73ee462bce07"
+CausalMediation = "f5484d8f-70ea-4f9b-aeb6-8bd66abb6736"
+CausalTargeted = "c4a754ed-8f2a-4b1c-9d3e-1f0a2b3c4d5e"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+
+[sources]
+CausalMediation = {path = ".."}
+
+[compat]
+Documenter = "1"
+julia = "1.12"
