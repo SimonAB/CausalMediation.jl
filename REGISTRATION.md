@@ -19,7 +19,7 @@ Tracking: [issue #1](https://github.com/SimonAB/CausalMediation.jl/issues/1) (ca
 3. Retrigger CM Registrator — done
 4. New-package AutoMerge — **merged** ([#163653](https://github.com/JuliaRegistries/General/pull/163653))
 5. TagBot `v0.1.0` — done
-6. Next: register **CausalTargeted 0.3.4** restoring the CausalMediation weakdep
+6. Register **CausalTargeted 0.3.4** restoring the CausalMediation weakdep — in progress
 
 ## Install
 
