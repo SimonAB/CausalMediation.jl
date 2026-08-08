@@ -9,23 +9,23 @@ confounding (`moc`) and continuous MTP one-step / TMLE estimators.
 **Documentation:** [simonab.github.io/CausalMediation.jl](https://simonab.github.io/CausalMediation.jl/dev/)
 (after the Documentation workflow has run on `main`).
 
-## Install
+> On the Julia **General** registry (`Pkg.add("CausalMediation")`). Requires Julia **1.12+**,
+> [CausalDynamics](https://github.com/SimonAB/CausalDynamics.jl) **0.4+**, and
+> [CausalTargeted](https://github.com/SimonAB/CausalTargeted.jl) **0.3+**.
+> Registry tracking: [REGISTRATION.md](REGISTRATION.md).
 
-Until the package is on General:
+## Install
 
 ```julia
 using Pkg
-Pkg.add(url="https://github.com/SimonAB/CausalMediation.jl.git")
-```
-
-After registration:
-
-```julia
 Pkg.add("CausalMediation")
 ```
 
-Requires Julia **1.12+**, [CausalDynamics](https://github.com/SimonAB/CausalDynamics.jl) **0.4+**,
-and [CausalTargeted](https://github.com/SimonAB/CausalTargeted.jl) **0.3+**.
+Development tip of `main` (before a new version hits General):
+
+```julia
+Pkg.add(url="https://github.com/SimonAB/CausalMediation.jl.git")
+```
 
 ## Quick start
 

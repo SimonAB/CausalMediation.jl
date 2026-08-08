@@ -120,16 +120,14 @@ spec = MediationSpec(:A, :Y; mediators = [:M], covariates = [:W], moc = [:L])
 
 ## Installation
 
-Until the package is on General:
-
 ```julia
 using Pkg
-Pkg.add(url="https://github.com/SimonAB/CausalMediation.jl.git")
+Pkg.add("CausalMediation")
 using CausalMediation
 ```
 
-After registration: `Pkg.add("CausalMediation")`. Requires Julia **1.12+**,
-CausalDynamics **0.4+**, and CausalTargeted **0.3+**.
+Requires Julia **1.12+**, CausalDynamics **0.4+**, and CausalTargeted **0.3+**.
+Development tip of `main`: `Pkg.add(url="https://github.com/SimonAB/CausalMediation.jl.git")`.
 
 From the CDCS monorepo:
 

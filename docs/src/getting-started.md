@@ -4,8 +4,8 @@
 CurrentModule = CausalMediation
 ```
 
-Install the package (URL until General registration completes), load CausalMediation
-together with CausalTargeted (Super Learner profiles) and optionally CausalDynamics
+Install with `Pkg.add("CausalMediation")`, load CausalMediation together with
+CausalTargeted (Super Learner profiles) and optionally CausalDynamics
 (identification), then estimate TE / NDE / NIE on a δ-grid.
 
 ## Identify, then estimate
