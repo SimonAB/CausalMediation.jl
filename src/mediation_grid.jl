@@ -39,7 +39,7 @@ function run_mediation_grid(
     effect::MediationEffect = InterventionalMediation(),
 )
     all_cols = unique(vcat(covar, mediators, moc, [trt]))
-    data_clean, _, extra_cols = handle_missing_data(data, outcome, all_cols, handle_missing; rng = rng)
+    data_clean, ipcw_w, extra_cols = handle_missing_data(data, outcome, all_cols, handle_missing; rng = rng)
     if !isempty(extra_cols)
         covar = unique(vcat(covar, extra_cols))
     end
@@ -75,6 +75,7 @@ function run_mediation_grid(
             d, stratum, df, outcome, trt, covar, mediators, moc, a, a_nat, sd_a,
             L, U, lower_q, upper_q, shift_scale, stratify_by, pooled,
             folds, epochs, local_rng, fold_cache, learners, n_mc, estimator, effect, j, n_jobs,
+            ipcw_w,
         )
     end
 
@@ -135,6 +136,7 @@ function _mediation_delta_job(
     effect::MediationEffect,
     job_i::Int,
     n_jobs::Int,
+    ipcw_w::AbstractVector{<:Real},
 )
     stratum_mask = BitVector(string.(df.STRAT) .== stratum)
     scale_by = pooled ? mean(stratum_mask) : 1.0
@@ -174,6 +176,7 @@ function _mediation_delta_job(
             shift = req,
             fold_cache = fold_cache,
             epochs = epochs,
+            ipcw_w = ipcw_w,
         )
         rows = NamedTuple[]
         labs = if haskey(est, :path_direct)
@@ -291,6 +294,7 @@ function _effects_dispatch(
             shift = get(kw, :shift, nothing),
             fold_cache = get(kw, :fold_cache, nothing),
             epochs = get(kw, :epochs, 1),
+            ipcw_w = get(kw, :ipcw_w, nothing),
         )
     end
 end

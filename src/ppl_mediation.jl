@@ -55,10 +55,15 @@ function _generic_ppl_spec(treatment, outcome, data, covar, mediators)
 end
 
 """
-    conjugate_mediation_bootstrap(df, trt, outcome, covar, mediators; n_boot, rng) -> DataFrame
+    conjugate_mediation_bootstrap(df, trt, outcome, covar, mediators; n_boot, rng, handle_missing)
+        -> DataFrame
 
 Linear-Gaussian bootstrap NDE / NIE / TE (pedagogical / sensitivity check, not
 the main EIF path).
+
+Missing outcomes / covariates follow CausalTargeted `handle_missing`
+(`:drop` default). Under `:ipcw` / `:ipcw_impute`, bootstrap draws are weighted
+by the returned observation weights (no silent `dropmissing`).
 """
 function conjugate_mediation_bootstrap(
     df::DataFrame,
@@ -68,19 +73,34 @@ function conjugate_mediation_bootstrap(
     mediators::Vector{Symbol};
     n_boot::Int = 500,
     rng::AbstractRNG = StableRNG(42),
+    handle_missing::Symbol = :drop,
 )
-    cols = unique(vcat([trt, outcome], covar, mediators))
-    sub = dropmissing(df[:, cols])
+    all_cols = unique(vcat(covar, mediators, [trt]))
+    sub, ipcw_w, extra_cols = handle_missing_data(
+        df, outcome, all_cols, handle_missing; rng = rng,
+    )
+    covar_use = isempty(extra_cols) ? covar : unique(vcat(covar, extra_cols))
     n = nrow(sub)
+    n >= 2 || throw(ArgumentError("conjugate_mediation_bootstrap needs at least 2 complete rows"))
+    w = Float64.(ipcw_w)
+    use_weights = !all(x -> isapprox(x, 1.0; atol = 1e-12, rtol = 0.0), w)
+    sample_weights = use_weights ? StatsBase.Weights(w ./ sum(w)) : nothing
+
     nde_s = Float64[]
     nie_s = Float64[]
+    sizehint!(nde_s, n_boot)
+    sizehint!(nie_s, n_boot)
 
     for _ in 1:n_boot
-        idx = rand(rng, 1:n, n)
+        idx = if use_weights
+            StatsBase.sample(rng, 1:n, sample_weights, n; replace = true)
+        else
+            rand(rng, 1:n, n)
+        end
         boot = sub[idx, :]
         a_b = Float64.(boot[!, trt])
         y_b = Float64.(boot[!, outcome])
-        X_b = hcat(ones(n), [Float64.(boot[!, c]) for c in covar]...)
+        X_b = hcat(ones(n), [Float64.(boot[!, c]) for c in covar_use]...)
 
         Xm = hcat(a_b, [Float64.(boot[!, m]) for m in mediators]..., X_b)
         β = GLM.coef(lm(Xm, y_b))
@@ -126,7 +146,7 @@ end
     run_mediation_scalar_ppl(data, trt, outcome; mediators, covar, method, kwargs...) -> DataFrame
 
 Scalar mediation via `:eif` (default, [`run_mediation_scalar`](@ref)) or
-`:conjugate_bootstrap`.
+`:conjugate_bootstrap`. Both accept `handle_missing` (forwarded).
 """
 function run_mediation_scalar_ppl(
     data::DataFrame,

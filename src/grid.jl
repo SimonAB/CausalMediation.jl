@@ -117,9 +117,16 @@ function run_mediation_scalar(
     estimator::Symbol = :onestep,
     effect::MediationEffect = InterventionalMediation(),
     rng = StableRNG(42),
+    handle_missing::Symbol = :drop,
 )
-    cols = unique(vcat([trt, outcome], covar, mediators, moc))
-    df = dropmissing(data[:, cols])
+    all_cols = unique(vcat(covar, mediators, moc, [trt]))
+    df, ipcw_w, extra_cols = handle_missing_data(data, outcome, all_cols, handle_missing; rng = rng)
+    if !isempty(extra_cols)
+        covar = unique(vcat(covar, extra_cols))
+    end
+    covar = columns_present(df, covar)
+    mediators = columns_present(df, mediators)
+    moc = columns_present(df, moc)
     n = nrow(df)
     a0 = zeros(n)
     a1 = ones(n)
@@ -130,6 +137,7 @@ function run_mediation_scalar(
         estimator = estimator,
         moc = moc,
         epochs = epochs,
+        ipcw_w = ipcw_w,
     )
     return _result_table(est, se)
 end

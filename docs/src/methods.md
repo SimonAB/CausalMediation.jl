@@ -90,8 +90,14 @@ first(names(df), 6)
 ## Cross-fitting, Super Learner, and diagnostics
 
 Nuisances reuse CausalTargeted profiles (`DEFAULT_SL_LEARNERS`,
-`SMALL_N_SL_LEARNERS`, …). Fold caches (`MediationFoldCache`) avoid refitting
-shared regressions across δ grid points.
+`SMALL_N_SL_LEARNERS`, …). Fold caches (`MediationFoldCache`) fit a single
+CausalTargeted covariate schema on the cleaned analysis frame so string and
+categorical columns encode consistently across folds. `run_mediation_grid`,
+`run_mediation_scalar`, `run_tmle3_nde`, and `conjugate_mediation_bootstrap`
+(via `run_mediation_scalar_ppl`) accept `handle_missing`
+(`:drop` default; `:ipcw` reweights the interventional EIF or, for the
+conjugate bootstrap, draws rows with IPCW probabilities). Do not pass
+`learners=(:mean,)` alone for treatment contrasts.
 
 | Topic | Primary sources | Surface |
 |-------|-----------------|---------|
