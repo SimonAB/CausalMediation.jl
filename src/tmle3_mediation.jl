@@ -13,8 +13,12 @@ function run_tmle3_nde(
     mediators::Vector{Symbol} = Symbol[],
     folds::Int = mtp_settings().folds,
     rng = StableRNG(42),
+    handle_missing::Symbol = :drop,
 )
-    df = dropmissing(data[:, unique(vcat([treatment, outcome], baseline, mediators))])
+    all_cols = unique(vcat(baseline, mediators, [treatment]))
+    df, _, extra_cols = handle_missing_data(data, outcome, all_cols, handle_missing; rng = rng)
+    baseline = columns_present(df, unique(vcat(baseline, extra_cols)))
+    mediators = columns_present(df, mediators)
     n = nrow(df)
     A = Float64.(df[!, treatment])
     Y = Float64.(df[!, outcome])

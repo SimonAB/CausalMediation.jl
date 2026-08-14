@@ -4,7 +4,8 @@
     MediationFoldCache
 
 Per-fold SuperLearner fits reused across δ values. Policy-specific predictions
-still depend on `a_nat` / `a_shift`.
+still depend on `a_nat` / `a_shift`. Covariate schemas are fitted once on the
+full analysis frame so categorical columns encode consistently across folds.
 """
 struct MediationFoldCache
     fold_sets::Vector{Vector{Int}}
@@ -21,6 +22,10 @@ struct MediationFoldCache
     trt::Symbol
     learners::Tuple
     rng_seed::UInt
+    covar_schema::CausalTargeted.CovariateSchema
+    adjust_schema::CausalTargeted.CovariateSchema
+    med_parents_schema::CausalTargeted.CovariateSchema
+    moc_parents_schema::CausalTargeted.CovariateSchema
 end
 
 """
@@ -46,6 +51,10 @@ function build_mediation_fold_cache(
     med_parents = _mediator_parents(covar, moc)
     moc_parents = copy(covar)
     adjust = _outcome_parents(covar, moc, mediators)
+    covar_schema = CausalTargeted.fit_covariate_schema(df, covar)
+    adjust_schema = CausalTargeted.fit_covariate_schema(df, adjust)
+    med_parents_schema = CausalTargeted.fit_covariate_schema(df, med_parents)
+    moc_parents_schema = CausalTargeted.fit_covariate_schema(df, moc_parents)
     fold_sets = crossfit_indices(n, folds, rng)
     seed = UInt(mod(hash(rng), typemax(UInt)))
 
@@ -60,22 +69,36 @@ function build_mediation_fold_cache(
         train_idx = setdiff(1:n, test_idx)
         train = df[train_idx, :]
         y_tr = y[train_idx]
-        ols_y = _fit_sl_outcome(train, adjust, y_tr; treatment = trt, learners = learners, rng = rng)
+        ols_y = _fit_sl_outcome(
+            train, adjust, y_tr; treatment = trt, learners = learners, rng = rng,
+            schema = adjust_schema,
+        )
         med_models = SuperLearnerFit[
-            _fit_sl_outcome(train, med_parents, Float64.(train[!, m]); treatment = trt, learners = learners, rng = rng)
+            _fit_sl_outcome(
+                train, med_parents, Float64.(train[!, m]); treatment = trt,
+                learners = learners, rng = rng, schema = med_parents_schema,
+            )
             for m in mediators
         ]
         σ = [
-            _mediator_residual_sd(train, med_models[j], mediators[j], med_parents, trt)
+            _mediator_residual_sd(
+                train, med_models[j], mediators[j], med_parents, trt;
+                schema = med_parents_schema,
+            )
             for j in eachindex(mediators)
         ]
         if !isempty(moc)
             zm = SuperLearnerFit[
-                _fit_sl_outcome(train, moc_parents, Float64.(train[!, z]); treatment = trt, learners = learners, rng = rng)
+                _fit_sl_outcome(
+                    train, moc_parents, Float64.(train[!, z]); treatment = trt,
+                    learners = learners, rng = rng, schema = moc_parents_schema,
+                )
                 for z in moc
             ]
             σz = [
-                _mediator_residual_sd(train, zm[j], moc[j], moc_parents, trt)
+                _mediator_residual_sd(
+                    train, zm[j], moc[j], moc_parents, trt; schema = moc_parents_schema,
+                )
                 for j in eachindex(moc)
             ]
             push!(moc_models_v, zm)
@@ -85,7 +108,7 @@ function build_mediation_fold_cache(
             push!(sigma_z, Float64[])
         end
         sl_a = fit_super_learner(
-            design_matrix(train, covar), a[train_idx];
+            design_matrix(covar_schema, train), a[train_idx];
             learners = learners, rng = rng,
         )
         push!(outcome_models, ols_y)
@@ -97,5 +120,6 @@ function build_mediation_fold_cache(
     return MediationFoldCache(
         fold_sets, outcome_models, mediator_models, sigma_m, moc_models_v, sigma_z,
         exposure_models, adjust, covar, mediators, moc, trt, Tuple(learners), seed,
+        covar_schema, adjust_schema, med_parents_schema, moc_parents_schema,
     )
 end

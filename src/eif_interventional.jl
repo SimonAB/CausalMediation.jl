@@ -23,6 +23,9 @@ function _nested_mediator_outcome_means(
     moc_models = nothing,
     σ_z::Vector{Float64} = Float64[],
     moc_parents::Vector{Symbol} = Symbol[],
+    adjust_schema = nothing,
+    med_parents_schema = nothing,
+    moc_parents_schema = nothing,
 )
     n_te = nrow(block)
     n_med = length(mediators)
@@ -36,7 +39,10 @@ function _nested_mediator_outcome_means(
     # when present; nested draws overwrite moc under each policy when has_moc).
     function _μ_med(a_pol)
         return hcat([
-            _predict_sl(mm, block, med_parents; treatment = trt, treatment_values = a_pol)
+            _predict_sl(
+                mm, block, med_parents; treatment = trt, treatment_values = a_pol,
+                schema = med_parents_schema,
+            )
             for mm in med_models
         ]...)
     end
@@ -51,9 +57,9 @@ function _nested_mediator_outcome_means(
                 block_m0[!, mediators[j]] = μ0[:, j]
                 block_m1[!, mediators[j]] = μ1[:, j]
             end
-            y_a0_m0 .= _predict_sl(ols_y, block_m0, adjust; treatment = trt, treatment_values = a0)
-            y_a1_m0 .= _predict_sl(ols_y, block_m0, adjust; treatment = trt, treatment_values = a1)
-            y_a1_m1 .= _predict_sl(ols_y, block_m1, adjust; treatment = trt, treatment_values = a1)
+            y_a0_m0 .= _predict_sl(ols_y, block_m0, adjust; treatment = trt, treatment_values = a0, schema = adjust_schema)
+            y_a1_m0 .= _predict_sl(ols_y, block_m0, adjust; treatment = trt, treatment_values = a1, schema = adjust_schema)
+            y_a1_m1 .= _predict_sl(ols_y, block_m1, adjust; treatment = trt, treatment_values = a1, schema = adjust_schema)
             return y_a0_m0, y_a1_m0, y_a1_m1
         end
         block_m0 = copy(block)
@@ -69,12 +75,12 @@ function _nested_mediator_outcome_means(
                 block_m0_anti[!, mediators[j]] = μ0[:, j] .- noise0
                 block_m1_anti[!, mediators[j]] = μ1[:, j] .- noise1
             end
-            y_a0_m0 .+= _predict_sl(ols_y, block_m0, adjust; treatment = trt, treatment_values = a0) .+
-                         _predict_sl(ols_y, block_m0_anti, adjust; treatment = trt, treatment_values = a0)
-            y_a1_m0 .+= _predict_sl(ols_y, block_m0, adjust; treatment = trt, treatment_values = a1) .+
-                         _predict_sl(ols_y, block_m0_anti, adjust; treatment = trt, treatment_values = a1)
-            y_a1_m1 .+= _predict_sl(ols_y, block_m1, adjust; treatment = trt, treatment_values = a1) .+
-                         _predict_sl(ols_y, block_m1_anti, adjust; treatment = trt, treatment_values = a1)
+            y_a0_m0 .+= _predict_sl(ols_y, block_m0, adjust; treatment = trt, treatment_values = a0, schema = adjust_schema) .+
+                         _predict_sl(ols_y, block_m0_anti, adjust; treatment = trt, treatment_values = a0, schema = adjust_schema)
+            y_a1_m0 .+= _predict_sl(ols_y, block_m0, adjust; treatment = trt, treatment_values = a1, schema = adjust_schema) .+
+                         _predict_sl(ols_y, block_m0_anti, adjust; treatment = trt, treatment_values = a1, schema = adjust_schema)
+            y_a1_m1 .+= _predict_sl(ols_y, block_m1, adjust; treatment = trt, treatment_values = a1, schema = adjust_schema) .+
+                         _predict_sl(ols_y, block_m1_anti, adjust; treatment = trt, treatment_values = a1, schema = adjust_schema)
         end
         inv_mc = 1 / (2 * n_mc)
         y_a0_m0 .*= inv_mc
@@ -91,7 +97,10 @@ function _nested_mediator_outcome_means(
     for _ in 1:n_rep
         for (a_m, a_t, acc) in ((a0, a0, y_a0_m0), (a0, a1, y_a1_m0), (a1, a1, y_a1_m1))
             μ_z = hcat([
-                _predict_sl(zm, block, moc_parents; treatment = trt, treatment_values = a_m)
+                _predict_sl(
+                    zm, block, moc_parents; treatment = trt, treatment_values = a_m,
+                    schema = moc_parents_schema,
+                )
                 for zm in moc_models
             ]...)
             for j in 1:n_z
@@ -100,11 +109,17 @@ function _nested_mediator_outcome_means(
                 block_anti[!, moc[j]] = μ_z[:, j] .- noise
             end
             μ_m = hcat([
-                _predict_sl(mm, block_work, med_parents; treatment = trt, treatment_values = a_m)
+                _predict_sl(
+                    mm, block_work, med_parents; treatment = trt, treatment_values = a_m,
+                    schema = med_parents_schema,
+                )
                 for mm in med_models
             ]...)
             μ_m_anti = hcat([
-                _predict_sl(mm, block_anti, med_parents; treatment = trt, treatment_values = a_m)
+                _predict_sl(
+                    mm, block_anti, med_parents; treatment = trt, treatment_values = a_m,
+                    schema = med_parents_schema,
+                )
                 for mm in med_models
             ]...)
             for j in 1:n_med
@@ -112,8 +127,8 @@ function _nested_mediator_outcome_means(
                 block_work[!, mediators[j]] = μ_m[:, j] .+ nm
                 block_anti[!, mediators[j]] = μ_m_anti[:, j] .- nm
             end
-            acc .+= _predict_sl(ols_y, block_work, adjust; treatment = trt, treatment_values = a_t) .+
-                    _predict_sl(ols_y, block_anti, adjust; treatment = trt, treatment_values = a_t)
+            acc .+= _predict_sl(ols_y, block_work, adjust; treatment = trt, treatment_values = a_t, schema = adjust_schema) .+
+                    _predict_sl(ols_y, block_anti, adjust; treatment = trt, treatment_values = a_t, schema = adjust_schema)
         end
     end
     inv_mc = 1 / (2 * n_rep)

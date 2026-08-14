@@ -27,13 +27,27 @@ function _interventional_effects(
     fold_cache::Union{Nothing, MediationFoldCache} = nothing,
     epochs::Int = 1,
     organic::Bool = false,
+    ipcw_w = nothing,
 )
     n = nrow(df)
+    ipcw_w === nothing && (ipcw_w = ones(n))
     y = Float64.(df[!, outcome])
     a = Float64.(df[!, trt])
     med_parents = _mediator_parents(covar, moc)
     moc_parents = copy(covar)
     adjust = _outcome_parents(covar, moc, mediators)
+    length(ipcw_w) == n || throw(ArgumentError("ipcw_w length must match nrow(df)"))
+    if fold_cache === nothing
+        covar_schema = CausalTargeted.fit_covariate_schema(df, covar)
+        adjust_schema = CausalTargeted.fit_covariate_schema(df, adjust)
+        med_parents_schema = CausalTargeted.fit_covariate_schema(df, med_parents)
+        moc_parents_schema = CausalTargeted.fit_covariate_schema(df, moc_parents)
+    else
+        covar_schema = fold_cache.covar_schema
+        adjust_schema = fold_cache.adjust_schema
+        med_parents_schema = fold_cache.med_parents_schema
+        moc_parents_schema = fold_cache.moc_parents_schema
+    end
     binary_a = all(x -> x == 0.0 || x == 1.0, a)
     psi_te = zeros(n)
     psi_nde = zeros(n)
@@ -51,22 +65,37 @@ function _interventional_effects(
         y_te = y[test_idx]
 
         if fold_cache === nothing
-            ols_y = _fit_sl_outcome(train, adjust, y_tr; treatment = trt, learners = learners, rng = rng)
+            ols_y = _fit_sl_outcome(
+                train, adjust, y_tr; treatment = trt, learners = learners, rng = rng,
+                schema = adjust_schema,
+            )
             med_models = [
-                _fit_sl_outcome(train, med_parents, Float64.(train[!, m]); treatment = trt, learners = learners, rng = rng)
+                _fit_sl_outcome(
+                    train, med_parents, Float64.(train[!, m]); treatment = trt,
+                    learners = learners, rng = rng, schema = med_parents_schema,
+                )
                 for m in mediators
             ]
             σ_m = [
-                _mediator_residual_sd(train, med_models[j], mediators[j], med_parents, trt)
+                _mediator_residual_sd(
+                    train, med_models[j], mediators[j], med_parents, trt;
+                    schema = med_parents_schema,
+                )
                 for j in eachindex(mediators)
             ]
             if !isempty(moc)
                 moc_models = [
-                    _fit_sl_outcome(train, moc_parents, Float64.(train[!, z]); treatment = trt, learners = learners, rng = rng)
+                    _fit_sl_outcome(
+                        train, moc_parents, Float64.(train[!, z]); treatment = trt,
+                        learners = learners, rng = rng, schema = moc_parents_schema,
+                    )
                     for z in moc
                 ]
                 σ_z = [
-                    _mediator_residual_sd(train, moc_models[j], moc[j], moc_parents, trt)
+                    _mediator_residual_sd(
+                        train, moc_models[j], moc[j], moc_parents, trt;
+                        schema = moc_parents_schema,
+                    )
                     for j in eachindex(moc)
                 ]
             else
@@ -85,14 +114,25 @@ function _interventional_effects(
             ols_y, block, adjust, mediators, med_models, σ_m, med_parents, trt,
             a0, a1, n_mc, rng;
             moc = moc, moc_models = moc_models, σ_z = σ_z, moc_parents = moc_parents,
+            adjust_schema = adjust_schema, med_parents_schema = med_parents_schema,
+            moc_parents_schema = moc_parents_schema,
         )
-        Q_obs = _predict_sl(ols_y, block, adjust; treatment = trt)
-        Q_a0_M = _predict_sl(ols_y, block, adjust; treatment = trt, treatment_values = a0)
-        Q_a1_M = _predict_sl(ols_y, block, adjust; treatment = trt, treatment_values = a1)
+        Q_obs = _predict_sl(ols_y, block, adjust; treatment = trt, schema = adjust_schema)
+        Q_a0_M = _predict_sl(ols_y, block, adjust; treatment = trt, treatment_values = a0, schema = adjust_schema)
+        Q_a1_M = _predict_sl(ols_y, block, adjust; treatment = trt, treatment_values = a1, schema = adjust_schema)
 
-        μ0 = hcat([_predict_sl(mm, block, med_parents; treatment = trt, treatment_values = a0) for mm in med_models]...)
-        μ1 = hcat([_predict_sl(mm, block, med_parents; treatment = trt, treatment_values = a1) for mm in med_models]...)
-        μ_obs = hcat([_predict_sl(mm, block, med_parents; treatment = trt) for mm in med_models]...)
+        μ0 = hcat([
+            _predict_sl(mm, block, med_parents; treatment = trt, treatment_values = a0, schema = med_parents_schema)
+            for mm in med_models
+        ]...)
+        μ1 = hcat([
+            _predict_sl(mm, block, med_parents; treatment = trt, treatment_values = a1, schema = med_parents_schema)
+            for mm in med_models
+        ]...)
+        μ_obs = hcat([
+            _predict_sl(mm, block, med_parents; treatment = trt, schema = med_parents_schema)
+            for mm in med_models
+        ]...)
         m_obs = hcat([Float64.(block[!, m]) for m in mediators]...)
         ρ0 = organic ? ones(length(test_idx)) :
             mediator_density_ratio_vs_obs(m_obs, μ0, μ_obs, σ_m; trunc = 5.0)
@@ -100,7 +140,7 @@ function _interventional_effects(
             mediator_density_ratio_vs_obs(m_obs, μ1, μ_obs, σ_m; trunc = 5.0)
 
         if binary_a
-            Xw = design_matrix(train, covar)
+            Xw = design_matrix(covar_schema, train)
             sl_e = fit_super_learner(
                 Xw, a[train_idx];
                 learners = (:logistic, :mean),
@@ -108,20 +148,20 @@ function _interventional_effects(
                 metalearner = :invmse,
                 rng = rng,
             )
-            e = clamp.(predict_super_learner(sl_e, design_matrix(block, covar)), 1e-3, 1 - 1e-3)
+            e = clamp.(predict_super_learner(sl_e, design_matrix(covar_schema, block)), 1e-3, 1 - 1e-3)
             H1 = truncate_weights(A_te ./ e; trunc = 10.0)
             H0 = truncate_weights((1 .- A_te) ./ (1 .- e); trunc = 10.0)
         else
             if fold_cache === nothing
                 sl_a = fit_super_learner(
-                    design_matrix(train, covar), a[train_idx];
+                    design_matrix(covar_schema, train), a[train_idx];
                     learners = learners, rng = rng,
                 )
             else
                 sl_a = fold_cache.exposure_models[fi]
             end
-            mu_tr = predict_super_learner(sl_a, design_matrix(train, covar))
-            mu_te = predict_super_learner(sl_a, design_matrix(block, covar))
+            mu_tr = predict_super_learner(sl_a, design_matrix(covar_schema, train))
+            mu_te = predict_super_learner(sl_a, design_matrix(covar_schema, block))
             σ_a = robust_residual_sd(a[train_idx] .- mu_tr)
             if L !== nothing && U !== nothing && shift !== nothing
                 H1_raw = CausalTargeted._mtp_clever_covariate_clamp_aware(A_te, mu_te, σ_a, shift, L, U)
@@ -194,12 +234,5 @@ function _interventional_effects(
         psi_te[test_idx] = te
     end
 
-    est = (nde = mean(psi_nde), nie = mean(psi_nie), te = mean(psi_te))
-    se = (
-        nde = std(psi_nde .- est.nde) / sqrt(n),
-        nie = std(psi_nie .- est.nie) / sqrt(n),
-        te = std(psi_te .- est.te) / sqrt(n),
-    )
-    ic = (nde = psi_nde, nie = psi_nie, te = psi_te)
-    return est, se, ic
+    return _summarise_mediation_influence(psi_nde, psi_nie, psi_te, ipcw_w)
 end

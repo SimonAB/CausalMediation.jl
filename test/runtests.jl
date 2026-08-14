@@ -95,4 +95,72 @@ using Statistics
         @test riesz_available() == false
         @test_throws ErrorException fit_riesz_representer(randn(10, 2), randn(10))
     end
+
+    @testset "string covariate schema" begin
+        df, truth = CausalMediation.simulate_mediation(250; rng = StableRNG(20))
+        df.W = string.(df.W .> 0)
+        res = CausalMediation.run_mediation_scalar(
+            df, :A, :Y;
+            covar = [:W], mediators = [:M],
+            folds = 2, n_mc = 8,
+            estimator = :onestep,
+            learners = (:glm, :mean),
+            rng = StableRNG(20),
+        )
+        te = only(res[res.effect .== "TE", :estimate])
+        @test isfinite(te)
+        @test abs(te - truth.te) < 0.35
+    end
+
+    @testset "MAR outcome IPCW" begin
+        df, truth = CausalMediation.simulate_mediation(280; rng = StableRNG(21))
+        rng = StableRNG(22)
+        df.Y = Vector{Union{Float64, Missing}}(df.Y)
+        p_miss = 1.0 ./ (1.0 .+ exp.(-(-1.2 .+ 0.9 .* df.W)))
+        for i in 1:nrow(df)
+            rand(rng) < p_miss[i] && (df.Y[i] = missing)
+        end
+        drop = CausalMediation.run_mediation_scalar(
+            df, :A, :Y;
+            covar = [:W], mediators = [:M],
+            folds = 2, n_mc = 8, estimator = :onestep,
+            learners = (:glm, :mean), handle_missing = :drop, rng = StableRNG(23),
+        )
+        ipcw = CausalMediation.run_mediation_scalar(
+            df, :A, :Y;
+            covar = [:W], mediators = [:M],
+            folds = 2, n_mc = 8, estimator = :onestep,
+            learners = (:glm, :mean), handle_missing = :ipcw, rng = StableRNG(23),
+        )
+        te_drop = only(drop[drop.effect .== "TE", :estimate])
+        te_ipcw = only(ipcw[ipcw.effect .== "TE", :estimate])
+        @test isfinite(te_drop)
+        @test isfinite(te_ipcw)
+        @test !isapprox(te_drop, te_ipcw; atol = 1e-10)
+        @test abs(te_ipcw - truth.te) < 0.35
+    end
+
+    @testset "conjugate bootstrap handle_missing (CM#4)" begin
+        df, truth = CausalMediation.simulate_mediation(200; rng = StableRNG(31))
+        rng = StableRNG(32)
+        df.Y = Vector{Union{Float64, Missing}}(df.Y)
+        p_miss = 1.0 ./ (1.0 .+ exp.(-(-1.0 .+ 0.7 .* df.W)))
+        for i in 1:nrow(df)
+            rand(rng) < p_miss[i] && (df.Y[i] = missing)
+        end
+        drop = conjugate_mediation_bootstrap(
+            df, :A, :Y, [:W], [:M];
+            n_boot = 40, rng = StableRNG(33), handle_missing = :drop,
+        )
+        ipcw = conjugate_mediation_bootstrap(
+            df, :A, :Y, [:W], [:M];
+            n_boot = 40, rng = StableRNG(33), handle_missing = :ipcw,
+        )
+        te_drop = only(drop[drop.effect .== "TE", :estimate])
+        te_ipcw = only(ipcw[ipcw.effect .== "TE", :estimate])
+        @test isfinite(te_drop)
+        @test isfinite(te_ipcw)
+        @test !isapprox(te_drop, te_ipcw; atol = 1e-10)
+        @test abs(te_drop - truth.te) < 0.45
+    end
 end
