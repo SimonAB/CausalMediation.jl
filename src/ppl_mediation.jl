@@ -81,7 +81,9 @@ function conjugate_mediation_bootstrap(
     )
     covar_use = isempty(extra_cols) ? covar : unique(vcat(covar, extra_cols))
     n = nrow(sub)
-    n >= 2 || throw(ArgumentError("conjugate_mediation_bootstrap needs at least 2 complete rows"))
+    n >= 2 || throw(ArgumentError(
+        "conjugate_mediation_bootstrap needs at least 2 rows after handle_missing=$handle_missing",
+    ))
     w = Float64.(ipcw_w)
     use_weights = !all(x -> isapprox(x, 1.0; atol = 1e-12, rtol = 0.0), w)
     sample_weights = use_weights ? StatsBase.Weights(w ./ sum(w)) : nothing

@@ -28,6 +28,9 @@ function _predict_sl(
     schema::Union{Nothing, CausalTargeted.CovariateSchema} = nothing,
 )
     fitted_schema = schema === nothing ? CausalTargeted.fit_covariate_schema(df, cols) : schema
+    fitted_schema.covariates == cols || throw(ArgumentError(
+        "provided schema covariates $(repr(fitted_schema.covariates)) do not match $(repr(cols))",
+    ))
     X = design_matrix(fitted_schema, df; treatment = treatment, treatment_values = treatment_values)
     return predict_super_learner(sl, X)
 end

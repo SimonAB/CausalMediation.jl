@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `run_tmle3_nde` applies `handle_missing` IPCW via `weighted_influence_summary`
+  ([#6](https://github.com/SimonAB/CausalMediation.jl/issues/6)).
+- `_predict_sl` / `_fit_sl_outcome` reject schema covariate mismatch; conjugate
+  bootstrap error names `handle_missing`
+  ([#7](https://github.com/SimonAB/CausalMediation.jl/issues/7)).
+
 ### Changed
 
 - Fold caches fit CausalTargeted `CovariateSchema` once on the cleaned frame

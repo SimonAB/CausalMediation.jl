@@ -1,6 +1,8 @@
 using Test
 using CausalMediation
-using CausalTargeted: SMALL_N_SL_LEARNERS, DEFAULT_SL_LEARNERS, effective_sd_shift
+using CausalTargeted:
+    SMALL_N_SL_LEARNERS, DEFAULT_SL_LEARNERS, effective_sd_shift,
+    fit_covariate_schema, fit_super_learner, design_matrix
 using CausalDynamics
 using DataFrames
 using Graphs
@@ -162,5 +164,42 @@ using Statistics
         @test isfinite(te_ipcw)
         @test !isapprox(te_drop, te_ipcw; atol = 1e-10)
         @test abs(te_drop - truth.te) < 0.45
+    end
+
+    @testset "TMLE3 NDE uses IPCW weights (CM#6)" begin
+        df, truth = CausalMediation.simulate_mediation(280; rng = StableRNG(40))
+        rng = StableRNG(41)
+        df.Y = Vector{Union{Float64, Missing}}(df.Y)
+        p_miss = 1.0 ./ (1.0 .+ exp.(-(-1.1 .+ 0.85 .* df.W)))
+        for i in 1:nrow(df)
+            rand(rng) < p_miss[i] && (df.Y[i] = missing)
+        end
+        drop = run_tmle3_nde(
+            df, :A, :Y;
+            baseline = [:W], mediators = [:M], folds = 2,
+            handle_missing = :drop, rng = StableRNG(42),
+        )
+        ipcw = run_tmle3_nde(
+            df, :A, :Y;
+            baseline = [:W], mediators = [:M], folds = 2,
+            handle_missing = :ipcw, rng = StableRNG(42),
+        )
+        @test isfinite(only(drop.estimate))
+        @test isfinite(only(ipcw.estimate))
+        @test !isapprox(only(drop.estimate), only(ipcw.estimate); atol = 1e-10)
+        @test abs(only(ipcw.estimate) - truth.nde) < 0.55
+    end
+
+    @testset "schema covariate mismatch (CM#7)" begin
+        df, _ = CausalMediation.simulate_mediation(80; rng = StableRNG(50))
+        schema_w = fit_covariate_schema(df, [:W])
+        X = design_matrix(schema_w, df; treatment = :A)
+        sl = fit_super_learner(X, Float64.(df.Y); learners = (:mean,), rng = StableRNG(51))
+        @test_throws ArgumentError CausalMediation._predict_sl(
+            sl, df, [:W, :M]; treatment = :A, schema = schema_w,
+        )
+        @test_throws ArgumentError conjugate_mediation_bootstrap(
+            df[1:1, :], :A, :Y, [:W], [:M]; n_boot = 2, rng = StableRNG(52),
+        )
     end
 end
