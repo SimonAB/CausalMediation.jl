@@ -16,7 +16,7 @@ function run_tmle3_nde(
     handle_missing::Symbol = :drop,
 )
     all_cols = unique(vcat(baseline, mediators, [treatment]))
-    df, _, extra_cols = handle_missing_data(data, outcome, all_cols, handle_missing; rng = rng)
+    df, ipcw_w, extra_cols = handle_missing_data(data, outcome, all_cols, handle_missing; rng = rng)
     baseline = columns_present(df, unique(vcat(baseline, extra_cols)))
     mediators = columns_present(df, mediators)
     n = nrow(df)
@@ -41,8 +41,13 @@ function run_tmle3_nde(
     denom = sum((H1 .- H0) .^ 2)
     ε = denom > 1e-12 ? sum((H1 .- H0) .* resid) / denom : 0.0
     ic = (Q1 .- Q0) .+ ε .* (H1 .- H0)
-    est = mean(ic)
-    se = std(ic) / sqrt(n)
+    if CausalTargeted._uses_ipcw_weights(ipcw_w)
+        s = weighted_influence_summary(ic, ipcw_w)
+        est, se = s.estimate, s.se
+    else
+        est = mean(ic)
+        se = std(ic) / sqrt(n)
+    end
 
     return DataFrame(
         treatment = [string(treatment)],
