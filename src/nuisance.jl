@@ -8,13 +8,13 @@ function _fit_sl_outcome(
     treatment = nothing,
     learners = DEFAULT_SL_LEARNERS,
     rng = StableRNG(1),
-    schema::Union{Nothing, CausalTargeted.CovariateSchema} = nothing,
+    schema::Union{Nothing, _CovariateSchema} = nothing,
 )
-    fitted_schema = schema === nothing ? CausalTargeted.fit_covariate_schema(df, cols) : schema
+    fitted_schema = schema === nothing ? _fit_covariate_schema(df, cols) : schema
     fitted_schema.covariates == cols || throw(ArgumentError(
         "provided schema covariates $(repr(fitted_schema.covariates)) do not match $(repr(cols))",
     ))
-    X = design_matrix(fitted_schema, df; treatment = treatment)
+    X = _design_matrix(fitted_schema, df; treatment = treatment)
     return fit_super_learner(X, y; learners = learners, rng = rng)
 end
 
@@ -25,13 +25,15 @@ function _predict_sl(
     cols::Vector{Symbol};
     treatment = nothing,
     treatment_values = nothing,
-    schema::Union{Nothing, CausalTargeted.CovariateSchema} = nothing,
+    schema::Union{Nothing, _CovariateSchema} = nothing,
 )
-    fitted_schema = schema === nothing ? CausalTargeted.fit_covariate_schema(df, cols) : schema
+    fitted_schema = schema === nothing ? _fit_covariate_schema(df, cols) : schema
     fitted_schema.covariates == cols || throw(ArgumentError(
         "provided schema covariates $(repr(fitted_schema.covariates)) do not match $(repr(cols))",
     ))
-    X = design_matrix(fitted_schema, df; treatment = treatment, treatment_values = treatment_values)
+    X = _design_matrix(
+        fitted_schema, df; treatment = treatment, treatment_values = treatment_values,
+    )
     return predict_super_learner(sl, X)
 end
 
@@ -77,9 +79,9 @@ function _summarise_mediation_influence(
         ic = (nde = Float64.(psi_nde), nie = Float64.(psi_nie), te = Float64.(psi_te))
         return est, se, ic
     end
-    s_nde = weighted_influence_summary(psi_nde, ipcw_w)
-    s_nie = weighted_influence_summary(psi_nie, ipcw_w)
-    s_te = weighted_influence_summary(psi_te, ipcw_w)
+    s_nde = _weighted_influence_summary(psi_nde, ipcw_w)
+    s_nie = _weighted_influence_summary(psi_nie, ipcw_w)
+    s_te = _weighted_influence_summary(psi_te, ipcw_w)
     est = (nde = s_nde.estimate, nie = s_nie.estimate, te = s_te.estimate)
     se = (nde = s_nde.se, nie = s_nie.se, te = s_te.se)
     ic = (nde = s_nde.ic, nie = s_nie.ic, te = s_te.ic)

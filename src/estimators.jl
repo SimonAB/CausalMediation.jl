@@ -38,10 +38,10 @@ function _interventional_effects(
     adjust = _outcome_parents(covar, moc, mediators)
     length(ipcw_w) == n || throw(ArgumentError("ipcw_w length must match nrow(df)"))
     if fold_cache === nothing
-        covar_schema = CausalTargeted.fit_covariate_schema(df, covar)
-        adjust_schema = CausalTargeted.fit_covariate_schema(df, adjust)
-        med_parents_schema = CausalTargeted.fit_covariate_schema(df, med_parents)
-        moc_parents_schema = CausalTargeted.fit_covariate_schema(df, moc_parents)
+        covar_schema = _fit_covariate_schema(df, covar)
+        adjust_schema = _fit_covariate_schema(df, adjust)
+        med_parents_schema = _fit_covariate_schema(df, med_parents)
+        moc_parents_schema = _fit_covariate_schema(df, moc_parents)
     else
         covar_schema = fold_cache.covar_schema
         adjust_schema = fold_cache.adjust_schema
@@ -140,7 +140,7 @@ function _interventional_effects(
             mediator_density_ratio_vs_obs(m_obs, μ1, μ_obs, σ_m; trunc = 5.0)
 
         if binary_a
-            Xw = design_matrix(covar_schema, train)
+            Xw = _design_matrix(covar_schema, train)
             sl_e = fit_super_learner(
                 Xw, a[train_idx];
                 learners = (:logistic, :mean),
@@ -148,20 +148,20 @@ function _interventional_effects(
                 metalearner = :invmse,
                 rng = rng,
             )
-            e = clamp.(predict_super_learner(sl_e, design_matrix(covar_schema, block)), 1e-3, 1 - 1e-3)
+            e = clamp.(predict_super_learner(sl_e, _design_matrix(covar_schema, block)), 1e-3, 1 - 1e-3)
             H1 = truncate_weights(A_te ./ e; trunc = 10.0)
             H0 = truncate_weights((1 .- A_te) ./ (1 .- e); trunc = 10.0)
         else
             if fold_cache === nothing
                 sl_a = fit_super_learner(
-                    design_matrix(covar_schema, train), a[train_idx];
+                    _design_matrix(covar_schema, train), a[train_idx];
                     learners = learners, rng = rng,
                 )
             else
                 sl_a = fold_cache.exposure_models[fi]
             end
-            mu_tr = predict_super_learner(sl_a, design_matrix(covar_schema, train))
-            mu_te = predict_super_learner(sl_a, design_matrix(covar_schema, block))
+            mu_tr = predict_super_learner(sl_a, _design_matrix(covar_schema, train))
+            mu_te = predict_super_learner(sl_a, _design_matrix(covar_schema, block))
             σ_a = robust_residual_sd(a[train_idx] .- mu_tr)
             if L !== nothing && U !== nothing && shift !== nothing
                 H1_raw = CausalTargeted._mtp_clever_covariate_clamp_aware(A_te, mu_te, σ_a, shift, L, U)

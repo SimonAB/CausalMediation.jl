@@ -22,10 +22,10 @@ struct MediationFoldCache
     trt::Symbol
     learners::Tuple
     rng_seed::UInt
-    covar_schema::CausalTargeted.CovariateSchema
-    adjust_schema::CausalTargeted.CovariateSchema
-    med_parents_schema::CausalTargeted.CovariateSchema
-    moc_parents_schema::CausalTargeted.CovariateSchema
+    covar_schema::_CovariateSchema
+    adjust_schema::_CovariateSchema
+    med_parents_schema::_CovariateSchema
+    moc_parents_schema::_CovariateSchema
 end
 
 """
@@ -51,10 +51,10 @@ function build_mediation_fold_cache(
     med_parents = _mediator_parents(covar, moc)
     moc_parents = copy(covar)
     adjust = _outcome_parents(covar, moc, mediators)
-    covar_schema = CausalTargeted.fit_covariate_schema(df, covar)
-    adjust_schema = CausalTargeted.fit_covariate_schema(df, adjust)
-    med_parents_schema = CausalTargeted.fit_covariate_schema(df, med_parents)
-    moc_parents_schema = CausalTargeted.fit_covariate_schema(df, moc_parents)
+    covar_schema = _fit_covariate_schema(df, covar)
+    adjust_schema = _fit_covariate_schema(df, adjust)
+    med_parents_schema = _fit_covariate_schema(df, med_parents)
+    moc_parents_schema = _fit_covariate_schema(df, moc_parents)
     fold_sets = crossfit_indices(n, folds, rng)
     seed = UInt(mod(hash(rng), typemax(UInt)))
 
@@ -108,7 +108,7 @@ function build_mediation_fold_cache(
             push!(sigma_z, Float64[])
         end
         sl_a = fit_super_learner(
-            design_matrix(covar_schema, train), a[train_idx];
+            _design_matrix(covar_schema, train), a[train_idx];
             learners = learners, rng = rng,
         )
         push!(outcome_models, ols_y)

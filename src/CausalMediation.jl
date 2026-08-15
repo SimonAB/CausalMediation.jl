@@ -35,6 +35,7 @@ using Distributions
 
 include("effects.jl")
 include("identify_bridge.jl")
+include("compat_causaltargeted.jl")
 include("nuisance.jl")
 include("mediation_eif.jl")
 include("eif_interventional.jl")

@@ -2,7 +2,7 @@ using Test
 using CausalMediation
 using CausalTargeted:
     SMALL_N_SL_LEARNERS, DEFAULT_SL_LEARNERS, effective_sd_shift,
-    fit_covariate_schema, fit_super_learner, design_matrix
+    fit_super_learner
 using CausalDynamics
 using DataFrames
 using Graphs
@@ -192,8 +192,8 @@ using Statistics
 
     @testset "schema covariate mismatch (CM#7)" begin
         df, _ = CausalMediation.simulate_mediation(80; rng = StableRNG(50))
-        schema_w = fit_covariate_schema(df, [:W])
-        X = design_matrix(schema_w, df; treatment = :A)
+        schema_w = CausalMediation._fit_covariate_schema(df, [:W])
+        X = CausalMediation._design_matrix(schema_w, df; treatment = :A)
         sl = fit_super_learner(X, Float64.(df.Y); learners = (:mean,), rng = StableRNG(51))
         @test_throws ArgumentError CausalMediation._predict_sl(
             sl, df, [:W, :M]; treatment = :A, schema = schema_w,

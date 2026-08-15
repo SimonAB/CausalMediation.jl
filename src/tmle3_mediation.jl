@@ -41,8 +41,8 @@ function run_tmle3_nde(
     denom = sum((H1 .- H0) .^ 2)
     ε = denom > 1e-12 ? sum((H1 .- H0) .* resid) / denom : 0.0
     ic = (Q1 .- Q0) .+ ε .* (H1 .- H0)
-    if CausalTargeted._uses_ipcw_weights(ipcw_w)
-        s = weighted_influence_summary(ic, ipcw_w)
+    if _uses_ipcw_weights(ipcw_w)
+        s = _weighted_influence_summary(ic, ipcw_w)
         est, se = s.estimate, s.se
     else
         est = mean(ic)
