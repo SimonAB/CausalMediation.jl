@@ -28,6 +28,8 @@ jobs:
         run: |
           julia --project=docs -e '
             using Pkg
+            # Tip Mediation needs CausalTargeted ≥0.3.7 (CovariateSchema); General is still 0.3.6.
+            Pkg.add(url = "https://github.com/SimonAB/CausalTargeted.jl", rev = "main")
             Pkg.develop(PackageSpec(path=pwd()))
             Pkg.instantiate()'
       - name: Build and deploy documentation
