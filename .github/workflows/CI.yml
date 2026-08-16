@@ -33,12 +33,5 @@ jobs:
         with:
           version: ${{ matrix.version }}
       - uses: julia-actions/cache@v3
-      # Tip Mediation needs CausalTargeted ≥0.3.7 (CovariateSchema); General is still 0.3.6.
-      - name: Install CausalTargeted tip
-        shell: julia --color=yes {0}
-        run: |
-          using Pkg
-          Pkg.activate(".")
-          Pkg.add(url = "https://github.com/SimonAB/CausalTargeted.jl", rev = "main")
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1

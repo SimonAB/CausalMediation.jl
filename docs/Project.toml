@@ -9,7 +9,7 @@ StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"
 
 [sources]
 CausalDynamics = {url = "https://github.com/SimonAB/CausalDynamics.jl.git"}
-CausalMediation = {path = "/Users/s_a_b/Documents/Work/CDCS/packages/CausalMediation.jl"}
+CausalMediation = {path = ".."}
 CausalTargeted = {url = "https://github.com/SimonAB/CausalTargeted.jl.git"}
 
 [compat]
