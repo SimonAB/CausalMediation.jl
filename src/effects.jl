@@ -29,6 +29,18 @@ ControlledDirect() = ControlledDirect(Dict{Symbol, Float64}())
 ControlledDirect(pairs::Pair{Symbol, <:Real}...) =
     ControlledDirect(Dict{Symbol, Float64}(k => Float64(v) for (k, v) in pairs))
 
+"""Classify a treatment column as `:factor`, `:continuous`, `:integer`, or `:other`."""
+function _treatment_column_kind(col)
+    T = Base.nonmissingtype(eltype(col))
+    (T <: AbstractString || T <: AbstractChar) && return :factor
+    T <: AbstractFloat && return :continuous
+    (T <: Integer || T <: Bool) && return :integer
+    return :other
+end
+
+"""Numeric MTP or finite-support recode on a mediation arm."""
+const MediationTreatmentPolicy = Union{ShiftPolicy, DiscreteTreatmentPolicy}
+
 """
     MediationSpec(treatment, outcome; mediators, covariates, moc, policy_d0, policy_d1, effect)
 
@@ -40,7 +52,10 @@ intermediate confounders (`moc`), shift policies, and effect family.
 - `mediators`: mediator column symbols (required)
 - `covariates`: baseline adjustment set (often from `IdentificationResult.adjustment`)
 - `moc`: intermediate confounders; must be empty for `NaturalMediation`
-- `policy_d0` / `policy_d1`: CausalTargeted `ShiftPolicy` for the two arms
+- `policy_d0` / `policy_d1`: CausalTargeted `ShiftPolicy` (numeric MTP) or
+  `DiscreteTreatmentPolicy` (factor recode). Both arms must be the same kind.
+  Discrete policies are interventional only, with continuous mediators and
+  empty `moc` in this version.
 - `effect`: `InterventionalMediation()` by default
 
 See also [`plan_mediation`](@ref), [`run_mediation`](@ref), [`assumptions`](@ref).
@@ -51,9 +66,26 @@ struct MediationSpec
     mediators::Vector{Symbol}
     covariates::Vector{Symbol}
     moc::Vector{Symbol}
-    policy_d0::ShiftPolicy
-    policy_d1::ShiftPolicy
+    policy_d0::MediationTreatmentPolicy
+    policy_d1::MediationTreatmentPolicy
     effect::MediationEffect
+
+    function MediationSpec(
+        treatment::Symbol,
+        outcome::Symbol,
+        mediators::Vector{Symbol},
+        covariates::Vector{Symbol},
+        moc::Vector{Symbol},
+        policy_d0::MediationTreatmentPolicy,
+        policy_d1::MediationTreatmentPolicy,
+        effect::MediationEffect,
+    )
+        _assert_mediation_policies!(policy_d0, policy_d1, effect, moc)
+        return new(
+            treatment, outcome, mediators, covariates, moc,
+            policy_d0, policy_d1, effect,
+        )
+    end
 end
 
 function MediationSpec(
@@ -62,8 +94,8 @@ function MediationSpec(
     mediators::Vector{Symbol},
     covariates::Vector{Symbol} = Symbol[],
     moc::Vector{Symbol} = Symbol[],
-    policy_d0::ShiftPolicy = ShiftPolicy(scale = "z", lower_q = 0.01, upper_q = 0.99),
-    policy_d1::ShiftPolicy = policy_d0,
+    policy_d0::MediationTreatmentPolicy = ShiftPolicy(scale = "z", lower_q = 0.01, upper_q = 0.99),
+    policy_d1::MediationTreatmentPolicy = policy_d0,
     effect::MediationEffect = InterventionalMediation(),
 )
     return MediationSpec(
@@ -71,6 +103,37 @@ function MediationSpec(
         policy_d0, policy_d1, effect,
     )
 end
+
+"""Refuse mixed policy kinds and discrete policies outside interventional factor A."""
+function _assert_mediation_policies!(
+    policy_d0::MediationTreatmentPolicy,
+    policy_d1::MediationTreatmentPolicy,
+    effect::MediationEffect,
+    moc::Vector{Symbol},
+)
+    disc0 = policy_d0 isa DiscreteTreatmentPolicy
+    disc1 = policy_d1 isa DiscreteTreatmentPolicy
+    if disc0 != disc1
+        throw(ArgumentError(
+            "policy_d0 and policy_d1 must be the same kind " *
+            "(both ShiftPolicy or both DiscreteTreatmentPolicy); " *
+            "got $(typeof(policy_d0)) and $(typeof(policy_d1))",
+        ))
+    end
+    if disc0
+        effect isa InterventionalMediation || throw(ArgumentError(
+            "discrete treatment policies are supported only for InterventionalMediation; " *
+            "got $(typeof(effect))",
+        ))
+        isempty(moc) || throw(ArgumentError(
+            "categorical-A interventional mediation does not yet support moc; got $moc",
+        ))
+    end
+    return nothing
+end
+
+"""True when both arms are [`DiscreteTreatmentPolicy`](@ref)."""
+_discrete_spec(spec::MediationSpec) = spec.policy_d0 isa DiscreteTreatmentPolicy
 
 """
     MediationResult

@@ -2,7 +2,8 @@ using Test
 using CausalMediation
 using CausalTargeted:
     SMALL_N_SL_LEARNERS, DEFAULT_SL_LEARNERS, effective_sd_shift,
-    fit_covariate_schema, fit_super_learner, design_matrix
+    fit_covariate_schema, fit_super_learner, design_matrix,
+    discrete_recode_policy, DiscreteTreatmentPolicy, ShiftPolicy
 using CausalDynamics
 using DataFrames
 using Graphs
@@ -188,6 +189,62 @@ using Statistics
         @test isfinite(only(ipcw.estimate))
         @test !isapprox(only(drop.estimate), only(ipcw.estimate); atol = 1e-10)
         @test abs(only(ipcw.estimate) - truth.nde) < 0.55
+    end
+
+    @testset "categorical A interventional mediation" begin
+        recode = discrete_recode_policy(Dict("2" => "1"))
+        identity = discrete_recode_policy(Dict{String, String}())
+        @test_throws ArgumentError MediationSpec(
+            :A, :Y; mediators = [:M],
+            policy_d0 = ShiftPolicy(), policy_d1 = recode,
+        )
+        @test_throws ArgumentError MediationSpec(
+            :A, :Y; mediators = [:M],
+            policy_d0 = identity, policy_d1 = recode,
+            effect = NaturalMediation(),
+        )
+        @test_throws ArgumentError MediationSpec(
+            :A, :Y; mediators = [:M], moc = [:L],
+            policy_d0 = identity, policy_d1 = recode,
+        )
+
+        df_num, _ = CausalMediation.simulate_mediation(80; rng = StableRNG(60))
+        spec_disc = MediationSpec(
+            :A, :Y; mediators = [:M], covariates = [:W],
+            policy_d0 = identity, policy_d1 = recode,
+        )
+        @test_throws ArgumentError run_mediation(
+            spec_disc, df_num; folds = 2, n_mc = 2, learners = (:glm, :mean),
+            rng = StableRNG(60),
+        )
+
+        df, truth = CausalMediation.simulate_categorical_a_mediation(400; rng = StableRNG(61))
+        @test_throws ArgumentError run_mediation_grid(
+            df, :A, :Y; covar = [:W], mediators = [:M], deltas = [1.0],
+            folds = 2, n_mc = 2, learners = (:glm, :mean), parallel = false,
+            rng = StableRNG(61),
+        )
+        res = run_mediation(
+            spec_disc, df;
+            folds = 3, n_mc = 24, estimator = :onestep,
+            learners = (:glm, :mean), rng = StableRNG(61),
+        )
+        d = decompose(res)
+        @test isfinite(d.nde) && isfinite(d.nie) && isfinite(d.te)
+        @test abs(d.te - truth.te) < 0.40
+        @test all(isnan, res.table.delta)
+
+        g = SimpleDiGraph(4)
+        add_edge!(g, 1, 2); add_edge!(g, 1, 3); add_edge!(g, 1, 4)
+        add_edge!(g, 2, 3); add_edge!(g, 2, 4); add_edge!(g, 3, 4)
+        names = Dict(1 => :W, 2 => :A, 3 => :M, 4 => :Y)
+        id = identify(
+            g, MediationQuery(:A, :Y, [:M]; effect_kind = :interventional);
+            node_names = names,
+        )
+        spec_id = spec_from_identification(id; policy_d0 = identity, policy_d1 = recode)
+        @test spec_id.policy_d1 isa DiscreteTreatmentPolicy
+        @test spec_id.covariates == [:W]
     end
 
     @testset "schema covariate mismatch (CM#7)" begin

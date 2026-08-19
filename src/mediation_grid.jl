@@ -43,6 +43,13 @@ function run_mediation_grid(
     if !isempty(extra_cols)
         covar = unique(vcat(covar, extra_cols))
     end
+    kind = _treatment_column_kind(data_clean[!, trt])
+    if kind === :factor
+        throw(ArgumentError(
+            "run_mediation_grid expects a numeric treatment; " *
+            "categorical :$trt requires MediationSpec with DiscreteTreatmentPolicy on both arms",
+        ))
+    end
     df = make_analysis_strata(data_clean, stratify_by)
     pooled = stratify_by !== nothing
     covar = columns_present(df, unique(vcat(covar, pooled ? [stratify_by] : Symbol[])))

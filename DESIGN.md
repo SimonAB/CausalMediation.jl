@@ -14,6 +14,8 @@ IdentificationResult  →  plan_mediation / run_mediation  →  TE/NDE/NIE (+ pa
    CausalDynamics          CausalTargeted (SL, ShiftPolicy, folds)
 ```
 
+Treatment shifts on `MediationSpec` are CausalTargeted `ShiftPolicy` (numeric MTP) or `DiscreteTreatmentPolicy` (factor recode). Both arms must be the same kind. Discrete recodes are interventional only, with continuous mediators and empty `moc` in this version. Identification (`MediationQuery`) remains support-agnostic.
+
 ## Package-specific principles
 
 - Do **not** duplicate Super Learner; call CausalTargeted.

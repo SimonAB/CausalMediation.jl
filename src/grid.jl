@@ -17,7 +17,8 @@ Canonical mediation entry point. Dispatches on `spec.effect` and returns a
 - `folds`, `learners`, `parallel`, `cache_nuisances`: Super Learner / cross-fit controls from CausalTargeted
 
 Natural effects with nonempty `spec.moc` are refused by
-[`assert_natural_admissible!`](@ref).
+[`assert_natural_admissible!`](@ref). Discrete recode policies skip the δ-grid
+and return a one-contrast table (`delta = NaN`).
 """
 function run_mediation(
     spec::MediationSpec,
@@ -34,6 +35,13 @@ function run_mediation(
 )
     assert_natural_admissible!(spec)
     assert_moc_for_ri!(spec)
+    if _discrete_spec(spec)
+        return _run_mediation_discrete(
+            spec, data;
+            folds = folds, learners = learners, estimator = estimator,
+            n_mc = n_mc, rng = rng, kwargs...,
+        )
+    end
 
     δs = deltas === nothing ? default_deltas() : deltas
     table = run_mediation_grid(
@@ -63,11 +71,78 @@ function run_mediation(
     )
 end
 
+"""Interventional factor-`A` path: dummy-coded Q, classification `H`, continuous `M`."""
+function _run_mediation_discrete(
+    spec::MediationSpec,
+    data::DataFrame;
+    folds,
+    learners,
+    estimator::Symbol,
+    n_mc::Int,
+    rng::AbstractRNG,
+    handle_missing::Symbol = :drop,
+    kwargs...,
+)
+    trt = spec.treatment
+    kind = _treatment_column_kind(data[!, trt])
+    if kind === :continuous
+        throw(ArgumentError(
+            "mediation does not mix continuous and categorical treatments; " *
+            "DiscreteTreatmentPolicy requires a categorical :$trt " *
+            "(String or Integer codes), not a continuous column",
+        ))
+    end
+    if kind === :other
+        throw(ArgumentError(
+            "treatment :$trt has unsupported eltype $(eltype(data[!, trt])) for DiscreteTreatmentPolicy",
+        ))
+    end
+    isempty(spec.mediators) && throw(ArgumentError("categorical-A mediation requires mediators"))
+
+    all_cols = unique(vcat(spec.covariates, spec.mediators, spec.moc, [trt]))
+    df, ipcw_w, extra_cols = handle_missing_data(
+        data, spec.outcome, all_cols, handle_missing; rng = rng,
+    )
+    covar = isempty(extra_cols) ? copy(spec.covariates) : unique(vcat(spec.covariates, extra_cols))
+    covar = columns_present(df, covar)
+    mediators = columns_present(df, spec.mediators)
+    df = copy(df)
+    df[!, trt] = string.(CausalTargeted._factorise_treatment(df[!, trt]))
+    a = collect(df[!, trt])
+    covar_schema = CausalTargeted.fit_covariate_schema(df, covar)
+    W = Matrix{Float64}(CausalTargeted._covariate_matrix(covar_schema, df))
+    a0 = string.(apply_discrete_policy(a, W, spec.policy_d0))
+    a1 = string.(apply_discrete_policy(a, W, spec.policy_d1))
+    df[!, trt] = a
+    pos = discrete_positivity(a, a1)
+    est, se, ic = _interventional_effects_discrete_a(
+        df, spec.outcome, trt, covar, mediators, a0, a1, folds, rng;
+        learners = learners, n_mc = n_mc, estimator = estimator, ipcw_w = ipcw_w,
+    )
+    table = _discrete_mediation_table(est, se; positivity = pos)
+    return MediationResult(
+        spec, est, se, ic,
+        (
+            n_mc = n_mc,
+            estimator = estimator,
+            n_rows = nrow(table),
+            density_ratio = :classification,
+            positivity = pos,
+        ),
+        table,
+    )
+end
+
 function _summarise_grid(table::DataFrame)
-    sub = table[.!isapprox.(table.delta, 0; atol = 1e-12), :]
-    isempty(sub) && (sub = table)
-    d0 = first(sort(unique(Float64.(sub.delta))))
-    rows = sub[Float64.(sub.delta) .== d0, :]
+    deltas = Float64.(table.delta)
+    if !isempty(deltas) && all(isnan, deltas)
+        rows = table
+    else
+        sub = table[.!isapprox.(deltas, 0; atol = 1e-12), :]
+        isempty(sub) && (sub = table)
+        d0 = first(sort(unique(Float64.(sub.delta))))
+        rows = sub[Float64.(sub.delta) .== d0, :]
+    end
     get_est(lab) = begin
         r = rows[string.(rows.estimand) .== lab, :]
         isempty(r) ? (NaN, NaN) : (Float64(r.est[1]), Float64(r.se[1]))

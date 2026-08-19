@@ -10,12 +10,12 @@ CausalDynamics `IdentificationResult` into a concrete [`MediationSpec`](@ref)
 (mirrors CausalTargeted `plan_mtp`).
 
 Empty fields on `spec` are filled from the certificate; nonempty fields are kept.
-Optional `shift` replaces both `policy_d0` and `policy_d1`.
+Optional `shift` replaces both `policy_d0` and `policy_d1` (numeric or discrete).
 """
 function plan_mediation(
     spec::MediationSpec,
     id_result::IdentificationResult;
-    shift::Union{Nothing, ShiftPolicy} = nothing,
+    shift::Union{Nothing, MediationTreatmentPolicy} = nothing,
 )
     assert_natural_admissible!(spec)
     adj = Symbol.(id_result.adjustment)
@@ -48,8 +48,8 @@ kind is preferred.
 function spec_from_identification(
     id_result::IdentificationResult;
     effect::Union{MediationEffect, Symbol} = :interventional,
-    policy_d0::ShiftPolicy = ShiftPolicy(scale = "z", lower_q = 0.01, upper_q = 0.99),
-    policy_d1::ShiftPolicy = policy_d0,
+    policy_d0::MediationTreatmentPolicy = ShiftPolicy(scale = "z", lower_q = 0.01, upper_q = 0.99),
+    policy_d1::MediationTreatmentPolicy = policy_d0,
 )
     q = id_result.query
     q isa MediationQuery || throw(ArgumentError(

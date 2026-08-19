@@ -5,7 +5,7 @@ Cross-fitted mediation estimation for the CDCS stack: interventional (RI),
 natural, organic, controlled direct, and recanting-twin path-specific effects.
 
 Depends on CausalDynamics for identification certificates and CausalTargeted
-for Super Learner, `ShiftPolicy`, fold helpers, and MTP density ratios.
+for Super Learner, `ShiftPolicy` / `DiscreteTreatmentPolicy`, fold helpers, and density ratios.
 
 # Entry points
 
@@ -45,6 +45,7 @@ include("eif_organic.jl")
 include("eif_recanting.jl")
 include("eif_controlled.jl")
 include("mediation_grid.jl")
+include("estimators_discrete_a.jl")
 include("grid.jl")
 include("diagnostics.jl")
 include("synthetic.jl")
@@ -69,6 +70,7 @@ export mediation_n_mc_sweep, mediation_stability_summary, mediation_stability_ma
 export simulate_mediation, simulate_continuous_mtp_mediation
 export simulate_intermediate_confounding_mediation
 export simulate_recanting_twin_mediation
+export simulate_categorical_a_mediation
 export TargetTrialMediation, target_trial_mediation
 export fit_riesz_representer, riesz_available
 

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-08-18
+
+### Added
+
+- Interventional TE / NDE / NIE under a factor recode of `A` (continuous `M`):
+  `MediationSpec` accepts `DiscreteTreatmentPolicy` on both arms, dummy-coded Q,
+  Díaz–Williams classification ratios from CausalTargeted, and
+  `simulate_categorical_a_mediation`. Natural / organic / RT / CDE and nonempty
+  `moc` remain numeric-`A` only. Mixed `ShiftPolicy` / discrete arms throw.
+  Getting-started and README show the recode `MediationSpec`.
+
 ### Fixed
 
 - `run_tmle3_nde` applies `handle_missing` IPCW via `weighted_influence_summary`

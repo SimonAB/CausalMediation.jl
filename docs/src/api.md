@@ -68,6 +68,7 @@ simulate_mediation
 simulate_continuous_mtp_mediation
 simulate_intermediate_confounding_mediation
 simulate_recanting_twin_mediation
+simulate_categorical_a_mediation
 ```
 
 ## Target trial and Riesz

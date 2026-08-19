@@ -9,6 +9,7 @@ Install: `Pkg.add("CausalMediation")`. Requires Julia **1.12+**,
 | Version | Status |
 |---------|--------|
 | **0.1.0** | On General ([#163653](https://github.com/JuliaRegistries/General/pull/163653), merged 2026-08-08); TagBot tagged `v0.1.0` |
+| **0.1.1** | Tip of `main` (unregistered): categorical-`A` interventional mediation, continuous `M`. Register after CausalTargeted **0.3.8+** is on General; drop `[sources]` in the same PR |
 
 Tracking: [issue #1](https://github.com/SimonAB/CausalMediation.jl/issues/1) (can close).
 

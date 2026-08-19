@@ -9,6 +9,7 @@ Canonical Julia names (no R brand in the public API):
 | `:organic` / `OrganicMediation` | `effect="O"` |
 | `:recanting_twin` / `RecantingTwinMediation` | `effect="RT"` |
 | `moc` | intermediate confounders (`Z`) |
+| `DiscreteTreatmentPolicy` on both arms | factor-`A` recode (interventional only) |
 | `run_mediation` / `run_mediation_grid` | `crumble(...)` |
 
 Legacy CausalTargeted aliases `run_crumble_*` remain soft-deprecated façades.

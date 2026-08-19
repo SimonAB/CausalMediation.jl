@@ -53,6 +53,37 @@ Without a graph, construct `MediationSpec` by hand (same estimation path):
 spec = MediationSpec(:A, :Y; mediators = [:M], covariates = [:W])
 ```
 
+## Factor treatment (recode MTP)
+
+Interventional TE / NDE / NIE under a finite recode of `A` (continuous `M`).
+Both arms must be `DiscreteTreatmentPolicy`. `run_mediation_grid` still expects
+a numeric exposure.
+
+```julia
+using CausalMediation, CausalTargeted, StableRNGs
+
+df, truth = simulate_categorical_a_mediation(280; rng = StableRNG(9))
+identity = discrete_recode_policy(Dict{String, String}())
+recode = discrete_recode_policy(truth.recode)
+spec = MediationSpec(
+    :A, :Y;
+    mediators = [:M],
+    covariates = [:W],
+    policy_d0 = identity,
+    policy_d1 = recode,
+)
+res = run_mediation(
+    spec, df;
+    folds = 2, n_mc = 16, estimator = :onestep,
+    learners = DEFAULT_SL_LEARNERS,
+    rng = StableRNG(10),
+)
+decompose(res)
+```
+
+Natural / organic / recanting-twin / controlled-direct families and nonempty
+`moc` remain numeric-`A` only.
+
 ## Intermediate confounding (`moc`)
 
 When a post-treatment confounder of the mediator–outcome relation sits on the

@@ -38,6 +38,67 @@ function simulate_intermediate_confounding_mediation(n::Int; kwargs...)
 end
 
 """
+    simulate_categorical_a_mediation(n; ...) -> (df, truth)
+
+Three-level string exposure `A ∈ {0,1,2}`, continuous mediator and outcome.
+Default MTP recodes `2 → 1`. Sample interventional oracles:
+
+- NDE = (β_{A1} − β_{A2}) P(A=2)
+- NIE = β_M (γ1 − γ2) P(A=2)
+- TE = NDE + NIE
+"""
+function simulate_categorical_a_mediation(
+    n::Int;
+    β_a1::Real = 0.4,
+    β_a2::Real = -0.2,
+    β_m::Real = 0.6,
+    γ1::Real = 0.5,
+    γ2::Real = 0.9,
+    β_w::Real = 0.3,
+    σ_m::Real = 0.4,
+    σ_y::Real = 0.4,
+    rng = StableRNG(2),
+)
+    W = randn(rng, n)
+    scores = hcat(0.2 .* W, 0.1 .+ 0.4 .* W, -0.2 .- 0.3 .* W)
+    e = exp.(scores .- maximum(scores; dims = 2))
+    pr = e ./ sum(e; dims = 2)
+    labels = ("0", "1", "2")
+    A = Vector{String}(undef, n)
+    @inbounds for i in 1:n
+        u = rand(rng)
+        c = 0.0
+        A[i] = labels[end]
+        for k in eachindex(labels)
+            c += pr[i, k]
+            if u <= c
+                A[i] = labels[k]
+                break
+            end
+        end
+    end
+    M = Float64(γ1) .* (A .== "1") .+ Float64(γ2) .* (A .== "2") .+
+        0.4 .* W .+ Float64(σ_m) .* randn(rng, n)
+    Y = Float64(β_a1) .* (A .== "1") .+ Float64(β_a2) .* (A .== "2") .+
+        Float64(β_m) .* M .+ Float64(β_w) .* W .+ Float64(σ_y) .* randn(rng, n)
+    df = DataFrame(W = W, A = A, M = M, Y = Y)
+    p2 = mean(A .== "2")
+    nde = (Float64(β_a1) - Float64(β_a2)) * p2
+    nie = Float64(β_m) * (Float64(γ1) - Float64(γ2)) * p2
+    te = nde + nie
+    truth = (
+        name = "categorical_a_mediation",
+        recode = Dict("2" => "1"),
+        p2 = p2,
+        nde = nde,
+        nie = nie,
+        te = te,
+        effects = _ -> (nde = nde, nie = nie, te = te),
+    )
+    return df, truth
+end
+
+"""
     simulate_recanting_twin_mediation(n; ...) -> (df, truth)
 
 Two-mediator DGP with a recanting structure: A → M1 → M2 → Y and A → M2,

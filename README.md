@@ -38,6 +38,19 @@ res = run_mediation(spec, df; deltas = [1.0], folds = 2, n_mc = 16, parallel = f
 decompose(res)
 ```
 
+Factor `A` (recode MTP, continuous `M`):
+
+```julia
+df, truth = simulate_categorical_a_mediation(280)
+spec = MediationSpec(
+    :A, :Y;
+    mediators = [:M],
+    covariates = [:W],
+    policy_d0 = discrete_recode_policy(Dict{String, String}()),
+    policy_d1 = discrete_recode_policy(truth.recode),
+)
+```
+
 With intermediate confounders:
 
 ```julia

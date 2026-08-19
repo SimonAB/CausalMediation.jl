@@ -30,11 +30,20 @@ NIE decompositions under weaker conditions
 or natural scale, quantile clamps). Nested Monte Carlo draws mediators under
 shifted treatment; outcome regressions are cross-fitted Super Learners.
 
+**Factor treatment.** Interventional TE / NDE / NIE also admit a recode MTP on a
+finite `A` (`DiscreteTreatmentPolicy` on both `MediationSpec` arms; default
+identity versus recode). Outcome and mediator regressions dummy-code `A`;
+treatment density ratios reuse CausalTargeted Díaz–Williams classifiers. Nested
+Monte Carlo for continuous `M` is unchanged. Natural / organic / recanting-twin /
+controlled-direct families, nonempty `moc`, and `run_mediation_grid` remain
+numeric-`A` only. Mixed `ShiftPolicy` / discrete arms throw.
+
 **EIF note.** For binary treatment contrasts the one-step / TMLE path includes
 density-ratio clever covariates in the spirit of the binary EIF. For continuous
-MTP mediation the default `:onestep` estimator augments the nested-MC plugin with
-an **outcome-residual** correction; the binary-style $H_{am}(Q-\bar Q)$ term is
-omitted when density ratios near one would cancel the plugin. Prefer
+MTP mediation and for factor recodes the default `:onestep` estimator augments
+the nested-MC plugin with an **outcome-residual** correction; the binary-style
+$H_{am}(Q-\bar Q)$ term is omitted when it would cancel the plugin (natural-arm
+$H_0 = 1$ on the factor path). Prefer
 `mediation_n_mc_sweep` to check sensitivity to nested-MC size.
 
 Minimal DAG (no intermediate confounder):
