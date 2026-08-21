@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Missingness parity: mediation grids / scalar attach CausalTargeted
   `missingness_metadata`; all four `handle_missing` strategies exercised in
   Targeted `test_missing_strategies_matrix.jl`.
+- Methods docs: dedicated missing-outcomes subsection pointing at CausalTargeted
+  Missingness catalogue (IPCW / impute; mediators as covariates under policy).
 
 ## [0.1.1] - 2026-08-18
 

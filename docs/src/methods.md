@@ -101,18 +101,31 @@ first(names(df), 6)
 Nuisances reuse CausalTargeted profiles (`DEFAULT_SL_LEARNERS`,
 `SMALL_N_SL_LEARNERS`, …). Fold caches (`MediationFoldCache`) fit a single
 CausalTargeted covariate schema on the cleaned analysis frame so string and
-categorical columns encode consistently across folds. `run_mediation_grid`,
-`run_mediation_scalar`, `run_tmle3_nde`, and `conjugate_mediation_bootstrap`
-(via `run_mediation_scalar_ppl`) accept `handle_missing`
-(`:drop` default; `:ipcw` reweights the interventional EIF or, for the
-conjugate bootstrap, draws rows with IPCW probabilities). Do not pass
-`learners=(:mean,)` alone for treatment contrasts.
+categorical columns encode consistently across folds.
+
+### Missing outcomes and covariates
+
+Mediation runners forward incompleteness to CausalTargeted
+[`handle_missing_data`](https://simonab.github.io/CausalTargeted.jl/dev/missingness/).
+`run_mediation_grid`, `run_mediation_scalar`, `run_tmle3_nde`, and
+`conjugate_mediation_bootstrap` (via `run_mediation_scalar_ppl`) accept
+`handle_missing` (`:drop` default; `:ipcw` reweights the interventional EIF or,
+for the conjugate bootstrap, draws rows with IPCW probabilities; `:impute` /
+`:ipcw_impute` for covariate gaps). Missing mediators are treated as covariates
+for that policy (complete-case or mean-impute with indicators), not as a
+separate mediation-specific missingness estimand. Structural MAR/MNAR claims
+remain CausalDynamics certificates; this package does not invent fills inside
+the EIF. Full policy catalogue:
+[CausalTargeted Missingness](https://simonab.github.io/CausalTargeted.jl/dev/missingness/).
+
+Do not pass `learners=(:mean,)` alone for treatment contrasts.
 
 | Topic | Primary sources | Surface |
 |-------|-----------------|---------|
 | TMLE / one-step | van der Laan & Rubin (2006); van der Laan & Rose | `estimator=:tmle` / `:onestep` |
 | Super Learner | van der Laan, Polley & Hubbard (2007) | CausalTargeted learners |
 | Nested-MC stability | Practical (Liu et al. / crumble spirit) | `mediation_n_mc_sweep`, `mediation_stability_*` |
+| Missing data (IPCW / impute) | van der Laan & Rose; Little & Rubin | `handle_missing` |
 
 Optional Lux Riesz representers load via weakdep (`fit_riesz_representer` after
 `using Lux`); `riesz_available()` reports whether the extension is loaded.
