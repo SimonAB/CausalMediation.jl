@@ -20,6 +20,13 @@
 
 - Graphs, `MediationQuery` / `identify`, certificates (`moc`, effect kind)
 
+## Missingness
+
+- Reuse CausalTargeted `handle_missing_data` on grids / TMLE3 / PPL bootstrap;
+  keep strategy parity with Targeted where scientifically valid
+- Same stratum × rung rule: no silent `Missing` → `Float64`; survival/censoring
+  semantics stay in Targeted
+
 ## Out of scope (for now)
 
 - Raw high-dimensional tensors as mediators (spectra, images): compress first via
