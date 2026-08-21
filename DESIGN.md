@@ -24,4 +24,5 @@ Treatment shifts on `MediationSpec` are CausalTargeted `ShiftPolicy` (numeric MT
 - Natural effects refuse nonempty `moc` (shared gate with `identify`).
 - High-dim raw tensors are out of scope as mediators: use CausalDynamics
   `RepresentationSpec` → code columns, then `MediationSpec` on those symbols
-  (see methods docs). Deep ``f_i`` on image nodes is Phase 2.
+  (see methods docs). Graph-constrained Lux ``f_i`` on codes lives in
+  CausalDynamics Phase 2a; image/tensor DSCM with abduction is Phase 2b.

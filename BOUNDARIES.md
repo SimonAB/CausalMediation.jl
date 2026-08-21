@@ -31,4 +31,5 @@
 - Sequential / longitudinal mediation (`A_t`, `M_t`)
 - Default GPU deep Riesz nets
 - Biological pathway registries
-- Deep generative mechanisms (DSCM) as ``f_i`` on image nodes (Phase 2)
+- Deep generative mechanisms (DSCM) as ``f_i`` on image nodes with L3 abduction
+  (CausalDynamics Phase 2b; Phase 2a is graph-constrained Lux residuals on codes)
