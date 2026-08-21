@@ -39,7 +39,11 @@ function run_mediation_grid(
     effect::MediationEffect = InterventionalMediation(),
 )
     all_cols = unique(vcat(covar, mediators, moc, [trt]))
-    data_clean, ipcw_w, extra_cols = handle_missing_data(data, outcome, all_cols, handle_missing; rng = rng)
+    miss = handle_missing_data(
+        data, outcome, all_cols, handle_missing;
+        rng = rng, rung = :L2, time_indexed = false,
+    )
+    data_clean, ipcw_w, extra_cols = miss
     if !isempty(extra_cols)
         covar = unique(vcat(covar, extra_cols))
     end
@@ -111,6 +115,7 @@ function run_mediation_grid(
         )
         attach_positivity_summary!(out, rep)
     end
+    attach_missingness_metadata!(out, miss.meta)
     return out
 end
 

@@ -64,9 +64,14 @@ function run_mediation(
         kwargs...,
     )
     est, se, ic = _summarise_grid(table)
+    miss_meta = try
+        missingness_metadata(table)
+    catch
+        (strategy = :unknown, rung = :L2, time_indexed = false)
+    end
     return MediationResult(
         spec, est, se, ic,
-        (n_mc = n_mc, estimator = estimator, n_rows = nrow(table)),
+        (n_mc = n_mc, estimator = estimator, n_rows = nrow(table), missingness = miss_meta),
         table,
     )
 end
@@ -100,9 +105,11 @@ function _run_mediation_discrete(
     isempty(spec.mediators) && throw(ArgumentError("categorical-A mediation requires mediators"))
 
     all_cols = unique(vcat(spec.covariates, spec.mediators, spec.moc, [trt]))
-    df, ipcw_w, extra_cols = handle_missing_data(
-        data, spec.outcome, all_cols, handle_missing; rng = rng,
+    miss = handle_missing_data(
+        data, spec.outcome, all_cols, handle_missing;
+        rng = rng, rung = :L2, time_indexed = false,
     )
+    df, ipcw_w, extra_cols = miss
     covar = isempty(extra_cols) ? copy(spec.covariates) : unique(vcat(spec.covariates, extra_cols))
     covar = columns_present(df, covar)
     mediators = columns_present(df, spec.mediators)
@@ -120,6 +127,7 @@ function _run_mediation_discrete(
         learners = learners, n_mc = n_mc, estimator = estimator, ipcw_w = ipcw_w,
     )
     table = _discrete_mediation_table(est, se; positivity = pos)
+    attach_missingness_metadata!(table, miss.meta)
     return MediationResult(
         spec, est, se, ic,
         (
@@ -128,6 +136,7 @@ function _run_mediation_discrete(
             n_rows = nrow(table),
             density_ratio = :classification,
             positivity = pos,
+            missingness = miss.meta,
         ),
         table,
     )
@@ -195,7 +204,11 @@ function run_mediation_scalar(
     handle_missing::Symbol = :drop,
 )
     all_cols = unique(vcat(covar, mediators, moc, [trt]))
-    df, ipcw_w, extra_cols = handle_missing_data(data, outcome, all_cols, handle_missing; rng = rng)
+    miss = handle_missing_data(
+        data, outcome, all_cols, handle_missing;
+        rng = rng, rung = :L2, time_indexed = false,
+    )
+    df, ipcw_w, extra_cols = miss
     if !isempty(extra_cols)
         covar = unique(vcat(covar, extra_cols))
     end
@@ -214,5 +227,7 @@ function run_mediation_scalar(
         epochs = epochs,
         ipcw_w = ipcw_w,
     )
-    return _result_table(est, se)
+    table = _result_table(est, se)
+    attach_missingness_metadata!(table, miss.meta)
+    return table
 end

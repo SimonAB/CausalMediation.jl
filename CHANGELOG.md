@@ -14,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   docs. Integration test: `test/test_representation_bridge.jl`.
 - Point methods docs at CausalTargeted Deep SCM estimation stress; clarify
   Phase 2a/2b vs deferred non-additive DeepSCM / Flux / MIRS in BOUNDARIES.
+- Missingness parity: mediation grids / scalar attach CausalTargeted
+  `missingness_metadata`; all four `handle_missing` strategies exercised in
+  Targeted `test_missing_strategies_matrix.jl`.
 
 ## [0.1.1] - 2026-08-18
 
