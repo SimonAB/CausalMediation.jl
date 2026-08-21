@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Document high-dim mediators via CausalDynamics `RepresentationSpec` /
+  `encode_to_panel` (codes as `MediationSpec` mediators); BOUNDARIES and methods
+  docs. Integration test: `test/test_representation_bridge.jl`.
+
 ## [0.1.1] - 2026-08-18
 
 ### Added

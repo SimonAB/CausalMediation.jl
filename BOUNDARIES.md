@@ -22,9 +22,13 @@
 
 ## Out of scope (for now)
 
+- Raw high-dimensional tensors as mediators (spectra, images): compress first via
+  CausalDynamics `RepresentationSpec` / `encode_to_panel`, then pass **code**
+  columns to `MediationSpec`; see [Methods](docs/src/methods.md#high-dimensional-mediators-via-codes)
 - Categorical mediators (`g(M|A,W)` multinomial)
 - Intermediate confounding (`moc`) on the factor-`A` path
 - Survival / competing-risks mediation
 - Sequential / longitudinal mediation (`A_t`, `M_t`)
 - Default GPU deep Riesz nets
 - Biological pathway registries
+- Deep generative mechanisms (DSCM) as ``f_i`` on image nodes (Phase 2)

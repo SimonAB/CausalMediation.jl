@@ -116,6 +116,37 @@ conjugate bootstrap, draws rows with IPCW probabilities). Do not pass
 
 Optional Lux Riesz representers load via weakdep (`fit_riesz_representer` after
 `using Lux`); `riesz_available()` reports whether the extension is loaded.
+Riesz nuisances are separate from **representation** (encoder → codes).
+
+## High-dimensional mediators via codes
+
+Raw spectra or images are not `MediationSpec` mediators. Compress them first
+with CausalDynamics [`RepresentationSpec`](https://simonab.github.io/CausalDynamics.jl/dev/)
+and `encode_to_panel`, then treat the code columns as mediators:
+
+```julia
+using CausalDynamics, CausalMediation, CausalTargeted, DataFrames
+
+# S::Matrix (n × p), df has :A, :W, :Y
+spec_rep = RepresentationSpec(
+    :spectrum, [:z1, :z2], encode;  # encode: n×p → n×2 (Lux CNN/MLP or linear map)
+    role = :definitional,           # or :measurement
+)
+cert = representation_certificate(spec_rep)
+wide = encode_to_panel(df, S, spec_rep)
+
+med = MediationSpec(:A, :Y; mediators = [:z1, :z2], covariates = [:W])
+# Fit / freeze the encoder on training folds before cross-fitted EIF (DeepMed habit).
+# res = run_mediation(med, wide; …)
+```
+
+- **`:definitional`**: the estimand is about the codes themselves (`M := g_θ(S)`).
+- **`:measurement`**: codes are noisy observations of a latent biological mediator;
+  state that in run metadata via `cert`.
+- Do not expand the Lux Riesz scaffold into a full CNN here; keep Riesz as an
+  optional nuisance for high-dim `moc` / features already in tabular form.
+
+Executable sketch: CausalDynamics `examples/representation_bridge.jl`.
 
 ## What we deliberately do not claim
 

@@ -259,4 +259,6 @@ using Statistics
             df[1:1, :], :A, :Y, [:W], [:M]; n_boot = 2, rng = StableRNG(52),
         )
     end
+
+    include("test_representation_bridge.jl")
 end
