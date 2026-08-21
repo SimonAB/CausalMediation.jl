@@ -1,7 +1,8 @@
 # Encode high-dim spectrum → codes, then estimate mediation on codes.
 using Test
 using CausalMediation
-using CausalDynamics
+using CausalDynamics:
+    RepresentationSpec, representation_certificate, encode_to_panel
 using CausalTargeted: SMALL_N_SL_LEARNERS
 using DataFrames
 using StableRNGs
