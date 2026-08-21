@@ -25,4 +25,6 @@ Treatment shifts on `MediationSpec` are CausalTargeted `ShiftPolicy` (numeric MT
 - High-dim raw tensors are out of scope as mediators: use CausalDynamics
   `RepresentationSpec` → code columns, then `MediationSpec` on those symbols
   (see methods docs). Graph-constrained Lux ``f_i`` on codes lives in
-  CausalDynamics Phase 2a; image/tensor DSCM with abduction is Phase 2b.
+  CausalDynamics Phase 2a; additive generative L3 on codes is Phase 2b.
+  Non-additive image DeepSCM, Flux-in-core, and full MIRS cohorts remain deferred
+  (CausalDynamics BOUNDARIES).

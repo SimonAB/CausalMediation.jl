@@ -147,6 +147,10 @@ med = MediationSpec(:A, :Y; mediators = [:z1, :z2], covariates = [:W])
   optional nuisance for high-dim `moc` / features already in tabular form.
 
 Executable sketch: CausalDynamics `examples/representation_bridge.jl`.
+Application stress (codes → mediation / LMTP):
+[CausalTargeted deep_scm_estimation_stress.qmd](https://github.com/SimonAB/CausalTargeted.jl/blob/main/docs/stress/deep_scm_estimation_stress.qmd).
+Additive generative L3 on codes (abduction) lives in CausalDynamics Phase 2b,
+not in the mediation EIF path.
 
 ## What we deliberately do not claim
 

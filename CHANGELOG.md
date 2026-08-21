@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Document high-dim mediators via CausalDynamics `RepresentationSpec` /
   `encode_to_panel` (codes as `MediationSpec` mediators); BOUNDARIES and methods
   docs. Integration test: `test/test_representation_bridge.jl`.
+- Point methods docs at CausalTargeted Deep SCM estimation stress; clarify
+  Phase 2a/2b vs deferred non-additive DeepSCM / Flux / MIRS in BOUNDARIES.
 
 ## [0.1.1] - 2026-08-18
 

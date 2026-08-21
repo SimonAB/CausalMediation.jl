@@ -34,3 +34,6 @@
 - Deep generative mechanisms with non-additive (encoder) abduction on raw
   image/tensor nodes; prefer Phase 1 codes + CausalDynamics Phase 2b
   `:generative` additive L3 on those codes
+- UniversalDiffEq / Flux hard wiring in CausalDynamics (Lux mechanisms + user
+  encoders only; Flux remains MLJFlux / AgeSCM)
+- Full MIRS cohort fixtures in-package (synthetic spectra in Targeted stress)

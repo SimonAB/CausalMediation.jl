@@ -69,6 +69,7 @@ Pages: home, getting started, comparison, methods, naming, API, references.
 **Stress validation** (Quarto notebook + catalogued datasets):
 [CausalTargeted STRESS.md](https://github.com/SimonAB/CausalTargeted.jl/blob/main/STRESS.md) ·
 [stress_validation.qmd](https://github.com/SimonAB/CausalTargeted.jl/blob/main/docs/stress/stress_validation.qmd) ·
+[deep_scm_estimation_stress.qmd](https://github.com/SimonAB/CausalTargeted.jl/blob/main/docs/stress/deep_scm_estimation_stress.qmd) (codes → mediation/LMTP) ·
 [Documenter](https://simonab.github.io/CausalTargeted.jl/dev/stress_validation/) ·
 harness in [causal-dynamics-book/scripts/stress_harness](https://github.com/SimonAB/causal-dynamics-book/tree/main/scripts/stress_harness).
 
