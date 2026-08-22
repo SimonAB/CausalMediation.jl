@@ -57,6 +57,22 @@ With intermediate confounders:
 spec = MediationSpec(:A, :Y; mediators = [:M], covariates = [:W], moc = [:L])
 ```
 
+## Testing and validation
+
+CI develops tip CausalDynamics and CausalTargeted so `RepresentationSpec` and nuisance APIs match the stack; `Pkg.test()` on Julia **1.12** is the merge gate. Full-stack stress with real cohorts lives in CausalTargeted (see links below).
+
+| Guardrail | What we exercise | Where |
+|-----------|------------------|-------|
+| **Unit / API** | Effect gates (interventional, natural, organic, CDE, recanting twin), `MediationSpec` / `run_mediation*`, identify natural vs interventional, schema guards, categorical-$A$ policies | `test/runtests.jl` |
+| **Synthetic recovery** | Binary and continuous MTP mediation; intermediate confounding (`moc`); TE / NDE / NIE vs simulation oracles | `test/runtests.jl` (`simulate_*` DGPs) |
+| **Missing data** | MAR outcome `:drop` vs `:ipcw`; conjugate bootstrap and TMLE3 NDE with IPCW weights | `test/runtests.jl` |
+| **Representation bridge** | High-dim spectrum → codes → mediation grid on encoded panel | `test/test_representation_bridge.jl` |
+| **Integration** | CausalDynamics identification certificates; CausalTargeted Super Learner / schema utilities | `test/runtests.jl` |
+| **Stack stress (pre-ship)** | Mediation curves, missing-$M$ / missing-$Y$, freeze comparisons on conservation and CI benchmarks | [CausalTargeted stress_validation.qmd](https://github.com/SimonAB/CausalTargeted.jl/blob/main/docs/stress/stress_validation.qmd) |
+| **Deep SCM hand-off** | Estimation on Lux / representation codes | [deep_scm_estimation_stress.qmd](https://github.com/SimonAB/CausalTargeted.jl/blob/main/docs/stress/deep_scm_estimation_stress.qmd) |
+
+If you have a mediation scenario that should be harder to pass (tighter effect bounds, path-specific or natural-ID edge cases, messier MAR), please open an issue — we welcome stress cases that expose gaps before users do.
+
 ## Documentation (local)
 
 ```bash
