@@ -3,6 +3,7 @@ using CausalMediation
 using CausalTargeted
 using CausalDynamics
 using Graphs
+using DAGMakie
 using CairoMakie
 
 # Prefer PNG MIME so Documenter writes figure files instead of huge inline HTML
