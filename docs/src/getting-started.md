@@ -1,10 +1,3 @@
----
-id: getting-started
-tags: []
-date_created: 2026-08-22
-date_modified: 2026-08-22
----
-
 # Getting started
 
 ```@meta
