@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Methods + BOUNDARIES: nested units hand-off (CausalDynamics generative nest;
+  CausalTargeted `cluster=` sandwich; hierarchical longitudinal mediation deferred).
 - Document high-dim mediators via CausalDynamics `RepresentationSpec` /
   `encode_to_panel` (codes as `MediationSpec` mediators); BOUNDARIES and methods
   docs. Integration test: `test/test_representation_bridge.jl`.

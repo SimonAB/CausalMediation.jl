@@ -29,6 +29,8 @@
 
 ## Out of scope (for now)
 
+- Hierarchical longitudinal mediation (``A_t``, ``M_t`` under nested units);
+  static/clustered mediation may reuse Targeted cluster-robust IF later
 - Raw high-dimensional tensors as mediators (spectra, images): compress first via
   CausalDynamics `RepresentationSpec` / `encode_to_panel`, then pass **code**
   columns to `MediationSpec`; see [Methods](docs/src/methods.md#high-dimensional-mediators-via-codes)
@@ -44,3 +46,4 @@
 - UniversalDiffEq / Flux hard wiring in CausalDynamics (Lux mechanisms + user
   encoders only; Flux remains MLJFlux / AgeSCM)
 - Full MIRS cohort fixtures in-package (synthetic spectra in Targeted stress)
+- MixedModels / lme4-style fitting (application layer)

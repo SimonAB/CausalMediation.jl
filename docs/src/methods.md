@@ -77,6 +77,17 @@ throws. Organic and controlled-direct paths are available for specialised
 contrasts; interpret them against the cited definitions, not as drop-in
 replacements for interventional TE/NDE/NIE.
 
+## Nested units / clustering
+
+When observations nest in clusters, CausalDynamics owns **generative** nested
+``U`` (`RandomEffectSpec`, `unroll_hierarchical_dag`). CausalTargeted owns
+**sampling** hierarchy via `cluster=` on repeated-outcome / parametric MSM
+(cluster-robust IF sandwich). CausalMediation should reuse the same missingness
+stratum rules and, when cluster-robust mediation IF lands, the same `cluster=`
+contract — without introducing MixedModels or BLUP estimands here.
+Hierarchical longitudinal mediation (``A_t``, ``M_t``) remains deferred
+([BOUNDARIES](https://github.com/SimonAB/CausalMediation.jl/blob/main/BOUNDARIES.md)).
+
 ## Recanting twins and path-specific effects
 
 Recanting-twin (RT) constructions isolate path-specific effects when
