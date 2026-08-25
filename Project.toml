@@ -1,6 +1,6 @@
 name = "CausalMediation"
 uuid = "f5484d8f-70ea-4f9b-aeb6-8bd66abb6736"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Simon A. Babayan <simon.babayan@glasgow.ac.uk>"]
 license = "MIT"
 repo = "https://github.com/SimonAB/CausalMediation.jl.git"
