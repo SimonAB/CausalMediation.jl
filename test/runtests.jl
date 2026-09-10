@@ -11,6 +11,14 @@ using StableRNGs
 using Statistics
 
 @testset "CausalMediation" begin
+    @testset "mediation sweep validation" begin
+        good = DataFrame(n_mc = [16], estimand = ["TE"], est = [0.2], se = [0.1])
+        @test validate_mediation_sweep(good).valid
+        bad = DataFrame(n_mc = [0], estimand = ["TE"], est = [NaN], se = [-1.0])
+        result = validate_mediation_sweep(bad)
+        @test !result.valid
+        @test length(result.issues) == 3
+    end
     @testset "effect gates" begin
         spec = MediationSpec(:A, :Y; mediators = [:M], covariates = [:W], moc = [:L],
             effect = NaturalMediation())

@@ -141,3 +141,24 @@ function mediation_stability_markdown(
     return String(take!(io))
 end
 
+"""
+    validate_mediation_sweep(sweep) -> NamedTuple
+
+Check the minimum evidential contract for a nested-MC mediation result table.
+This is a validation diagnostic, not a causal identification test: it catches
+missing columns, invalid Monte Carlo settings and non-finite estimates while
+leaving exchangeability and positivity to the declared analysis certificate.
+"""
+function validate_mediation_sweep(sweep::DataFrame)
+    required = (:n_mc, :estimand, :est, :se)
+    missing_columns = Symbol[c for c in required if !(c in Symbol.(names(sweep))]
+    issues = String[]
+    isempty(missing_columns) || push!(issues, "missing columns: $(join(string.(missing_columns), ", "))")
+    if isempty(missing_columns)
+        any(Int.(sweep.n_mc) .<= 0) && push!(issues, "n_mc must be positive")
+        any(.!isfinite.(Float64.(sweep.est))) && push!(issues, "est contains non-finite values")
+        any(.!isfinite.(Float64.(sweep.se))) && push!(issues, "se contains non-finite values")
+        any(Float64.(sweep.se) .< 0) && push!(issues, "se must be non-negative")
+    end
+    return (valid = isempty(issues), issues = issues, n_rows = nrow(sweep))
+end
