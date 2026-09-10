@@ -22,10 +22,6 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 [weakdeps]
 Lux = "b2108857-7c20-44ae-9111-449ecde12c47"
 
-[sources]
-CausalDynamics = {path = "../CausalDynamics.jl"}
-CausalTargeted = {path = "../CausalTargeted.jl"}
-
 [extensions]
 CausalMediationLuxExt = "Lux"
 

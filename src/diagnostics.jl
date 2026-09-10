@@ -151,7 +151,7 @@ leaving exchangeability and positivity to the declared analysis certificate.
 """
 function validate_mediation_sweep(sweep::DataFrame)
     required = (:n_mc, :estimand, :est, :se)
-    missing_columns = Symbol[c for c in required if !(c in Symbol.(names(sweep))]
+    missing_columns = Symbol[c for c in required if !(c in Symbol.(names(sweep)))]
     issues = String[]
     isempty(missing_columns) || push!(issues, "missing columns: $(join(string.(missing_columns), ", "))")
     if isempty(missing_columns)
