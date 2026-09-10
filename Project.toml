@@ -1,14 +1,9 @@
 name = "CausalMediation"
 uuid = "f5484d8f-70ea-4f9b-aeb6-8bd66abb6736"
+license = "MIT"
 version = "0.1.2"
 authors = ["Simon A. Babayan <simon.babayan@glasgow.ac.uk>"]
-license = "MIT"
 repo = "https://github.com/SimonAB/CausalMediation.jl.git"
-
-[[author_details]]
-name = "Simon A. Babayan"
-orcid = "0000-0002-4949-1117"
-email = "simon.babayan@glasgow.ac.uk"
 
 [deps]
 CausalDynamics = "823b1367-efac-4af0-bbfc-73ee462bce07"
@@ -23,6 +18,16 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+
+[weakdeps]
+Lux = "b2108857-7c20-44ae-9111-449ecde12c47"
+
+[sources]
+CausalDynamics = {path = "../CausalDynamics.jl"}
+CausalTargeted = {path = "../CausalTargeted.jl"}
+
+[extensions]
+CausalMediationLuxExt = "Lux"
 
 [compat]
 CausalDynamics = "0.4"
@@ -40,11 +45,10 @@ Statistics = "1"
 StatsBase = "0.34"
 julia = "1.12, 1.13"
 
-[weakdeps]
-Lux = "b2108857-7c20-44ae-9111-449ecde12c47"
-
-[extensions]
-CausalMediationLuxExt = "Lux"
+[[author_details]]
+name = "Simon A. Babayan"
+email = "simon.babayan@glasgow.ac.uk"
+orcid = "0000-0002-4949-1117"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
