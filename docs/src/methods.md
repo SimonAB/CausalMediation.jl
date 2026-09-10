@@ -138,6 +138,11 @@ Do not pass `learners=(:mean,)` alone for treatment contrasts.
 | Nested-MC stability | Practical (Liu et al. / crumble spirit) | `mediation_n_mc_sweep`, `mediation_stability_*` |
 | Missing data (IPCW / impute) | van der Laan & Rose; Little & Rubin | `handle_missing` |
 
+Use `validate_mediation_sweep` before archiving a nested-MC stability table. It
+checks the result-table contract (required columns, positive `n_mc`, finite
+estimates and non-negative standard errors); it does not test exchangeability,
+positivity or other causal assumptions, which remain part of the certificate.
+
 Optional Lux Riesz representers load via weakdep (`fit_riesz_representer` after
 `using Lux`); `riesz_available()` reports whether the extension is loaded.
 Riesz nuisances are separate from **representation** (encoder → codes).
