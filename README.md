@@ -59,7 +59,7 @@ spec = MediationSpec(:A, :Y; mediators = [:M], covariates = [:W], moc = [:L])
 
 ## Testing and validation
 
-CI develops tip CausalDynamics and CausalTargeted so `RepresentationSpec` and nuisance APIs match the stack; `Pkg.test()` on Julia **1.12** is the merge gate. Full-stack stress with real cohorts lives in CausalTargeted (see links below).
+CI develops tip CausalDynamics and CausalTargeted so `RepresentationSpec` and nuisance APIs match the stack; `Pkg.test()` on Julia **1.13** is the merge gate. Julia **1.12** remains within the declared compatibility range. Full-stack stress with real cohorts lives in CausalTargeted (see links below).
 
 | Guardrail | What we exercise | Where |
 |-----------|------------------|-------|
