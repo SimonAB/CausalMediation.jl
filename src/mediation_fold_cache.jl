@@ -56,7 +56,7 @@ function build_mediation_fold_cache(
     med_parents_schema = CausalTargeted.fit_covariate_schema(df, med_parents)
     moc_parents_schema = CausalTargeted.fit_covariate_schema(df, moc_parents)
     fold_sets = crossfit_indices(n, folds, rng)
-    seed = UInt(mod(hash(rng), typemax(UInt)))
+    seed = CausalDynamics.stable_rng_seed(rng)
 
     outcome_models = SuperLearnerFit[]
     mediator_models = Vector{SuperLearnerFit}[]
