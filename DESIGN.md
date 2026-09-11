@@ -19,6 +19,9 @@ Treatment shifts on `MediationSpec` are CausalTargeted `ShiftPolicy` (numeric MT
 ## Package-specific principles
 
 - Do **not** duplicate Super Learner; call CausalTargeted.
+- Consume CausalDynamics temporal-identity roles (occasion, enduring, constitutive,
+  influence) when a mediator is historically constituted; do not grow a parallel
+  mediator ontology until sequential mediation is in [BOUNDARIES.md](BOUNDARIES.md).
 - Public effect names are Julia symbols (`:interventional`, `:natural`, …), not R brand names.
 - Intermediate confounders are first-class (`moc` on `MediationSpec` and `MediationQuery`).
 - Natural effects refuse nonempty `moc` (shared gate with `identify`).
