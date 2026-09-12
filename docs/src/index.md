@@ -30,7 +30,7 @@ estimates parameters once the query, mediators, and `moc` are known.
 **Choose CausalMediation** for Julia-native mediation with shared certificates and
 Super Learner. **Prefer `crumble` / `medoutcon`** when the pipeline is already R.
 Details: [Comparison](comparison.md) ·
-[ECOSYSTEM_COMPARISON.md](https://github.com/SimonAB/CausalMediation.jl/blob/main/ECOSYSTEM_COMPARISON.md).
+[ECOSYSTEM_COMPARISON.md](https://github.com/SimonAB/causal-dynamics-book/blob/main/packages/ECOSYSTEM_COMPARISON.md).
 
 ## Related packages
 
@@ -45,7 +45,7 @@ Design notes:
 [DESIGN.md](https://github.com/SimonAB/CausalMediation.jl/blob/main/DESIGN.md) ·
 [NAMING.md](https://github.com/SimonAB/CausalMediation.jl/blob/main/NAMING.md) ·
 [BOUNDARIES.md](https://github.com/SimonAB/CausalMediation.jl/blob/main/BOUNDARIES.md) ·
-[ecosystem principles](https://github.com/SimonAB/CausalDynamics.jl/blob/main/DESIGN_PRINCIPLES.md).
+[ecosystem principles](https://github.com/SimonAB/causal-dynamics-book/blob/main/packages/DESIGN_PRINCIPLES.md).
 
 ## Methods and literature
 

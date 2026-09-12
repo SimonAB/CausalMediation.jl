@@ -3,7 +3,7 @@
 This package is the **mediation estimation layer**: interventional, natural, organic,
 controlled direct, and recanting-twin effects with cross-fitted EIF / one-step / TMLE.
 
-**Shared principles:** [DESIGN_PRINCIPLES.md](DESIGN_PRINCIPLES.md)  
+**Shared principles:** [DESIGN_PRINCIPLES.md](https://github.com/SimonAB/causal-dynamics-book/blob/main/packages/DESIGN_PRINCIPLES.md)  
 **Boundaries:** [BOUNDARIES.md](BOUNDARIES.md)
 
 ## Role in the stack

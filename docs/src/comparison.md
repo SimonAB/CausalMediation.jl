@@ -25,7 +25,7 @@ end-to-end, or you need a specialised option this package deliberately does not
 claim (full GPU Riesz nets, every survival flavour).
 
 Stack overview:
-[ECOSYSTEM_COMPARISON.md](https://github.com/SimonAB/CausalMediation.jl/blob/main/ECOSYSTEM_COMPARISON.md).
+[ECOSYSTEM_COMPARISON.md](https://github.com/SimonAB/causal-dynamics-book/blob/main/packages/ECOSYSTEM_COMPARISON.md).
 
 ```mermaid
 flowchart LR

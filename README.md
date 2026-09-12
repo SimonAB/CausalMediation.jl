@@ -91,7 +91,8 @@ harness in [causal-dynamics-book/scripts/stress_harness](https://github.com/Simo
 
 Design notes in-repo: [DESIGN.md](DESIGN.md) · [BOUNDARIES.md](BOUNDARIES.md) ·
 [NAMING.md](NAMING.md) · [REGISTRATION.md](REGISTRATION.md) ·
-[ECOSYSTEM_COMPARISON.md](ECOSYSTEM_COMPARISON.md).
+[ecosystem principles](https://github.com/SimonAB/causal-dynamics-book/blob/main/packages/DESIGN_PRINCIPLES.md) ·
+[ECOSYSTEM_COMPARISON.md](https://github.com/SimonAB/causal-dynamics-book/blob/main/packages/ECOSYSTEM_COMPARISON.md).
 
 ## License
 
