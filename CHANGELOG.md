@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Expanded `moc` gloss on `MediationSpec`; documented `grid.jl` vs
+  `mediation_grid.jl` file roles in DESIGN.md. CausalTargeted no longer exports
+  mediation façades — this package is the primary surface.
 - Consume CausalDynamics orthogonal temporal declarations (`temporal_support`,
   `value_representation`, `referent_id`, `graph_kind`). Mediator semantics and
   constitutive-path rejection remain gated on Dynamics certificates; natural

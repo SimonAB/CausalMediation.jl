@@ -3,7 +3,7 @@
 This package is the **mediation estimation layer**: interventional, natural, organic,
 controlled direct, and recanting-twin effects with cross-fitted EIF / one-step / TMLE.
 
-**Shared principles:** [DESIGN_PRINCIPLES.md](https://github.com/SimonAB/causal-dynamics-book/blob/main/packages/DESIGN_PRINCIPLES.md)  
+**Shared principles + Policy taxonomy:** [DESIGN_PRINCIPLES.md](https://github.com/SimonAB/causal-dynamics-book/blob/main/packages/DESIGN_PRINCIPLES.md)  
 **Boundaries:** [BOUNDARIES.md](BOUNDARIES.md)
 
 ## Role in the stack
@@ -31,3 +31,14 @@ Treatment shifts on `MediationSpec` are CausalTargeted `ShiftPolicy` (numeric MT
   CausalDynamics Phase 2a; additive generative L3 on codes is Phase 2b.
   Non-additive image DeepSCM, Flux-in-core, and full MIRS cohorts remain deferred
   (CausalDynamics BOUNDARIES).
+
+
+## Source file roles
+
+| File | Role |
+|------|------|
+| `grid.jl` | Canonical `run_mediation(spec, data)` driver and scalar helpers |
+| `mediation_grid.jl` | δ-grid `run_mediation_grid` (TE / NDE / NIE × δ) |
+| `effects.jl` | `MediationSpec`, `moc`, effect families, assumption gates |
+| `eif_*.jl` / `estimators*.jl` | EIF and one-step / TMLE estimators |
+| `mediation_fold_cache.jl` | Cross-fit nuisance cache for δ-grids |

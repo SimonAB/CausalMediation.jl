@@ -51,7 +51,11 @@ intermediate confounders (`moc`), shift policies, and effect family.
 
 - `mediators`: mediator column symbols (required)
 - `covariates`: baseline adjustment set (often from `IdentificationResult.adjustment`)
-- `moc`: intermediate confounders; must be empty for `NaturalMediation`
+- `moc`: **mediator–outcome confounders** (intermediate confounders of `M` and `Y`
+  that are affected by treatment). First-class on `MediationSpec` and on
+  CausalDynamics `IdentificationResult.moc`. Must be empty for `NaturalMediation`;
+  nonempty `moc` selects interventional / organic / RT families that condition
+  on these post-treatment variables.
 - `policy_d0` / `policy_d1`: CausalTargeted `ShiftPolicy` (numeric MTP) or
   `DiscreteTreatmentPolicy` (factor recode). Both arms must be the same kind.
   Discrete policies are interventional only, with continuous mediators and
