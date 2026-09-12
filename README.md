@@ -65,7 +65,7 @@ CI develops tip CausalDynamics and CausalTargeted so `RepresentationSpec` and nu
 |-----------|------------------|-------|
 | **Unit / API** | Effect gates (interventional, natural, organic, CDE, recanting twin), `MediationSpec` / `run_mediation*`, identify natural vs interventional, schema guards, categorical-$A$ policies | `test/runtests.jl` |
 | **Synthetic recovery** | Binary and continuous MTP mediation; intermediate confounding (`moc`); TE / NDE / NIE vs simulation oracles | `test/runtests.jl` (`simulate_*` DGPs) |
-| **Missing data** | MAR outcome `:drop` vs `:ipcw`; conjugate bootstrap and TMLE3 NDE with IPCW weights | `test/runtests.jl` |
+| **Missing data** | Shared MAR $Y$ helper; scalar path checks truth vs `:ipcw`; bootstrap / TMLE3 check finite `:drop`≠`:ipcw` | `test/runtests.jl` |
 | **Representation bridge** | High-dim spectrum → codes → mediation grid on encoded panel | `test/test_representation_bridge.jl` |
 | **Integration** | CausalDynamics identification certificates; CausalTargeted Super Learner / schema utilities | `test/runtests.jl` |
 | **Stack stress (pre-ship)** | Mediation curves, missing-$M$ / missing-$Y$, freeze comparisons on conservation and CI benchmarks | [CausalTargeted stress_validation.qmd](https://github.com/SimonAB/CausalTargeted.jl/blob/main/docs/stress/stress_validation.qmd) |
