@@ -27,6 +27,7 @@ MediationSpec
 MediationResult
 assumptions
 assert_natural_admissible!
+assert_causal_mediator_paths!
 assert_moc_for_ri!
 decompose
 ```

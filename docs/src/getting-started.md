@@ -296,6 +296,9 @@ fig
 
 `assert_natural_admissible!` throws if you request `NaturalMediation` with nonempty
 `moc` (the same gate as CausalDynamics `identify`).
+`assert_causal_mediator_paths!` (and `plan_mediation(...; relation_kinds=…)`)
+refuse constitutive or participation relations as ordinary NDE/NIE mediator
+routes — those are not causal-influence paths.
 
 ## 4. Multiple ordered mediators
 
