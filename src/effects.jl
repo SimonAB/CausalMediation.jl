@@ -197,25 +197,122 @@ const _NON_CAUSAL_MEDIATION_RELATIONS = (
 )
 
 """
-    assert_causal_mediator_paths!(spec; relation_kinds=nothing)
+Declared relation kinds accepted by [`assert_causal_mediator_paths!`](@ref):
 
-Refuse mediation along constitutive, participation, or other non-influence
-relations. Ordinary mediation requires `:causal_influence` paths into mediators.
+- `AbstractDict{Tuple{Symbol,Symbol},Symbol}` — one declared kind per directed
+  edge `(source, target)`; the preferred form.
+- `AbstractDict{Symbol,Symbol}` — one declared kind per mediator, read as the
+  kind of every path edge touching that mediator (coarse legacy form).
+- `CausalDynamics.TemporalDAGSpec` / `TemporalUnrolling` — kinds are read from
+  the declared `LaggedEdge.relation_kind` values.
+"""
+const MediationRelationKinds = Union{
+    AbstractDict{Tuple{Symbol, Symbol}, Symbol},
+    AbstractDict{Symbol, Symbol},
+    TemporalDAGSpec,
+    TemporalUnrolling,
+}
+
+"""Directed `(source, target)` pairs that every mediation route traverses."""
+function _mediation_path_edges(spec::MediationSpec)
+    pairs = Tuple{Symbol, Symbol}[]
+    for m in spec.mediators
+        push!(pairs, (spec.treatment, m))
+        push!(pairs, (m, spec.outcome))
+    end
+    # Ordered mediators may also be linked; those links are path edges too.
+    for (i, mi) in enumerate(spec.mediators), (j, mj) in enumerate(spec.mediators)
+        i == j && continue
+        push!(pairs, (mi, mj))
+    end
+    return pairs
+end
+
+"""Collapse a `TemporalDAGSpec` to `(parent, child) => relation_kind`, refusing mixed kinds."""
+function _edge_relation_kinds(dag::TemporalDAGSpec)
+    kinds = Dict{Tuple{Symbol, Symbol}, Symbol}()
+    for e in dag.edges
+        key = (e.parent, e.child)
+        if haskey(kinds, key) && kinds[key] !== e.relation_kind
+            throw(ArgumentError(
+                "edges $(key) declare mixed relation kinds (:$(kinds[key]) and " *
+                ":$(e.relation_kind)) across lags; mediation cannot treat that pair " *
+                "as a single causal route — split the variables or declare one kind.",
+            ))
+        end
+        kinds[key] = e.relation_kind
+    end
+    return kinds
+end
+_edge_relation_kinds(u::TemporalUnrolling) = _edge_relation_kinds(u.spec)
+
+function _refuse_non_causal(what::AbstractString, kind::Symbol)
+    throw(ArgumentError(
+        "$what has relation_kind :$kind; ordinary mediation requires " *
+        ":causal_influence along every treatment → mediator → outcome edge. " *
+        "Constitutive, participation, or measurement paths are not NDE/NIE " *
+        "routes — choose a different MediationEffect or drop the mediator.",
+    ))
+end
+
+"""
+    assert_causal_mediator_paths!(spec; relation_kinds=nothing, require=false)
+
+Refuse mediation along constitutive, participation, measurement, or other
+non-influence relations. Ordinary mediation requires a declared
+`:causal_influence` kind on **every** edge of every treatment → mediator →
+outcome route ([`MediationRelationKinds`](@ref) lists accepted forms).
+
+Relation kind is declared, never inferred: with a per-edge dictionary or a
+`TemporalDAGSpec`, each route edge must be present — a missing declaration is
+an error, not a silently assumed causal edge. Mediator-to-mediator edges are
+optional but, when declared, must also be causal. With the coarse per-mediator
+dictionary every mediator must be declared.
+
+When `relation_kinds === nothing` nothing is checked and `nothing` is returned,
+unless `require = true`, in which case the absence is itself refused (used by
+[`plan_mediation`](@ref) when the certificate comes from a semantically typed
+graph).
 """
 function assert_causal_mediator_paths!(
     spec::MediationSpec;
-    relation_kinds::Union{Nothing, AbstractDict{Symbol, Symbol}} = nothing,
+    relation_kinds::Union{Nothing, MediationRelationKinds} = nothing,
+    require::Bool = false,
 )
-    relation_kinds === nothing && return nothing
-    for m in spec.mediators
-        kind = get(relation_kinds, m, :causal_influence)
-        if kind in _NON_CAUSAL_MEDIATION_RELATIONS || kind !== :causal_influence
+    if relation_kinds === nothing
+        require && throw(ArgumentError(
+            "relation kinds are required for this mediation plan: the identification " *
+            "certificate came from a semantically typed graph, so pass " *
+            "`relation_kinds` (a `(source, target) => kind` Dict or the " *
+            "`TemporalDAGSpec`) rather than assuming every mediator path is causal.",
+        ))
+        return nothing
+    end
+    if relation_kinds isa AbstractDict{Symbol, Symbol}
+        for m in spec.mediators
+            haskey(relation_kinds, m) || throw(ArgumentError(
+                "mediator :$m has no declared relation_kind; declare it explicitly " *
+                "(relation kinds are never defaulted to :causal_influence).",
+            ))
+            kind = relation_kinds[m]
+            kind === :causal_influence || _refuse_non_causal("mediator :$m", kind)
+        end
+        return nothing
+    end
+    kinds = relation_kinds isa AbstractDict ? relation_kinds : _edge_relation_kinds(relation_kinds)
+    mediator_set = Set(spec.mediators)
+    for (s, t) in _mediation_path_edges(spec)
+        optional = s in mediator_set && t in mediator_set
+        if !haskey(kinds, (s, t))
+            optional && continue
             throw(ArgumentError(
-                "mediator :$m has relation_kind :$kind; ordinary mediation requires " *
-                ":causal_influence. Constitutive or participation paths are not " *
-                "NDE/NIE routes — choose a different MediationEffect or drop the mediator.",
+                "edge ($s → $t) on a mediation route has no declared relation_kind; " *
+                "declare it explicitly (relation kinds are never defaulted to " *
+                ":causal_influence).",
             ))
         end
+        kind = kinds[(s, t)]
+        kind === :causal_influence || _refuse_non_causal("edge ($s → $t)", kind)
     end
     return nothing
 end

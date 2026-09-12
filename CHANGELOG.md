@@ -17,8 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `assert_causal_mediator_paths!` and optional `relation_kinds` on
-  `plan_mediation` refuse constitutive / participation mediators as ordinary
-  NDE/NIE routes.
+  `plan_mediation` refuse constitutive / participation / measurement mediators
+  as ordinary NDE/NIE routes. `relation_kinds` (`MediationRelationKinds`) may be
+  a per-edge `(source, target) => kind` Dict, a per-mediator Dict, or a
+  CausalDynamics `TemporalDAGSpec` / `TemporalUnrolling`; every treatment →
+  mediator → outcome edge must be declared — undeclared route edges are refused,
+  never defaulted to `:causal_influence`. `plan_mediation` requires
+  `relation_kinds` when the certificate carries a `semantic_fingerprint`.
 - Getting started documents the mediator-relation gate alongside
   `assert_natural_admissible!`.
 

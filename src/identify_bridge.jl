@@ -11,15 +11,22 @@ CausalDynamics `IdentificationResult` into a concrete [`MediationSpec`](@ref)
 
 Empty fields on `spec` are filled from the certificate; nonempty fields are kept.
 Optional `shift` replaces both `policy_d0` and `policy_d1` (numeric or discrete).
+
+`relation_kinds` (see [`MediationRelationKinds`](@ref)) declares the relation
+kind of every mediation route edge; pass the `TemporalDAGSpec` the certificate
+was derived from when available. When `id_result.semantic_fingerprint` is set
+the certificate came from a semantically typed graph and `relation_kinds` is
+**required** — the planner refuses to assume that imported paths are causal.
 """
 function plan_mediation(
     spec::MediationSpec,
     id_result::IdentificationResult;
     shift::Union{Nothing, MediationTreatmentPolicy} = nothing,
-    relation_kinds::Union{Nothing, AbstractDict{Symbol, Symbol}} = nothing,
+    relation_kinds::Union{Nothing, MediationRelationKinds} = nothing,
 )
     assert_natural_admissible!(spec)
-    assert_causal_mediator_paths!(spec; relation_kinds = relation_kinds)
+    require_kinds = id_result.semantic_fingerprint !== nothing
+    assert_causal_mediator_paths!(spec; relation_kinds = relation_kinds, require = require_kinds)
     adj = Symbol.(id_result.adjustment)
     meds = isempty(spec.mediators) ? Symbol.(id_result.mediators) : spec.mediators
     moc = isempty(spec.moc) ? Symbol.(id_result.moc) : spec.moc
@@ -35,7 +42,7 @@ function plan_mediation(
         policy_d1 = pol1,
         effect = spec.effect,
     )
-    assert_causal_mediator_paths!(planned; relation_kinds = relation_kinds)
+    assert_causal_mediator_paths!(planned; relation_kinds = relation_kinds, require = require_kinds)
     return planned
 end
 

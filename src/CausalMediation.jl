@@ -59,7 +59,7 @@ export InterventionalMediation, NaturalMediation, OrganicMediation
 export RecantingTwinMediation, ControlledDirect
 export MediationSpec, MediationResult
 export assumptions, assert_natural_admissible!, assert_moc_for_ri!
-export assert_causal_mediator_paths!
+export assert_causal_mediator_paths!, MediationRelationKinds
 export plan_mediation, spec_from_identification
 export run_mediation, run_mediation_grid, run_mediation_scalar
 export run_mediation_scalar_ppl, run_tmle3_nde

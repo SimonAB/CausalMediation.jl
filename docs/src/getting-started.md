@@ -297,8 +297,15 @@ fig
 `assert_natural_admissible!` throws if you request `NaturalMediation` with nonempty
 `moc` (the same gate as CausalDynamics `identify`).
 `assert_causal_mediator_paths!` (and `plan_mediation(...; relation_kinds=…)`)
-refuse constitutive or participation relations as ordinary NDE/NIE mediator
-routes — those are not causal-influence paths.
+refuse constitutive, participation, or measurement relations as ordinary
+NDE/NIE mediator routes — those are not causal-influence paths. Relation kind
+is declared, never inferred: pass `(source, target) => kind` for every edge on
+each treatment → mediator → outcome route, or the CausalDynamics
+`TemporalDAGSpec` whose `LaggedEdge.relation_kind` values carry the
+declarations. A route edge with no declaration is refused rather than assumed
+causal, and `plan_mediation` insists on `relation_kinds` whenever the
+certificate carries a `semantic_fingerprint` (i.e. came from a semantically
+typed graph).
 
 ## 4. Multiple ordered mediators
 
