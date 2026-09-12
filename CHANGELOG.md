@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Consume CausalDynamics orthogonal temporal declarations (`temporal_support`,
+  `value_representation`, `referent_id`, `graph_kind`). Mediator semantics and
+  constitutive-path rejection remain gated on Dynamics certificates; natural
+  effects are never silently relabelled as interventional.
+
+### Added
+
+- `assert_causal_mediator_paths!` and optional `relation_kinds` on
+  `plan_mediation` refuse constitutive / participation mediators as ordinary
+  NDE/NIE routes.
+
 ## [0.1.2] - 2026-08-25
 
 ### Added

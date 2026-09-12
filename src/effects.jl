@@ -187,6 +187,39 @@ function assert_natural_admissible!(spec::MediationSpec)
     return nothing
 end
 
+const _NON_CAUSAL_MEDIATION_RELATIONS = (
+    :constitutive_dependence,
+    :constitutive_persistence,
+    :participation,
+    :measurement,
+    :temporal_precedence,
+    :identity_succession,
+)
+
+"""
+    assert_causal_mediator_paths!(spec; relation_kinds=nothing)
+
+Refuse mediation along constitutive, participation, or other non-influence
+relations. Ordinary mediation requires `:causal_influence` paths into mediators.
+"""
+function assert_causal_mediator_paths!(
+    spec::MediationSpec;
+    relation_kinds::Union{Nothing, AbstractDict{Symbol, Symbol}} = nothing,
+)
+    relation_kinds === nothing && return nothing
+    for m in spec.mediators
+        kind = get(relation_kinds, m, :causal_influence)
+        if kind in _NON_CAUSAL_MEDIATION_RELATIONS || kind !== :causal_influence
+            throw(ArgumentError(
+                "mediator :$m has relation_kind :$kind; ordinary mediation requires " *
+                ":causal_influence. Constitutive or participation paths are not " *
+                "NDE/NIE routes — choose a different MediationEffect or drop the mediator.",
+            ))
+        end
+    end
+    return nothing
+end
+
 """
     assert_moc_for_ri!(spec)
 

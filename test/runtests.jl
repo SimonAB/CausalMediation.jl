@@ -269,4 +269,5 @@ using Statistics
     end
 
     include("test_representation_bridge.jl")
+    include("test_semantic_paths.jl")
 end

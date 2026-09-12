@@ -16,14 +16,16 @@ function plan_mediation(
     spec::MediationSpec,
     id_result::IdentificationResult;
     shift::Union{Nothing, MediationTreatmentPolicy} = nothing,
+    relation_kinds::Union{Nothing, AbstractDict{Symbol, Symbol}} = nothing,
 )
     assert_natural_admissible!(spec)
+    assert_causal_mediator_paths!(spec; relation_kinds = relation_kinds)
     adj = Symbol.(id_result.adjustment)
     meds = isempty(spec.mediators) ? Symbol.(id_result.mediators) : spec.mediators
     moc = isempty(spec.moc) ? Symbol.(id_result.moc) : spec.moc
     pol0 = shift === nothing ? spec.policy_d0 : shift
     pol1 = shift === nothing ? spec.policy_d1 : shift
-    return MediationSpec(
+    planned = MediationSpec(
         spec.treatment,
         spec.outcome;
         mediators = meds,
@@ -33,6 +35,8 @@ function plan_mediation(
         policy_d1 = pol1,
         effect = spec.effect,
     )
+    assert_causal_mediator_paths!(planned; relation_kinds = relation_kinds)
+    return planned
 end
 
 """
