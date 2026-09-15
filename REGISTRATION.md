@@ -11,7 +11,7 @@ Install: `Pkg.add("CausalMediation")`. Requires Julia **1.12+**,
 |---------|--------|
 | **0.1.0** | On General ([#163653](https://github.com/JuliaRegistries/General/pull/163653), merged 2026-08-08); TagBot tagged `v0.1.0` |
 | **0.1.1** | On General (tree `b873813`); TagBot `v0.1.1` — categorical-`A` interventional mediation |
-| **0.1.2** | Tip of `main` — missingness metadata on grids/scalar; nested-units BOUNDARIES; representation-bridge docs |
+| **0.1.2** | Tip of `main` — missingness metadata on grids/scalar; nested-units BOUNDARIES; representation-bridge docs; ready for General registration |
 
 Tracking: [issue #1](https://github.com/SimonAB/CausalMediation.jl/issues/1).
 
