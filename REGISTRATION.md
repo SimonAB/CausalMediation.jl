@@ -5,21 +5,19 @@ CausalMediation.jl is on the Julia **General** registry.
 Install: `Pkg.add("CausalMediation")`. Requires Julia **1.12+**,
 [CausalDynamics.jl](https://github.com/SimonAB/CausalDynamics.jl) **0.4+**, and
 [CausalTargeted.jl](https://github.com/SimonAB/CausalTargeted.jl) **0.3+**
-(factor-`A` mediation needs Targeted **0.3.8+**; General currently has **0.3.10**).
+(factor-`A` mediation needs Targeted **0.3.8+**; General currently has **0.3.28**).
 
 | Version | Status |
 |---------|--------|
 | **0.1.0** | On General ([#163653](https://github.com/JuliaRegistries/General/pull/163653), merged 2026-08-08); TagBot tagged `v0.1.0` |
 | **0.1.1** | On General (tree `b873813`); TagBot `v0.1.1` — categorical-`A` interventional mediation |
-| **0.1.2** | Tip of `main` — missingness metadata on grids/scalar; nested-units BOUNDARIES; representation-bridge docs; ready for General registration |
+| **0.1.2** | On General (tree `92f7d287bfc12127c6ad19d3fc5b4cdc0c900d73`) — missingness metadata on grids/scalar; nested-units BOUNDARIES; representation-bridge docs |
 
 Tracking: [issue #1](https://github.com/SimonAB/CausalMediation.jl/issues/1).
 
-## Register 0.1.2
+## 0.1.2 registration
 
-1. Push `0.1.2` on `main`
-2. `@JuliaRegistrator register` on [issue #1](https://github.com/SimonAB/CausalMediation.jl/issues/1)
-3. Wait for General AutoMerge; TagBot tags `v0.1.2`
+Registration is complete; the General registry contains version **0.1.2**.
 
 ## Register 0.1.1 (done)
 

@@ -8,6 +8,17 @@ analogues of ideas in the modern mediation literature (including R `crumble` /
 `references.bib` in the CDCS book. Engine naming (`:interventional`, not
 `"RI"`) is summarised in [Naming](naming.md).
 
+## Counterfactual data and mediation
+
+Counterfactual-data designs can provide information beyond ordinary observational
+and interventional distributions for some nested or path-specific queries. That
+possibility is relevant to natural direct effects, but identification of the
+counterfactual query belongs upstream in CausalDynamics. This package currently
+estimates the mediation functionals supported by its `MediationSpec` and does not
+claim a general counterfactual-data identification algorithm. A future bridge
+should consume an explicit identification certificate rather than infer
+cross-world information from the mediator data frame.
+
 ## Interventional (randomised intermediate) effects
 
 **Scientific problem.** Natural direct and indirect effects require cross-world
