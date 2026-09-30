@@ -88,6 +88,16 @@ throws. Organic and controlled-direct paths are available for specialised
 contrasts; interpret them against the cited definitions, not as drop-in
 replacements for interventional TE/NDE/NIE.
 
+`ControlledDirect` holds a continuous mediator at the specified value and
+averages cross-fitted outcome-regression contrasts. Omitting `estimator` selects
+`:plugin` for this effect; explicit `:onestep` and `:tmle` throw. A fixed value
+of a continuous mediator has no ordinary nonparametric influence function, so
+the treatment-only residual correction is invalid. The returned point estimate
+depends on the outcome model. Standard errors and confidence limits are `NaN`
+until a suitable inference method is implemented. Nonempty `moc` is refused:
+its post-treatment distribution would also need to be integrated under each
+treatment arm.
+
 ## Nested units / clustering
 
 When observations nest in clusters, CausalDynamics owns **generative** nested
@@ -131,8 +141,10 @@ Mediation runners forward incompleteness to CausalTargeted
 [`handle_missing_data`](https://simonab.github.io/CausalTargeted.jl/dev/missingness/).
 `run_mediation_grid`, `run_mediation_scalar`, `run_tmle3_nde`, and
 `conjugate_mediation_bootstrap` (via `run_mediation_scalar_ppl`) accept
-`handle_missing` (`:drop` default; `:ipcw` reweights the interventional EIF or,
-for the conjugate bootstrap, draws rows with IPCW probabilities; `:impute` /
+`handle_missing` (`:drop` default; `:ipcw` reweights interventional, natural,
+organic, and recanting-twin influence summaries and the controlled direct
+plug-in contrast; for the conjugate bootstrap it draws rows with IPCW
+probabilities; `:impute` /
 `:ipcw_impute` for covariate gaps). Missing mediators are treated as covariates
 for that policy (complete-case or mean-impute with indicators), not as a
 separate mediation-specific missingness estimand. Structural MAR/MNAR claims

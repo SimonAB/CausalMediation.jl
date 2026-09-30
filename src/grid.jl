@@ -11,7 +11,8 @@ Canonical mediation entry point. Dispatches on `spec.effect` and returns a
 
 # Keyword arguments
 
-- `estimator`: `:plugin`, `:onestep` (default), or `:tmle`
+- `estimator`: `:plugin`, `:onestep`, or `:tmle`; omitted selects `:plugin`
+  for `ControlledDirect` and `:onestep` for the other effects
 - `deltas`: MTP shift grid (defaults to CausalTargeted `default_deltas()`)
 - `n_mc`: nested mediator Monte Carlo draws per unit (default `32`)
 - `folds`, `learners`, `parallel`, `cache_nuisances`: Super Learner / cross-fit controls from CausalTargeted
@@ -25,7 +26,7 @@ function run_mediation(
     data::DataFrame;
     folds = mtp_settings().folds,
     learners = DEFAULT_SL_LEARNERS,
-    estimator::Symbol = :onestep,
+    estimator::Union{Nothing, Symbol} = nothing,
     deltas = nothing,
     n_mc::Int = 32,
     rng::AbstractRNG = StableRNG(42),
@@ -35,6 +36,7 @@ function run_mediation(
 )
     assert_natural_admissible!(spec)
     assert_moc_for_ri!(spec)
+    estimator = _resolve_mediation_estimator(spec.effect, estimator, spec.moc)
     if _discrete_spec(spec)
         return _run_mediation_discrete(
             spec, data;
@@ -186,6 +188,8 @@ end
     run_mediation_scalar(data, trt, outcome; mediators, covar, moc, kwargs...) -> DataFrame
 
 Binary contrast `d0=0` vs `d1=1` with NDE / NIE / TE rows.
+The omitted estimator selects `:plugin` for `ControlledDirect` and `:onestep`
+otherwise. Controlled direct plug-in rows have NaN SE and confidence limits.
 """
 function run_mediation_scalar(
     data::DataFrame,
@@ -198,11 +202,12 @@ function run_mediation_scalar(
     epochs::Int = 1,
     learners = DEFAULT_SL_LEARNERS,
     n_mc::Int = 32,
-    estimator::Symbol = :onestep,
+    estimator::Union{Nothing, Symbol} = nothing,
     effect::MediationEffect = InterventionalMediation(),
     rng = StableRNG(42),
     handle_missing::Symbol = :drop,
 )
+    estimator = _resolve_mediation_estimator(effect, estimator, moc)
     all_cols = unique(vcat(covar, mediators, moc, [trt]))
     miss = handle_missing_data(
         data, outcome, all_cols, handle_missing;

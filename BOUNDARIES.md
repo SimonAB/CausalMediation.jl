@@ -37,6 +37,8 @@
 - Categorical mediators (`g(M|A,W)` multinomial)
 - Intermediate confounding (`moc`) on the factor-`A` path
 - Survival / competing-risks mediation
+- One-step / TMLE for a fixed continuous mediator value, and controlled direct
+  effects with post-treatment mediator-outcome confounders (`moc`)
 - Sequential / longitudinal mediation (`A_t`, `M_t`)
 - Default GPU deep Riesz nets
 - Biological pathway registries

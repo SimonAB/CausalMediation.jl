@@ -26,6 +26,7 @@ function _organic_effects(
     U = nothing,
     shift = nothing,
     fold_cache = nothing,
+    ipcw_w = nothing,
 )
     return _interventional_effects(
         df, outcome, trt, covar, mediators, a_nat, a_shift, folds, rng;
@@ -39,5 +40,6 @@ function _organic_effects(
         fold_cache = fold_cache,
         epochs = 1,
         organic = true,
+        ipcw_w = ipcw_w,
     )
 end

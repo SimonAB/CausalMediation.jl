@@ -8,7 +8,9 @@ using Logging
 
 Mediation δ-grid as a `DataFrame` (rows for TE / NDE / NIE × δ × stratum).
 Supports optional `moc` intermediate confounders and
-`estimator ∈ (:plugin, :onestep, :tmle)`.
+`estimator ∈ (:plugin, :onestep, :tmle)`. The omitted estimator selects
+`:plugin` for `ControlledDirect` and `:onestep` otherwise. Controlled direct
+effects with nonempty `moc` or explicit `:onestep` / `:tmle` are refused.
 
 Prefer [`run_mediation`](@ref) with a [`MediationSpec`](@ref) when you already
 have an identification certificate. Pass `effect` to select natural / organic /
@@ -30,7 +32,7 @@ function run_mediation_grid(
     shift_scale = mtp_settings().shift_scale,
     learners = DEFAULT_SL_LEARNERS,
     n_mc::Int = 32,
-    estimator::Symbol = :onestep,
+    estimator::Union{Nothing, Symbol} = nothing,
     rng::AbstractRNG = StableRNG(42),
     parallel::Bool = nthreads() > 1,
     cache_nuisances::Bool = true,
@@ -38,6 +40,7 @@ function run_mediation_grid(
     handle_missing::Symbol = :drop,
     effect::MediationEffect = InterventionalMediation(),
 )
+    estimator = _resolve_mediation_estimator(effect, estimator, moc)
     all_cols = unique(vcat(covar, mediators, moc, [trt]))
     miss = handle_missing_data(
         data, outcome, all_cols, handle_missing;
@@ -246,6 +249,9 @@ function _effects_dispatch(
     kwargs...,
 )
     kw = Dict{Symbol, Any}(pairs(kwargs))
+    chosen = _resolve_mediation_estimator(
+        effect, get(kw, :estimator, nothing), get(kw, :moc, Symbol[]),
+    )
     if effect isa NaturalMediation
         moc = get(kw, :moc, Symbol[])
         isempty(moc) || throw(ArgumentError("Natural effects require empty moc"))
@@ -253,35 +259,38 @@ function _effects_dispatch(
             df, outcome, trt, covar, mediators, a_nat, a_shift, folds, rng;
             learners = get(kw, :learners, DEFAULT_SL_LEARNERS),
             n_mc = get(kw, :n_mc, 32),
-            estimator = get(kw, :estimator, :onestep),
+            estimator = chosen,
             L = get(kw, :L, nothing),
             U = get(kw, :U, nothing),
             shift = get(kw, :shift, nothing),
             fold_cache = get(kw, :fold_cache, nothing),
+            ipcw_w = get(kw, :ipcw_w, nothing),
         )
     elseif effect isa OrganicMediation
         return _organic_effects(
             df, outcome, trt, covar, mediators, a_nat, a_shift, folds, rng;
             learners = get(kw, :learners, DEFAULT_SL_LEARNERS),
             n_mc = get(kw, :n_mc, 32),
-            estimator = get(kw, :estimator, :onestep),
+            estimator = chosen,
             moc = get(kw, :moc, Symbol[]),
             L = get(kw, :L, nothing),
             U = get(kw, :U, nothing),
             shift = get(kw, :shift, nothing),
             fold_cache = get(kw, :fold_cache, nothing),
+            ipcw_w = get(kw, :ipcw_w, nothing),
         )
     elseif effect isa RecantingTwinMediation
         return _recanting_twin_effects(
             df, outcome, trt, covar, mediators, a_nat, a_shift, folds, rng;
             learners = get(kw, :learners, DEFAULT_SL_LEARNERS),
             n_mc = get(kw, :n_mc, 32),
-            estimator = get(kw, :estimator, :onestep),
+            estimator = chosen,
             moc = get(kw, :moc, Symbol[]),
             L = get(kw, :L, nothing),
             U = get(kw, :U, nothing),
             shift = get(kw, :shift, nothing),
             fold_cache = get(kw, :fold_cache, nothing),
+            ipcw_w = get(kw, :ipcw_w, nothing),
         )
     elseif effect isa ControlledDirect
         return _controlled_direct_effects(
@@ -289,17 +298,18 @@ function _effects_dispatch(
             learners = get(kw, :learners, DEFAULT_SL_LEARNERS),
             m_fixed = effect.m,
             moc = get(kw, :moc, Symbol[]),
-            estimator = get(kw, :estimator, :onestep),
+            estimator = chosen,
             L = get(kw, :L, nothing),
             U = get(kw, :U, nothing),
             shift = get(kw, :shift, nothing),
+            ipcw_w = get(kw, :ipcw_w, nothing),
         )
     else
         return _interventional_effects(
             df, outcome, trt, covar, mediators, a_nat, a_shift, folds, rng;
             learners = get(kw, :learners, DEFAULT_SL_LEARNERS),
             n_mc = get(kw, :n_mc, 32),
-            estimator = get(kw, :estimator, :onestep),
+            estimator = chosen,
             moc = get(kw, :moc, Symbol[]),
             L = get(kw, :L, nothing),
             U = get(kw, :U, nothing),

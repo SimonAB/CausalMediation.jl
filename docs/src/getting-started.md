@@ -433,7 +433,7 @@ fig
 | `estimator` | Role |
 |-------------|------|
 | `:plugin` | Nested-MC plug-in contrasts |
-| `:onestep` | Plugin plus EIF correction (default) |
+| `:onestep` | Plugin plus EIF correction (default except for `ControlledDirect`) |
 | `:tmle` | Targeting step on the same nuisances |
 
 `n_mc` controls nested mediator draws. At small *n*, sweep it:
@@ -458,7 +458,7 @@ mediation_stability_markdown(sweep)
 | `NaturalMediation()` | Classical NDE/NIE when `moc` is empty |
 | `OrganicMediation()` | Lok organic effects |
 | `RecantingTwinMediation()` | Path-specific / RT contrasts |
-| `ControlledDirect(m = …)` | Fix mediators at specified levels |
+| `ControlledDirect(m = …)` | Fix mediators at specified levels; defaults to `:plugin`, with unavailable SE and confidence limits |
 
 See [Methods](methods.md) and [Naming](naming.md).
 
@@ -466,5 +466,4 @@ See [Methods](methods.md) and [Naming](naming.md).
 
 Older CT names (`run_crumble_*`, engine `:crumble`) soft-deprecate to this
 package’s APIs. Prefer `using CausalMediation` and `run_mediation` in new code.
-
 

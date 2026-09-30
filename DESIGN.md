@@ -2,6 +2,9 @@
 
 This package is the **mediation estimation layer**: interventional, natural, organic,
 controlled direct, and recanting-twin effects with cross-fitted EIF / one-step / TMLE.
+For continuous-mediator controlled direct effects, the current estimator is
+cross-fitted outcome-regression plug-in only. A point intervention has no
+ordinary nonparametric EIF; one-step / TMLE and inferential SEs are not claimed.
 
 **Shared principles + Policy taxonomy:** [DESIGN_PRINCIPLES.md](https://github.com/SimonAB/causal-dynamics-book/blob/main/packages/DESIGN_PRINCIPLES.md)  
 **Boundaries:** [BOUNDARIES.md](BOUNDARIES.md)

@@ -20,7 +20,13 @@ struct OrganicMediation <: MediationEffect end
 """Recanting-twin / path-specific effects (Vo–Díaz)."""
 struct RecantingTwinMediation <: MediationEffect end
 
-"""Controlled direct effect with mediators fixed at `m`."""
+"""
+Controlled direct effect with continuous mediators fixed at `m`.
+
+Estimation supports cross-fitted outcome-regression `estimator=:plugin` only;
+it does not return inferential standard errors or confidence limits. Empty
+`moc` is required. An omitted estimator selects `:plugin` for this effect.
+"""
 struct ControlledDirect <: MediationEffect
     m::Dict{Symbol, Float64}
 end

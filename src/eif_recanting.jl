@@ -26,6 +26,7 @@ function _recanting_twin_effects(
     U = nothing,
     shift = nothing,
     fold_cache = nothing,
+    ipcw_w = nothing,
 )
     est, se, ic = _interventional_effects(
         df, outcome, trt, covar, mediators, a_nat, a_shift, folds, rng;
@@ -38,10 +39,11 @@ function _recanting_twin_effects(
         shift = shift,
         fold_cache = fold_cache,
         epochs = 1,
+        ipcw_w = ipcw_w,
     )
     # Path labels + IC remainder for falsification / reporting
     rem_ic = ic.te .- (ic.nde .+ ic.nie)
-    rem = mean(rem_ic)
+    rem = est.te - (est.nde + est.nie)
     rem_se = std(rem_ic .- rem) / sqrt(length(rem_ic))
     est_rt = (
         te = est.te,

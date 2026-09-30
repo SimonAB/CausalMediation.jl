@@ -77,6 +77,7 @@ using Statistics
         for eff in (NaturalMediation(), OrganicMediation(), ControlledDirect(:M => 0.0), RecantingTwinMediation())
             spec = MediationSpec(:A, :Y; mediators = [:M], covariates = [:W], effect = eff)
             res = run_mediation(spec, df; deltas = [1.0], folds = 2, n_mc = 4,
+                estimator = eff isa ControlledDirect ? :plugin : :onestep,
                 learners = SMALL_N_SL_LEARNERS, parallel = false, rng = StableRNG(4))
             @test nrow(res.table) >= 3
             d = decompose(res)
@@ -260,4 +261,5 @@ using Statistics
 
     include("test_representation_bridge.jl")
     include("test_semantic_paths.jl")
+    include("test_review_regressions.jl")
 end

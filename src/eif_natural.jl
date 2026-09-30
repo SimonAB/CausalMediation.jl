@@ -24,6 +24,7 @@ function _natural_effects(
     U = nothing,
     shift = nothing,
     fold_cache = nothing,
+    ipcw_w = nothing,
 )
     # Natural = interventional when moc empty
     return _interventional_effects(
@@ -37,5 +38,6 @@ function _natural_effects(
         shift = shift,
         fold_cache = fold_cache,
         epochs = 1,
+        ipcw_w = ipcw_w,
     )
 end

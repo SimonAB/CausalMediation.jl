@@ -47,7 +47,7 @@ forward here. Prefer `using CausalMediation` in new scripts and book chunks.
 | Symbol | Meaning |
 |--------|---------|
 | `:plugin` | Nested-MC plug-in |
-| `:onestep` | Plugin + EIF / residual correction (default) |
+| `:onestep` | Plugin + EIF / residual correction (default except for `ControlledDirect`) |
 | `:tmle` | Targeting fluctuation |
 
 Not named after R package brands (`:crumble` is a soft-deprecated CT engine

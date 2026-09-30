@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Controlled direct effects now use cross-fitted plug-in estimation by default.
+  Explicit one-step / TMLE and nonempty `moc` are refused because the previous
+  residual correction was not a valid continuous-mediator point-intervention
+  EIF. SEs and confidence limits are `NaN` until suitable inference is added.
+- Forward IPCW weights through natural, organic, recanting-twin, and controlled
+  direct estimators, including their scalar, grid, and spec entry points.
+
 ### Changed
 
 - Unit tests: share MAR missing-Y helper across scalar / bootstrap / TMLE3
