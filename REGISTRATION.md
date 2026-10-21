@@ -5,7 +5,7 @@ CausalMediation.jl is on the Julia **General** registry.
 Install: `Pkg.add("CausalMediation")`. Requires Julia **1.12+**,
 [CausalDynamics.jl](https://github.com/SimonAB/CausalDynamics.jl) **0.4+**, and
 [CausalTargeted.jl](https://github.com/SimonAB/CausalTargeted.jl) **0.3+**
-(factor-`A` mediation needs Targeted **0.3.8+**; General currently has **0.3.28**).
+(factor-`A` mediation needs Targeted **0.3.8+**; General has **0.3.29**).
 
 | Version | Status |
 |---------|--------|
@@ -18,6 +18,10 @@ Tracking: [issue #1](https://github.com/SimonAB/CausalMediation.jl/issues/1).
 ## 0.1.2 registration
 
 Registration is complete; the General registry contains version **0.1.2**.
+
+The development tip includes subsequent controlled-direct-effect contract and
+IPCW forwarding corrections. These are documented under **Unreleased** in
+[CHANGELOG.md](CHANGELOG.md) and are not part of the registered **0.1.2** release.
 
 ## Register 0.1.1 (done)
 
