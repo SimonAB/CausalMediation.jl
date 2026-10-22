@@ -66,6 +66,7 @@ build_mediation_fold_cache
 mediation_n_mc_sweep
 mediation_stability_summary
 mediation_stability_markdown
+validate_mediation_sweep
 simulate_mediation
 simulate_continuous_mtp_mediation
 simulate_intermediate_confounding_mediation

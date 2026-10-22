@@ -105,7 +105,7 @@ MIT © Simon A. Babayan
   author  = {Babayan, Simon A.},
   title   = {CausalMediation.jl},
   year    = {2026},
-  version = {v0.1.0},
+  version = {v0.1.2},
   doi     = {10.5281/zenodo.21812342},
   url     = {https://github.com/SimonAB/CausalMediation.jl}
 }
