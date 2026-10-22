@@ -2,6 +2,8 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21812342.svg)](https://doi.org/10.5281/zenodo.21812342)
 
+This package is part of the [CDCS Julia package set](https://github.com/SimonAB/causal-dynamics-book/tree/main/packages), which supports the [Causal Dynamics of Complex Systems book](https://simonab.github.io/causal-dynamics-book/).
+
 Cross-fitted mediation for the CDCS Julia stack: interventional (RI), natural,
 organic, controlled direct, and recanting-twin effects, with intermediate
 confounding (`moc`) and continuous MTP one-step / TMLE estimators.
