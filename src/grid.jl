@@ -73,12 +73,26 @@ function run_mediation(
     end
     return MediationResult(
         spec, est, se, ic,
-        (n_mc = n_mc, estimator = estimator, n_rows = nrow(table), missingness = miss_meta),
+        (
+            n_mc = n_mc,
+            estimator = estimator,
+            n_rows = nrow(table),
+            missingness = miss_meta,
+            inference_status = se.inference_status,
+        ),
         table,
     )
 end
 
-"""Interventional factor-`A` path: dummy-coded Q, classification `H`, continuous `M`."""
+"""
+    _run_mediation_discrete(spec, data; folds, learners, estimator, n_mc, rng, ...) -> MediationResult
+
+Discrete-treatment mediation: `spec` must carry `CausalTargeted.DiscreteTreatmentPolicy` arms on
+`policy_d0` and `policy_d1`. The treatment column is coerced to `String` levels,
+`CausalTargeted.apply_discrete_policy` builds counterfactual arms, and `_interventional_effects_discrete_a`
+estimates TE / NDE / NIE with classification-style density ratios. Requires non-empty `spec.mediators` and
+a categorical `spec.treatment`; a continuous `treatment` column is an error.
+"""
 function _run_mediation_discrete(
     spec::MediationSpec,
     data::DataFrame;
@@ -139,11 +153,20 @@ function _run_mediation_discrete(
             density_ratio = :classification,
             positivity = pos,
             missingness = miss.meta,
+            inference_status = se.inference_status,
         ),
         table,
     )
 end
 
+"""
+    _summarise_grid(table) -> (est, se, ic)
+
+Reduce a mediation δ-grid `table` to scalar NDE / NIE / TE point estimates and standard errors
+for `MediationResult`. Preferentially keeps rows at the smallest non-zero `delta` (or all
+rows when every `delta` is `NaN`, as for discrete contrasts). Sets SEs to `NaN` when inference
+status mixes across rows.
+"""
 function _summarise_grid(table::DataFrame)
     deltas = Float64.(table.delta)
     if !isempty(deltas) && all(isnan, deltas)
@@ -162,11 +185,26 @@ function _summarise_grid(table::DataFrame)
     nie, nie_se = get_est("NIE")
     te, te_se = get_est("TE")
     est = (nde = nde, nie = nie, te = te)
-    se = (nde = nde_se, nie = nie_se, te = te_se)
+    status = if :inference_status in propertynames(table)
+        codes = unique(Symbol.(table.inference_status))
+        length(codes) == 1 ? only(codes) : :mixed
+    else
+        :unsupported_inference
+    end
+    if status === :mixed
+        nde_se = nie_se = te_se = NaN
+    end
+    se = (nde = nde_se, nie = nie_se, te = te_se, inference_status = status)
     ic = (nde = Float64[], nie = Float64[], te = Float64[])
     return est, se, ic
 end
 
+"""
+    _result_table(est, se) -> DataFrame
+
+Build a three-row summary `DataFrame` (`effect`, `estimate`, `se`, `lower`, `upper`,
+`inference_status`) from mediation effect named tuples, using a Wald interval on each component.
+"""
 function _result_table(est, se)
     rows = Dict{String, Any}[]
     for lab in keys(est)
@@ -179,6 +217,7 @@ function _result_table(est, se)
             "se" => s,
             "lower" => lwr,
             "upper" => upr,
+            "inference_status" => string(get(se, :inference_status, :unsupported_inference)),
         ))
     end
     return DataFrame(rows)

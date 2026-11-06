@@ -3,27 +3,29 @@
 Estimands (interventional, not natural):
 
 ```
-ψ(a_t, a_m) = E[ ∫ Q(a_t, m, W, Z) g(m | a_m, Z, W) g(z | a_m, W) dm dz ]
+ψ(a_t, a_m) = E[ ∫ Q(a_t, m, W) g(m | a_m, W) dm ]
 NDE = ψ(a₁, a₀) − ψ(a₀, a₀)
 NIE = ψ(a₁, a₁) − ψ(a₁, a₀)
 TE  = ψ(a₁, a₁) − ψ(a₀, a₀)
 ```
 
-One-step EIF for ψ(a_t, a_m) (cross-fitted nuisances):
+Two-stage EIF for ψ(a_t, a_m) (cross-fitted nuisances, static treatment arms,
+empty `moc`, and unweighted observations):
 
 ```
-D = H^{a_t} · ρ(a_m) · (Y − Q(A,M,W,Z))
-  + H^{a_m} · (Q(a_t, M, W, Z) − Q̄(a_t, a_m, W))
+D = H^{a_t} · ρ(a_m) · (Y − Q(A,M,W))
+  + H^{a_m} · (Q(a_t, M, W) − Q̄(a_t, a_m, W))
   + Q̄(a_t, a_m, W)
 ```
 
-where `H^{a}` is the treatment density / propensity clever covariate for policy `a`,
-and `ρ(a_m) = g(M|a_m,Z,W) / g(M|A,Z,W)` (with optional moc density factors).
+where `H^{a}` is the treatment density / propensity ratio for the static arm `a`,
+and `ρ(a_m) = g(M|a_m,W) / g(M|A,W)`.
 
-Binary A uses the full `D`. Continuous MTP `:onestep` / `:tmle` use the
-plugin plus the outcome-residual term only (see `estimators.jl`); the
-`H_am · (Q − Q̄)` piece is omitted when density ratios near one would cancel
-the plugin.
+The formula is grounded in the two-stage stochastic mediation EIF (Díaz & Hejazi,
+2020) and its modified-treatment-policy extension (Liu et al., 2025). It does not
+cover intermediate confounders, factual-A-dependent policy arms, IPCW, or
+continuous-treatment clamping. Those paths must not use its variance as an EIF
+standard error until their corresponding gradients are implemented.
 
 # References
 

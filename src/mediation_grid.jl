@@ -122,6 +122,14 @@ function run_mediation_grid(
     return out
 end
 
+"""
+    _mediation_delta_job(d, stratum, df, outcome, trt, ...; ...) -> Vector{NamedTuple}
+
+Single (δ, stratum) job for [`run_mediation_grid`](@ref): restrict to `stratum`, build shift diagnostics,
+apply the requested MTP shift, call `_effects_dispatch`, and return three named tuples
+(NDE, NIE, TE) or trivial / unsupported / failure rows. When stratification pools strata, estimates are
+divided by the stratum mass (`scale_by`) so pooled entries are population means.
+"""
 function _mediation_delta_job(
     d::Float64,
     stratum::String,
@@ -163,7 +171,10 @@ function _mediation_delta_job(
     )
     if isapprox(d, 0; atol = 1e-12)
         return [
-            _mediation_row(d, lab, 0.0, 0.0, 0.0, 0.0, diag, lower_q, upper_q, sd_a; stratum = stratum)
+            _mediation_row(
+                d, lab, 0.0, 0.0, 0.0, 0.0, diag, lower_q, upper_q, sd_a;
+                stratum = stratum, inference_status = "trivial",
+            )
             for lab in ("NDE", "NIE", "TE")
         ]
     end
@@ -171,7 +182,10 @@ function _mediation_delta_job(
     req = diag.requested_shift
     if !isfinite(req)
         return [
-            _mediation_row(d, lab, NaN, NaN, NaN, NaN, diag, lower_q, upper_q, sd_a; stratum = stratum)
+            _mediation_row(
+                d, lab, NaN, NaN, NaN, NaN, diag, lower_q, upper_q, sd_a;
+                stratum = stratum, inference_status = "unsupported_policy",
+            )
             for lab in ("NDE", "NIE", "TE")
         ]
     end
@@ -208,18 +222,29 @@ function _mediation_delta_job(
             push!(rows, _mediation_row(
                 d, lab, e_s, s_s, lwr, upr, diag, lower_q, upper_q, sd_a;
                 severity = add_diag.severity, clamp_rate = add_diag.clamp, stratum = stratum,
+                inference_status = string(se.inference_status),
             ))
         end
         return rows
     catch
         return [
-            _mediation_row(d, lab, NaN, NaN, NaN, NaN, diag, lower_q, upper_q, sd_a; stratum = stratum)
+            _mediation_row(
+                d, lab, NaN, NaN, NaN, NaN, diag, lower_q, upper_q, sd_a;
+                stratum = stratum, inference_status = "estimation_failed",
+            )
             for lab in ("NDE", "NIE", "TE")
         ]
     end
 end
 
-function _mediation_row(d, lab, est, se, lwr, upr, diag, lower_q, upper_q, sd_a; severity = 0.0, clamp_rate = nothing, stratum = "full_population")
+"""
+    _mediation_row(d, lab, est, se, lwr, upr, diag, lower_q, upper_q, sd_a; ...) -> NamedTuple
+
+One row of the mediation grid `DataFrame`: effect label, δ, Wald limits, clamp and support diagnostics,
+quantile bounds, exposure SD, stratum, and `inference_status`. `clamp_rate` overrides clamp proportion
+when additive clamp diagnostics supply it; otherwise `diag.stratum_clamp_prop` or `diag.global_clamp_prop` is used.
+"""
+function _mediation_row(d, lab, est, se, lwr, upr, diag, lower_q, upper_q, sd_a; severity = 0.0, clamp_rate = nothing, stratum = "full_population", inference_status = "available")
     clamp_v = Float64(
         clamp_rate === nothing ? coalesce(diag.stratum_clamp_prop, diag.global_clamp_prop, 0.0) : clamp_rate,
     )
@@ -239,10 +264,17 @@ function _mediation_row(d, lab, est, se, lwr, upr, diag, lower_q, upper_q, sd_a;
         sd_exposure = Float64(sd_a),
         support_status = string(diag.support_status),
         stratum = string(stratum),
+        inference_status = string(inference_status),
     )
 end
 
-"""Dispatch effect family → estimator core."""
+"""
+    _effects_dispatch(effect, df, outcome, trt, covar, mediators, a_nat, a_shift, folds, rng; kwargs...)
+
+Route `effect` (`Natural`, `Organic`, RT, `ControlledDirect`, or default interventional) to the matching
+estimator implementation, resolving `estimator` with `_resolve_mediation_estimator`. `kwargs` typically
+include `learners`, `n_mc`, `moc`, `L`, `U`, `shift`, `fold_cache`, `epochs`, and `ipcw_w`.
+"""
 function _effects_dispatch(
     effect::MediationEffect,
     df, outcome, trt, covar, mediators, a_nat, a_shift, folds, rng;
@@ -267,7 +299,7 @@ function _effects_dispatch(
             ipcw_w = get(kw, :ipcw_w, nothing),
         )
     elseif effect isa OrganicMediation
-        return _organic_effects(
+        return _without_mediation_inference(_organic_effects(
             df, outcome, trt, covar, mediators, a_nat, a_shift, folds, rng;
             learners = get(kw, :learners, DEFAULT_SL_LEARNERS),
             n_mc = get(kw, :n_mc, 32),
@@ -278,9 +310,9 @@ function _effects_dispatch(
             shift = get(kw, :shift, nothing),
             fold_cache = get(kw, :fold_cache, nothing),
             ipcw_w = get(kw, :ipcw_w, nothing),
-        )
+        ), :unsupported_estimand)
     elseif effect isa RecantingTwinMediation
-        return _recanting_twin_effects(
+        return _without_mediation_inference(_recanting_twin_effects(
             df, outcome, trt, covar, mediators, a_nat, a_shift, folds, rng;
             learners = get(kw, :learners, DEFAULT_SL_LEARNERS),
             n_mc = get(kw, :n_mc, 32),
@@ -291,9 +323,9 @@ function _effects_dispatch(
             shift = get(kw, :shift, nothing),
             fold_cache = get(kw, :fold_cache, nothing),
             ipcw_w = get(kw, :ipcw_w, nothing),
-        )
+        ), :unsupported_estimand)
     elseif effect isa ControlledDirect
-        return _controlled_direct_effects(
+        return _without_mediation_inference(_controlled_direct_effects(
             df, outcome, trt, covar, mediators, a_nat, a_shift, folds, rng;
             learners = get(kw, :learners, DEFAULT_SL_LEARNERS),
             m_fixed = effect.m,
@@ -303,7 +335,7 @@ function _effects_dispatch(
             U = get(kw, :U, nothing),
             shift = get(kw, :shift, nothing),
             ipcw_w = get(kw, :ipcw_w, nothing),
-        )
+        ), :unsupported_estimand)
     else
         return _interventional_effects(
             df, outcome, trt, covar, mediators, a_nat, a_shift, folds, rng;

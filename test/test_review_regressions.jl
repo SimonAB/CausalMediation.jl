@@ -63,6 +63,8 @@ using Statistics
     @test isfinite(only(categorical[categorical.effect .== "TE", :estimate]))
 end
 
+include("test_uncertainty_contracts.jl")
+
 @testset "IPCW reaches each mediation effect" begin
     rng = StableRNG(46)
     n = 2400

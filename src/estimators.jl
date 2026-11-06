@@ -3,9 +3,10 @@
 """
     _interventional_effects(...) -> (est, se, ic)
 
-Cross-fitted interventional TE / NDE / NIE with full EIF for binary and
-continuous MTP. Optional `moc` intermediate confounders enter mediator and
-outcome parent sets and nested Monte Carlo.
+    Cross-fitted interventional TE / NDE / NIE point estimates. EIF standard
+    errors are supported only for static binary treatment arms with empty `moc`
+    and uniform observation weights. Other paths retain point estimates and
+    mark inferential standard errors unavailable.
 """
 function _interventional_effects(
     df::DataFrame,
@@ -49,6 +50,11 @@ function _interventional_effects(
         moc_parents_schema = fold_cache.moc_parents_schema
     end
     binary_a = all(x -> x == 0.0 || x == 1.0, a)
+    inference_status = _mediation_inference_status(
+        a_nat, a_shift;
+        estimator = estimator, moc = moc, organic = organic, ipcw_w = ipcw_w,
+        observed_treatment = a, binary_treatment = binary_a,
+    )
     psi_te = zeros(n)
     psi_nde = zeros(n)
     psi_nie = zeros(n)
@@ -179,7 +185,8 @@ function _interventional_effects(
             nie = Q̄11 .- Q̄10
             te = nde .+ nie
         elseif binary_a
-            # Full EIF for binary A (propensity weights are not ≈1 simultaneously)
+            # Full two-stage EIF for static binary arms and empty moc. The
+            # H_am mediator-stage score is required by the target functional.
             ic10 = eif_psi_interventional(Q̄10, Q_a1_M, Q_obs, y_te, H1, H0, ρ0)
             ic00 = eif_psi_interventional(Q̄00, Q_a0_M, Q_obs, y_te, H0, H0, ρ0)
             ic11 = eif_psi_interventional(Q̄11, Q_a1_M, Q_obs, y_te, H1, H1, ρ1)
@@ -202,9 +209,8 @@ function _interventional_effects(
                 te = nde .+ nie
             end
         else
-            # Continuous MTP: plugin + outcome-residual EIF terms.
-            # Omitting H_am·(Q(a_t,M)−Q̄) avoids cancelling the plugin when density
-            # ratios ≈ 1 (Liu et al. 2024 / Díaz–Hejazi continuous mediation).
+            # Preserve the existing continuous-policy point estimator. Its
+            # quantile-clamped policy does not meet the static-arm EIF contract.
             resid = y_te .- Q_obs
             zeros_h = zero.(H1)
             ic10 = eif_psi_interventional(Q̄10, Q_a1_M, Q_obs, y_te, H1, zeros_h, ρ0)
@@ -234,5 +240,7 @@ function _interventional_effects(
         psi_te[test_idx] = te
     end
 
-    return _summarise_mediation_influence(psi_nde, psi_nie, psi_te, ipcw_w)
+    return _summarise_mediation_influence(
+        psi_nde, psi_nie, psi_te, ipcw_w, inference_status,
+    )
 end

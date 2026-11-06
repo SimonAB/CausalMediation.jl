@@ -91,7 +91,13 @@ function _nested_mediator_outcome_means_factor(
     return y_a0_m0, y_a1_m0, y_a1_m1
 end
 
-"""Classification clever covariate for one recode versus the observed law."""
+"""
+    _discrete_arm_ratio(a_obs, a_pol, W, levels, train_idx, test_idx, rng; ...) -> Vector
+
+Cross-fitted Díaz–Williams treatment density ratio for discrete `A`: ratio of policy `a_pol` to observed `a_obs`
+on the test fold, using `CausalTargeted._fit_discrete_density_ratio` trained on `train_idx`. This classifier
+route is used for factual-A-dependent recodes; static arms use `_static_factor_arm_ratios` instead.
+"""
 function _discrete_arm_ratio(
     a_obs,
     a_pol,
@@ -116,12 +122,78 @@ function _discrete_arm_ratio(
     )
 end
 
+"""Cross-fitted static-arm clever covariates from ordinary treatment propensities."""
+function _static_factor_arm_ratios(
+    a_obs,
+    arm0,
+    arm1,
+    W::Matrix{Float64},
+    train_idx,
+    test_idx,
+    rng;
+    learners_trt = (:logistic, :mean),
+    trunc::Real = 10.0,
+)
+    trunc > 0 || throw(ArgumentError("trunc must be positive"))
+    levels = unique(string.(a_obs[train_idx]))
+    sort!(levels)
+    target0, target1 = string(arm0), string(arm1)
+    target0 in levels || throw(ArgumentError(
+        "static treatment arm $(repr(arm0)) is absent from the training fold",
+    ))
+    target1 in levels || throw(ArgumentError(
+        "static treatment arm $(repr(arm1)) is absent from the training fold",
+    ))
+    if target0 == target1
+        observed_test = string.(a_obs[test_idx])
+        ratio = Float64.(observed_test .== target0)
+        return ratio, copy(ratio)
+    end
+
+    X_train = hcat(ones(length(train_idx)), W[train_idx, :])
+    X_test = hcat(ones(length(test_idx)), W[test_idx, :])
+    learners = Tuple(map(l -> l === :logistic ? :glm : l, learners_trt))
+    observed_train = string.(a_obs[train_idx])
+    if length(levels) == 2
+        y1 = Float64.(observed_train .== target1)
+        propensity_fit = CausalTargeted.fit_super_learner(
+            X_train, y1; learners = learners, family = :binomial, rng = rng,
+        )
+        p1 = clamp.(CausalTargeted.predict_super_learner(propensity_fit, X_test), 1e-4, 1 - 1e-4)
+        p0 = 1 .- p1
+    else
+        propensity_fit = CausalTargeted.fit_super_learner(
+            X_train, observed_train; learners = learners, family = :multinomial,
+            levels = levels, rng = rng,
+        )
+        probabilities = CausalTargeted.predict_super_learner(propensity_fit, X_test)
+        p0 = probabilities[:, findfirst(isequal(target0), propensity_fit.levels)]
+        p1 = probabilities[:, findfirst(isequal(target1), propensity_fit.levels)]
+        p0 = clamp.(p0, 1e-4, 1.0)
+        p1 = clamp.(p1, 1e-4, 1.0)
+    end
+
+    observed_test = string.(a_obs[test_idx])
+    H0 = zeros(length(test_idx))
+    H1 = zeros(length(test_idx))
+    @inbounds for i in eachindex(observed_test)
+        if observed_test[i] == target0
+            H0[i] = min(inv(p0[i]), trunc)
+        end
+        if observed_test[i] == target1
+            H1[i] = min(inv(p1[i]), trunc)
+        end
+    end
+    return H0, H1
+end
+
 """
     _interventional_effects_discrete_a(...) -> (est, se, ic)
 
 Cross-fitted interventional TE / NDE / NIE for a factor treatment. Outcome and
 mediator regressions dummy-code `A` (`treatment = nothing`, `A` in the schema).
-Treatment density ratios reuse CausalTargeted Díaz–Williams classifiers.
+Static-arm clever covariates use a shared binomial or multinomial propensity
+fit; factual-A-dependent recodes use CausalTargeted Díaz–Williams classifiers.
 """
 function _interventional_effects_discrete_a(
     df::DataFrame,
@@ -156,6 +228,13 @@ function _interventional_effects_discrete_a(
     med_parents_schema = CausalTargeted.fit_covariate_schema(schema_df, med_parents)
     covar_schema = CausalTargeted.fit_covariate_schema(df, covar)
     W = Matrix{Float64}(CausalTargeted._covariate_matrix(covar_schema, df))
+    inference_status = _mediation_inference_status(
+        a0, a1;
+        estimator = estimator, ipcw_w = ipcw_w,
+        observed_treatment = a, factor_treatment = true,
+    )
+    static_arms = all(isequal(x, first(a0)) for x in a0) &&
+        all(isequal(x, first(a1)) for x in a1)
 
     psi_te = zeros(n)
     psi_nde = zeros(n)
@@ -215,27 +294,41 @@ function _interventional_effects_discrete_a(
         ρ0 = mediator_density_ratio_vs_obs(m_obs, μ0, μ_obs, σ_m; trunc = 5.0)
         ρ1 = mediator_density_ratio_vs_obs(m_obs, μ1, μ_obs, σ_m; trunc = 5.0)
 
-        H0 = truncate_weights(
-            _discrete_arm_ratio(a, a0, W, levels, train_idx, test_idx, rng);
-            trunc = 10.0,
-        )
-        H1 = truncate_weights(
-            _discrete_arm_ratio(a, a1, W, levels, train_idx, test_idx, rng);
-            trunc = 10.0,
-        )
+        if static_arms
+            H0, H1 = _static_factor_arm_ratios(
+                a, first(a0_te), first(a1_te), W, train_idx, test_idx, rng;
+                trunc = 10.0,
+            )
+        else
+            H0 = truncate_weights(
+                _discrete_arm_ratio(
+                    a, a0, W, levels, train_idx, test_idx, rng;
+                    mtp = true,
+                );
+                trunc = 10.0,
+            )
+            H1 = truncate_weights(
+                _discrete_arm_ratio(
+                    a, a1, W, levels, train_idx, test_idx, rng;
+                    mtp = true,
+                );
+                trunc = 10.0,
+            )
+        end
 
         if estimator === :plugin
             nde = Q̄10 .- Q̄00
             nie = Q̄11 .- Q̄10
             te = nde .+ nie
         else
-            # Same as continuous MTP: plugin plus outcome-residual. The binary
-            # H_am (Q−Q̄) term inflates NIE when the natural arm has H0 = 1.
+            # Keep the existing point correction for unsupported recodes. For
+            # static arms, use the complete two-stage EIF, including H_am.
             resid = y_te .- Q_obs
-            zeros_h = zero.(H1)
-            ic10 = eif_psi_interventional(Q̄10, Q_a1_M, Q_obs, y_te, H1, zeros_h, ρ0)
-            ic00 = eif_psi_interventional(Q̄00, Q_a0_M, Q_obs, y_te, H0, zeros_h, ρ0)
-            ic11 = eif_psi_interventional(Q̄11, Q_a1_M, Q_obs, y_te, H1, zeros_h, ρ1)
+            H_am0 = inference_status === :available ? H0 : zero.(H0)
+            H_am1 = inference_status === :available ? H1 : zero.(H1)
+            ic10 = eif_psi_interventional(Q̄10, Q_a1_M, Q_obs, y_te, H1, H_am0, ρ0)
+            ic00 = eif_psi_interventional(Q̄00, Q_a0_M, Q_obs, y_te, H0, H_am0, ρ0)
+            ic11 = eif_psi_interventional(Q̄11, Q_a1_M, Q_obs, y_te, H1, H_am1, ρ1)
             parts = decompose_mediation_eif(ic10, ic00, ic11)
             nde, nie, te = parts.nde, parts.nie, parts.te
             if estimator === :tmle
@@ -260,7 +353,9 @@ function _interventional_effects_discrete_a(
         psi_te[test_idx] = te
     end
 
-    return _summarise_mediation_influence(psi_nde, psi_nie, psi_te, ipcw_w)
+    return _summarise_mediation_influence(
+        psi_nde, psi_nie, psi_te, ipcw_w, inference_status,
+    )
 end
 
 """One-contrast grid table (`delta = NaN`) for a factor recode."""
@@ -276,7 +371,10 @@ function _discrete_mediation_table(est, se; positivity = nothing)
     rows = NamedTuple[]
     for (lab, e, s) in (("NDE", est.nde, se.nde), ("NIE", est.nie, se.nie), ("TE", est.te, se.te))
         lwr, upr = wald_ci(e, s)
-        push!(rows, _mediation_row(NaN, lab, e, s, lwr, upr, dummy, NaN, NaN, NaN))
+        push!(rows, _mediation_row(
+            NaN, lab, e, s, lwr, upr, dummy, NaN, NaN, NaN;
+            inference_status = string(se.inference_status),
+        ))
     end
     return DataFrame(rows)
 end

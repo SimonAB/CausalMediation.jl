@@ -11,6 +11,7 @@ using StableRNGs
 using Statistics
 
 @testset "CausalMediation" begin
+    include("test_uncertainty_contracts.jl")
     @testset "mediation sweep validation" begin
         good = DataFrame(n_mc = [16], estimand = ["TE"], est = [0.2], se = [0.1])
         @test validate_mediation_sweep(good).valid

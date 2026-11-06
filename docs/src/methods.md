@@ -32,7 +32,7 @@ NIE decompositions under weaker conditions
 | Topic | Primary sources | CausalMediation surface |
 |-------|-----------------|-------------------------|
 | Interventional effects, multiple mediators | Vansteelandt & Daniel (2017), *Epidemiology* | `InterventionalMediation`, TE/NDE/NIE |
-| Stochastic intervention mediation | Díaz & Hejazi (2020), *JRSS-B* | Continuous-A nested MC + EIF |
+| Stochastic intervention mediation | Díaz & Hejazi (2020), *JRSS-B* | Target definitions; continuous-A nested MC currently has unavailable EIF uncertainty |
 | Intermediate confounding | Hejazi et al. (2023), *Biostatistics* | `moc` on `MediationSpec` |
 | Unified targeted mediation + MTP | Liu et al. (2024), arXiv:2408.14620 | `run_mediation` / `run_mediation_grid` |
 | R software companion | Liu et al. (2025), arXiv:2604.09902 (`crumble`) | Conceptual catalogue; Julia uses mediation names |
@@ -49,13 +49,27 @@ Monte Carlo for continuous `M` is unchanged. Natural / organic / recanting-twin 
 controlled-direct families, nonempty `moc`, and `run_mediation_grid` remain
 numeric-`A` only. Mixed `ShiftPolicy` / discrete arms throw.
 
-**EIF note.** For binary treatment contrasts the one-step / TMLE path includes
-density-ratio clever covariates in the spirit of the binary EIF. For continuous
-MTP mediation and for factor recodes the default `:onestep` estimator augments
-the nested-MC plugin with an **outcome-residual** correction; the binary-style
-$H_{am}(Q-\bar Q)$ term is omitted when it would cancel the plugin (natural-arm
-$H_0 = 1$ on the factor path). Prefer
-`mediation_n_mc_sweep` to check sensitivity to nested-MC size.
+**Uncertainty contract.** Constant discrete treatment arms, empty `moc`,
+uniform weights and `estimator=:onestep` use both outcome and mediator-stage
+residual corrections. The mediator correction is part of the two-stage EIF;
+an identity density ratio does not justify dropping it. Check overlap and
+nuisance-model assumptions before interpreting the resulting intervals.
+Static factor arms share an ordinary propensity fit, preserving exact zero
+weights off the assigned arm. Remaining finite-sample undercoverage in the
+synthetic calibration is documented in the CDCS uncertainty report; these
+intervals are asymptotic and have not demonstrated nominal coverage throughout
+the tested small-sample settings.
+
+Other routes retain point estimates but return `NaN` inferential SEs and
+limits, with an `inference_status` explaining the restriction. These include
+plug-in fits, the current outcome-only `:tmle` fluctuation, factual-treatment
+dependent recodes, continuous clamped shifts, intermediate-confounder targets
+and IPCW fits without a matching joint score. Continuous clamping creates
+boundary masses. Nonempty `moc` requires the additional stages of its nested
+functional, rather than the empty-`moc` EIF. No estimator or target is silently
+substituted to supply an interval. Identical arms give an exact zero contrast.
+`mediation_n_mc_sweep` diagnoses integration error; it does not measure
+sampling uncertainty. The existing antithetic draws are retained.
 
 Minimal DAG (no intermediate confounder):
 

@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Static discrete-arm, empty-`moc`, unweighted one-step mediation includes the
+  mediator-stage residual in its full two-stage EIF.
+- Unsupported score contracts keep point fits but expose `NaN` inferential
+  SEs/limits and an explicit `inference_status`: plug-in/outcome-only TMLE,
+  clamped continuous policies, factual-treatment dependent recodes, intermediate
+  confounding and unmatched IPCW scores. Identical arms give exact zero effects.
+
 - Controlled direct effects now use cross-fitted plug-in estimation by default.
   Explicit one-step / TMLE and nonempty `moc` are refused because the previous
   residual correction was not a valid continuous-mediator point-intervention

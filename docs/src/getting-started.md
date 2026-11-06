@@ -103,6 +103,11 @@ d = CausalMediation.decompose(res)
 d
 ```
 
+This clamped continuous-policy example retains point estimates. Its table's
+`inference_status` explains the unavailable SEs and confidence limits. Static
+discrete treatment arms with empty `moc` have a separate supported one-step
+score; see [Methods](methods.md) for the assumptions and observed calibration limits.
+
 **Graph (mediation paths).** Direct and indirect routes with `W` omitted (already adjusted).
 
 ```@example mediation-walk
