@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Numeric binary static-arm mediation restores exact off-arm zero propensity
+  weights after truncation, while retaining the existing truncation of positive
+  weights.
 - Static discrete-arm, empty-`moc`, unweighted one-step mediation includes the
   mediator-stage residual in its full two-stage EIF.
 - Unsupported score contracts keep point fits but expose `NaN` inferential

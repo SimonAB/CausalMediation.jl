@@ -98,6 +98,22 @@ function _without_mediation_inference(result, reason::Symbol)
     return est, merge(unavailable, (inference_status = reason,)), unavailable_ic
 end
 
+"""Static binary-arm propensity weights with structural off-arm zeros preserved."""
+function _static_binary_arm_weights(
+    A::AbstractVector{<:Real},
+    e::AbstractVector{<:Real};
+    trunc::Real = 10.0,
+)
+    length(A) == length(e) || throw(ArgumentError("treatment and propensity lengths must match"))
+    A_float = Float64.(A)
+    e_float = Float64.(e)
+    H1 = CausalTargeted.truncate_weights(A_float ./ e_float; trunc = trunc)
+    H0 = CausalTargeted.truncate_weights((1 .- A_float) ./ (1 .- e_float); trunc = trunc)
+    H1[A_float .== 0.0] .= 0.0
+    H0[A_float .== 1.0] .= 0.0
+    return H0, H1
+end
+
 """Apply IPCW weights to mediation influence vectors when weights differ from one."""
 function _summarise_mediation_influence(
     psi_nde::AbstractVector{<:Real},

@@ -155,8 +155,7 @@ function _interventional_effects(
                 rng = rng,
             )
             e = clamp.(predict_super_learner(sl_e, design_matrix(covar_schema, block)), 1e-3, 1 - 1e-3)
-            H1 = truncate_weights(A_te ./ e; trunc = 10.0)
-            H0 = truncate_weights((1 .- A_te) ./ (1 .- e); trunc = 10.0)
+            H0, H1 = _static_binary_arm_weights(A_te, e; trunc = 10.0)
         else
             if fold_cache === nothing
                 sl_a = fit_super_learner(

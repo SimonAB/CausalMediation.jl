@@ -54,8 +54,9 @@ uniform weights and `estimator=:onestep` use both outcome and mediator-stage
 residual corrections. The mediator correction is part of the two-stage EIF;
 an identity density ratio does not justify dropping it. Check overlap and
 nuisance-model assumptions before interpreting the resulting intervals.
-Static factor arms share an ordinary propensity fit, preserving exact zero
-weights off the assigned arm. Remaining finite-sample undercoverage in the
+Static numeric-binary and factor-arm routes preserve exact zero propensity
+weights off the assigned arm; numeric-binary positive weights retain their
+existing truncation. Remaining finite-sample undercoverage in the
 synthetic calibration is documented in the CDCS uncertainty report; these
 intervals are asymptotic and have not demonstrated nominal coverage throughout
 the tested small-sample settings.

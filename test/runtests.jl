@@ -11,7 +11,7 @@ using StableRNGs
 using Statistics
 
 @testset "CausalMediation" begin
-    include("test_uncertainty_contracts.jl")
+    include("test_mediation_oracles.jl")
     @testset "mediation sweep validation" begin
         good = DataFrame(n_mc = [16], estimand = ["TE"], est = [0.2], se = [0.1])
         @test validate_mediation_sweep(good).valid
@@ -110,8 +110,21 @@ using Statistics
     end
 
     @testset "string covariate schema" begin
-        df, truth = CausalMediation.simulate_mediation(250; rng = StableRNG(20))
-        df.W = string.(df.W .> 0)
+        rng = StableRNG(20)
+        W_numeric = Float64.(rand(rng, 0:1, 250))
+        W = string.(Int.(W_numeric))
+        p = 1 ./ (1 .+ exp.(-(-0.5 .+ W_numeric)))
+        A = Float64.(rand(rng, 250) .< p)
+        M = 0.5 .* A .+ 0.7 .* W_numeric .+ 0.5 .* randn(rng, 250)
+        Y = 0.4 .* A .+ 0.6 .* M .+ 0.8 .* W_numeric .+ 0.5 .* randn(rng, 250)
+        df = DataFrame(W = W, A = A, M = M, Y = Y)
+        truth = (te = 0.4 + 0.6 * 0.5,)
+
+        categorical_schema = fit_covariate_schema(df, [:W])
+        numeric_df = DataFrame(W = W_numeric)
+        numeric_schema = fit_covariate_schema(numeric_df, [:W])
+        @test design_matrix(categorical_schema, df) == design_matrix(numeric_schema, numeric_df)
+
         res = CausalMediation.run_mediation_scalar(
             df, :A, :Y;
             covar = [:W], mediators = [:M],
