@@ -1,6 +1,12 @@
 """Interventional mediation under a factor recode of `A` (continuous `M`)."""
 
-"""Pad a copy of `df` so the treatment schema sees every policy level."""
+"""
+    _schema_frame_with_levels(df, trt, levels) -> DataFrame
+
+Return a copy of `df` possibly extended with synthetic rows so that `trt` includes every value in
+`levels` (as `String`s). Used when fitting covariate schemas so dummy coding respects all policy arms
+that may not appear in the observed sample.
+"""
 function _schema_frame_with_levels(df::DataFrame, trt::Symbol, levels)
     extra = DataFrame[]
     observed = Set(string.(df[!, trt]))
@@ -15,13 +21,25 @@ function _schema_frame_with_levels(df::DataFrame, trt::Symbol, levels)
     return isempty(extra) ? copy(df) : vcat(df, extra...)
 end
 
-"""Predict a Super Learner after assigning a counterfactual treatment column."""
+"""
+    _predict_sl_cf(sl, df, cols, trt, a_cf; schema)
+
+Predict from fitted outcome or mediator Super Learner `sl` on a counterfactual copy of `df` where column
+`trt` is set to `a_cf` (via `CausalTargeted._counterfactual_frame`), using `schema` for consistent dummy coding.
+"""
 function _predict_sl_cf(sl, df::DataFrame, cols::Vector{Symbol}, trt::Symbol, a_cf; schema)
     cf = CausalTargeted._counterfactual_frame(df, trt, collect(a_cf))
     return _predict_sl(sl, cf, cols; treatment = nothing, schema = schema)
 end
 
-"""Nested Gaussian mediator draws with dummy-coded `A` (no `treatment_values`)."""
+"""
+    _nested_mediator_outcome_means_factor(...) -> (y_a0_m0, y_a1_m0, y_a1_m1)
+
+For factor `A` and continuous mediators: predict mediator means under `a0` and `a1`, optionally draw
+`n_mc` Gaussian residual pairs per mediator (antithetic within draw), and integrate the outcome model
+`Q` over those draws. Returns three vectors of ``E[Y(a, M(a'))]``-style plug-in means on the test fold
+(`a0`/`a1` crossed with mediator draws under `a0` or `a1`). When `n_mc <= 1`, evaluates at predicted means only.
+"""
 function _nested_mediator_outcome_means_factor(
     ols_y,
     block::DataFrame,
