@@ -122,7 +122,11 @@ function _discrete_arm_ratio(
     )
 end
 
-"""Cross-fitted static-arm clever covariates from ordinary treatment propensities."""
+"""Cross-fitted static-arm clever covariates from ordinary treatment propensities.
+
+`trunc=nothing` removes the mediation-level ratio cap while retaining a
+machine-precision probability guard; numeric caps preserve the default fit.
+"""
 function _static_factor_arm_ratios(
     a_obs,
     arm0,
@@ -132,9 +136,9 @@ function _static_factor_arm_ratios(
     test_idx,
     rng;
     learners_trt = (:logistic, :mean),
-    trunc::Real = 10.0,
+    trunc::Union{Nothing, Real} = 10.0,
 )
-    trunc > 0 || throw(ArgumentError("trunc must be positive"))
+    trunc === nothing || trunc > 0 || throw(ArgumentError("trunc must be positive"))
     levels = unique(string.(a_obs[train_idx]))
     sort!(levels)
     target0, target1 = string(arm0), string(arm1)
@@ -159,7 +163,8 @@ function _static_factor_arm_ratios(
         propensity_fit = CausalTargeted.fit_super_learner(
             X_train, y1; learners = learners, family = :binomial, rng = rng,
         )
-        p1 = clamp.(CausalTargeted.predict_super_learner(propensity_fit, X_test), 1e-4, 1 - 1e-4)
+        p_guard = trunc === nothing ? eps(Float64) : 1e-4
+        p1 = clamp.(CausalTargeted.predict_super_learner(propensity_fit, X_test), p_guard, 1 - p_guard)
         p0 = 1 .- p1
     else
         propensity_fit = CausalTargeted.fit_super_learner(
@@ -169,8 +174,9 @@ function _static_factor_arm_ratios(
         probabilities = CausalTargeted.predict_super_learner(propensity_fit, X_test)
         p0 = probabilities[:, findfirst(isequal(target0), propensity_fit.levels)]
         p1 = probabilities[:, findfirst(isequal(target1), propensity_fit.levels)]
-        p0 = clamp.(p0, 1e-4, 1.0)
-        p1 = clamp.(p1, 1e-4, 1.0)
+        p_guard = trunc === nothing ? eps(Float64) : 1e-4
+        p0 = clamp.(p0, p_guard, 1.0)
+        p1 = clamp.(p1, p_guard, 1.0)
     end
 
     observed_test = string.(a_obs[test_idx])
@@ -178,10 +184,10 @@ function _static_factor_arm_ratios(
     H1 = zeros(length(test_idx))
     @inbounds for i in eachindex(observed_test)
         if observed_test[i] == target0
-            H0[i] = min(inv(p0[i]), trunc)
+            H0[i] = trunc === nothing ? inv(p0[i]) : min(inv(p0[i]), trunc)
         end
         if observed_test[i] == target1
-            H1[i] = min(inv(p1[i]), trunc)
+            H1[i] = trunc === nothing ? inv(p1[i]) : min(inv(p1[i]), trunc)
         end
     end
     return H0, H1
@@ -209,6 +215,7 @@ function _interventional_effects_discrete_a(
     n_mc::Int = 32,
     estimator::Symbol = :onestep,
     ipcw_w = nothing,
+    weight_truncation::Bool = true,
 )
     n = nrow(df)
     ipcw_w === nothing && (ipcw_w = ones(n))
@@ -232,7 +239,12 @@ function _interventional_effects_discrete_a(
         a0, a1;
         estimator = estimator, ipcw_w = ipcw_w,
         observed_treatment = a, factor_treatment = true,
+        weight_truncation = weight_truncation,
     )
+    base_inference_status = weight_truncation && inference_status === :truncated_weights ? :available : inference_status
+    if !weight_truncation && base_inference_status ∉ (:available, :trivial)
+        throw(ArgumentError("weight_truncation=false is supported only for static factor-arm one-step mediation with uniform observation weights; got $base_inference_status"))
+    end
     static_arms = all(isequal(x, first(a0)) for x in a0) &&
         all(isequal(x, first(a1)) for x in a1)
 
@@ -291,15 +303,16 @@ function _interventional_effects_discrete_a(
             for mm in med_models
         ]...)
         m_obs = hcat([Float64.(block[!, m]) for m in mediators]...)
-        ρ0 = mediator_density_ratio_vs_obs(m_obs, μ0, μ_obs, σ_m; trunc = 5.0)
-        ρ1 = mediator_density_ratio_vs_obs(m_obs, μ1, μ_obs, σ_m; trunc = 5.0)
+        ρ0 = mediator_density_ratio_vs_obs(m_obs, μ0, μ_obs, σ_m; trunc = weight_truncation ? 5.0 : nothing)
+        ρ1 = mediator_density_ratio_vs_obs(m_obs, μ1, μ_obs, σ_m; trunc = weight_truncation ? 5.0 : nothing)
 
         if static_arms
             H0, H1 = _static_factor_arm_ratios(
                 a, first(a0_te), first(a1_te), W, train_idx, test_idx, rng;
-                trunc = 10.0,
+                trunc = weight_truncation ? 10.0 : nothing,
             )
         else
+            weight_truncation || throw(ArgumentError("weight_truncation=false does not support non-static factor treatment policies"))
             H0 = truncate_weights(
                 _discrete_arm_ratio(
                     a, a0, W, levels, train_idx, test_idx, rng;
@@ -324,8 +337,8 @@ function _interventional_effects_discrete_a(
             # Keep the existing point correction for unsupported recodes. For
             # static arms, use the complete two-stage EIF, including H_am.
             resid = y_te .- Q_obs
-            H_am0 = inference_status === :available ? H0 : zero.(H0)
-            H_am1 = inference_status === :available ? H1 : zero.(H1)
+            H_am0 = base_inference_status === :available ? H0 : zero.(H0)
+            H_am1 = base_inference_status === :available ? H1 : zero.(H1)
             ic10 = eif_psi_interventional(Q̄10, Q_a1_M, Q_obs, y_te, H1, H_am0, ρ0)
             ic00 = eif_psi_interventional(Q̄00, Q_a0_M, Q_obs, y_te, H0, H_am0, ρ0)
             ic11 = eif_psi_interventional(Q̄11, Q_a1_M, Q_obs, y_te, H1, H_am1, ρ1)

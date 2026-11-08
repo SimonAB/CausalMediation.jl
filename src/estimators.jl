@@ -29,6 +29,7 @@ function _interventional_effects(
     epochs::Int = 1,
     organic::Bool = false,
     ipcw_w = nothing,
+    weight_truncation::Bool = true,
 )
     n = nrow(df)
     ipcw_w === nothing && (ipcw_w = ones(n))
@@ -54,7 +55,12 @@ function _interventional_effects(
         a_nat, a_shift;
         estimator = estimator, moc = moc, organic = organic, ipcw_w = ipcw_w,
         observed_treatment = a, binary_treatment = binary_a,
+        weight_truncation = weight_truncation,
     )
+    base_inference_status = weight_truncation && inference_status === :truncated_weights ? :available : inference_status
+    if !weight_truncation && base_inference_status ∉ (:available, :trivial)
+        throw(ArgumentError("weight_truncation=false is supported only for static binary one-step mediation with empty moc and uniform observation weights; got $base_inference_status"))
+    end
     psi_te = zeros(n)
     psi_nde = zeros(n)
     psi_nie = zeros(n)
@@ -141,9 +147,9 @@ function _interventional_effects(
         ]...)
         m_obs = hcat([Float64.(block[!, m]) for m in mediators]...)
         ρ0 = organic ? ones(length(test_idx)) :
-            mediator_density_ratio_vs_obs(m_obs, μ0, μ_obs, σ_m; trunc = 5.0)
+            mediator_density_ratio_vs_obs(m_obs, μ0, μ_obs, σ_m; trunc = weight_truncation ? 5.0 : nothing)
         ρ1 = organic ? ones(length(test_idx)) :
-            mediator_density_ratio_vs_obs(m_obs, μ1, μ_obs, σ_m; trunc = 5.0)
+            mediator_density_ratio_vs_obs(m_obs, μ1, μ_obs, σ_m; trunc = weight_truncation ? 5.0 : nothing)
 
         if binary_a
             Xw = design_matrix(covar_schema, train)
@@ -154,8 +160,9 @@ function _interventional_effects(
                 metalearner = :invmse,
                 rng = rng,
             )
-            e = clamp.(predict_super_learner(sl_e, design_matrix(covar_schema, block)), 1e-3, 1 - 1e-3)
-            H0, H1 = _static_binary_arm_weights(A_te, e; trunc = 10.0)
+            p_guard = weight_truncation ? 1e-3 : eps(Float64)
+            e = clamp.(predict_super_learner(sl_e, design_matrix(covar_schema, block)), p_guard, 1 - p_guard)
+            H0, H1 = _static_binary_arm_weights(A_te, e; trunc = weight_truncation ? 10.0 : nothing)
         else
             if fold_cache === nothing
                 sl_a = fit_super_learner(

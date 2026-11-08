@@ -82,8 +82,8 @@ using Statistics
             learners = (:glm, :mean), folds = 2, n_mc = 12, rng = StableRNG(1802),
         )
         @test all(isfinite, static.estimate)
-        @test all(isfinite, static.se)
-        @test all(static.inference_status .== "available")
+        @test all(isnan, static.se)
+        @test all(static.inference_status .== "truncated_weights")
 
         plugin = run_mediation_scalar(
             df, :A, :Y; covar = [:W], mediators = [:M], estimator = :plugin,
@@ -174,8 +174,22 @@ using Statistics
             learners = (:glm, :mean), parallel = false, rng = StableRNG(1822),
         )
         @test all(isfinite, values(static.estimates))
-        @test all(isfinite, values(static.se)[1:3])
-        @test static.diagnostics.inference_status === :available
+        @test all(isnan, values(static.se)[1:3])
+        @test static.diagnostics.inference_status === :truncated_weights
+
+        untruncated = run_mediation(
+            static_spec, df; estimator = :onestep, folds = 2, n_mc = 8,
+            learners = (:glm, :mean), parallel = false, rng = StableRNG(1822),
+            weight_truncation = false,
+        )
+        plugin = run_mediation(
+            static_spec, df; estimator = :plugin, folds = 2, n_mc = 8,
+            learners = (:glm, :mean), parallel = false, rng = StableRNG(1822),
+        )
+        @test all(isfinite, values(untruncated.se)[1:3])
+        @test untruncated.diagnostics.inference_status === :available
+        @test any(!isapprox(values(static.estimates)[i], values(plugin.estimates)[i]; atol = 1e-10)
+            for i in 1:3)
 
         identity = discrete_recode_policy(Dict{String, String}())
         recode = discrete_recode_policy(Dict("2" => "1"))

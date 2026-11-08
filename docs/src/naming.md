@@ -39,6 +39,11 @@ Construct specs with the type, or pass a symbol through
 | `plan_mediation` / `spec_from_identification` | Certificate merge (CT has `plan_mtp`) |
 | `decompose` | TE / NDE / NIE (or path) extraction |
 
+`run_tmle3_nde` is a historical migration shim, not a supported estimator
+alias. It now throws without fitting or switching to one-step. Numeric static
+arms should use `run_mediation_scalar`; static discrete arms should use
+`run_mediation` with explicit `discrete_static_policy` values.
+
 CausalTargeted still exports soft-deprecated `run_crumble_*` façades that
 forward here. Prefer `using CausalMediation` in new scripts and book chunks.
 
@@ -49,6 +54,14 @@ forward here. Prefer `using CausalMediation` in new scripts and book chunks.
 | `:plugin` | Nested-MC plug-in |
 | `:onestep` | Plugin + EIF / residual correction (default except for `ControlledDirect`) |
 | `:tmle` | Targeting fluctuation |
+
+For otherwise eligible static binary/factor-arm one-step inference,
+`weight_truncation=true` selects the compatibility default capped route and
+reports `:truncated_weights` even if no observed weight reaches the cap. This
+status is route-based, not an empirical cap-activation test.
+Pass `weight_truncation=false` only for genuinely static arms to request the
+untruncated EIF. This retains ordinary overlap, nuisance-model and moment
+requirements and does not guarantee finite-sample coverage.
 
 Not named after R package brands (`:crumble` is a soft-deprecated CT engine
 alias only).

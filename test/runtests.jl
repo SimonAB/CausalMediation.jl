@@ -12,6 +12,7 @@ using Statistics
 
 @testset "CausalMediation" begin
     include("test_mediation_oracles.jl")
+    include("test_truncation_contract.jl")
     @testset "mediation sweep validation" begin
         good = DataFrame(n_mc = [16], estimand = ["TE"], est = [0.2], se = [0.1])
         @test validate_mediation_sweep(good).valid
@@ -187,22 +188,7 @@ using Statistics
         @test !isapprox(te_drop, te_ipcw; atol = 1e-10)
     end
 
-    @testset "TMLE3 NDE uses IPCW weights (CM#6)" begin
-        df, truth = CausalMediation.simulate_mediation(280; rng = StableRNG(40))
-        _mar_missing_y!(df, StableRNG(41); intercept = -1.1, slope = 0.85)
-        drop = run_tmle3_nde(
-            df, :A, :Y;
-            baseline = [:W], mediators = [:M], folds = 2,
-            handle_missing = :drop, rng = StableRNG(42),
-        )
-        ipcw = run_tmle3_nde(
-            df, :A, :Y;
-            baseline = [:W], mediators = [:M], folds = 2,
-            handle_missing = :ipcw, rng = StableRNG(42),
-        )
-        @test isfinite(only(drop.estimate)) && isfinite(only(ipcw.estimate))
-        @test !isapprox(only(drop.estimate), only(ipcw.estimate); atol = 1e-10)
-    end
+    include("test_tmle3_contract.jl")
 
     @testset "categorical A interventional mediation" begin
         recode = discrete_recode_policy(Dict("2" => "1"))

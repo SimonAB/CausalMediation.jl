@@ -108,6 +108,41 @@ This clamped continuous-policy example retains point estimates. Its table's
 discrete treatment arms with empty `moc` have a separate supported one-step
 score; see [Methods](methods.md) for the assumptions and observed calibration limits.
 
+The default `weight_truncation=true` selects the capped route and preserves
+static-arm point estimates, while marking otherwise eligible inference as
+`:truncated_weights` even if no observed weight reaches the cap. This status
+follows the configured route; it is not an empirical cap-activation test. The
+untruncated option is for genuinely static binary or factor arms;
+it is not valid for this continuous shift or the row-dependent identity/recode
+example below.
+
+For a static binary contrast, the two intervention arms are constant across
+subjects. Setting `weight_truncation=false` requests the untruncated two-stage
+EIF; ordinary overlap, nuisance-model and moment assumptions still apply, and
+this does not guarantee nominal finite-sample coverage.
+
+```julia
+df_static, _ = simulate_mediation(200; rng = StableRNG(11))
+df_static.A = string.(Int.(df_static.A))
+spec_static = MediationSpec(
+    :A, :Y;
+    mediators = [:M],
+    covariates = [:W],
+    policy_d0 = discrete_static_policy("0"; levels = ["0", "1"]),
+    policy_d1 = discrete_static_policy("1"; levels = ["0", "1"]),
+)
+static_res = run_mediation(
+    spec_static, df_static;
+    estimator = :onestep,
+    learners = (:glm, :mean),
+    folds = 2,
+    weight_truncation = false,
+    parallel = false,
+    rng = StableRNG(12),
+)
+(static_res.estimates, static_res.se, static_res.diagnostics.inference_status)
+```
+
 **Graph (mediation paths).** Direct and indirect routes with `W` omitted (already adjusted).
 
 ```@example mediation-walk

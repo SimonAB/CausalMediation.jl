@@ -42,6 +42,15 @@ spec_from_identification
 
 ## Estimation
 
+For otherwise eligible static-arm one-step inference, `weight_truncation=true`
+selects the compatibility default capped route. Point fits are retained but
+uncertainty is unavailable with `inference_status = :truncated_weights`, even
+if no observed weight reaches the cap; this status is not an empirical
+cap-activation test.
+Pass `weight_truncation=false` only for static binary or factor arms to request
+the untruncated EIF; non-static and continuous policies reject this option.
+See [Methods](methods.md) for the assumptions and uncertainty limits.
+
 ```@docs
 run_mediation
 run_mediation_grid
@@ -49,6 +58,12 @@ run_mediation_scalar
 run_mediation_scalar_ppl
 run_tmle3_nde
 ```
+
+`run_tmle3_nde` remains exported for migration clarity, but now throws an
+informative error and performs no fit. For numeric static-arm mediation use
+`run_mediation_scalar(...; estimator = :onestep, weight_truncation = false)`;
+for static discrete treatment policies use `run_mediation` with two
+`discrete_static_policy` arms. Neither route silently substitutes an estimator.
 
 ## Influence functions and caches
 

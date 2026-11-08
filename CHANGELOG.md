@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Static binary and factor-arm one-step inference now exposes
+  `weight_truncation::Bool=true`. The compatibility default preserves point fits
+  but marks otherwise eligible uncertainty unavailable with `:truncated_weights`
+  for the capped route, even if no observed weight reaches the cap; `false`
+  requests the untruncated static-arm EIF, subject to the usual overlap,
+  nuisance-model and moment assumptions.
+
+### Changed
+
+- `run_tmle3_nde` is retained as a fail-fast migration entry point. It now
+  throws an informative error rather than fitting or silently changing to a
+  different estimator.
+
 ### Fixed
 
 - Numeric binary static-arm mediation restores exact off-arm zero propensity

@@ -62,16 +62,55 @@ end
     mediator_density_ratio_vs_obs(m_obs, μ_pol, μ_obs, σ; trunc) -> Vector
 
 `g(M|a_pol,·) / g(M|A_obs,·)` under independent Gaussian mediator conditionals.
+Pass a numeric `trunc` (default `5.0`) to retain the capped ratio. `trunc=nothing`
+computes an uncapped log-density ratio and raises `DomainError` when it cannot be
+represented as a finite `Float64`.
 """
 function mediator_density_ratio_vs_obs(
     m_obs::AbstractMatrix{<:Real},
     μ_pol::AbstractMatrix{<:Real},
     μ_obs::AbstractMatrix{<:Real},
     σ::Vector{Float64};
-    trunc::Real = 5.0,
+    trunc::Union{Nothing, Real} = 5.0,
 )
     n, p = size(m_obs)
     r = ones(n)
+    if trunc === nothing
+        log_r = zeros(n)
+        for j in 1:p
+            isfinite(σ[j]) || throw(DomainError(
+                σ[j], "uncapped mediator density ratio requires a finite residual standard deviation",
+            ))
+            σj = max(σ[j], 1e-6)
+            for i in 1:n
+                μp = μ_pol[i, j]
+                μo = μ_obs[i, j]
+                all(isfinite, (m_obs[i, j], μp, μo)) || throw(DomainError(
+                    (m_obs[i, j], μp, μo),
+                    "uncapped mediator density ratio requires finite observations and means",
+                ))
+                isequal(μp, μo) && continue
+                Δμ = (μp - μo) / σj
+                z_pol = (m_obs[i, j] - μp) / σj
+                z_obs = (m_obs[i, j] - μo) / σj
+                contribution = Δμ * (z_pol / 2 + z_obs / 2)
+                isfinite(contribution) || throw(DomainError(
+                    contribution,
+                    "uncapped mediator density ratio is not representable in Float64",
+                ))
+                log_r[i] += contribution
+            end
+        end
+        lower_log = log(nextfloat(0.0))
+        upper_log = log(floatmax(Float64))
+        for i in eachindex(log_r)
+            (isfinite(log_r[i]) && lower_log <= log_r[i] <= upper_log) || throw(DomainError(
+                log_r[i],
+                "uncapped mediator density ratio is not representable in Float64",
+            ))
+        end
+        return exp.(log_r)
+    end
     for j in 1:p
         σj = max(σ[j], 1e-6)
         for i in 1:n

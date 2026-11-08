@@ -8,6 +8,12 @@ Cross-fitted mediation for the CDCS Julia stack: interventional (RI), natural,
 organic, controlled direct, and recanting-twin effects, with intermediate
 confounding (`moc`) and continuous MTP one-step / TMLE estimators.
 
+For eligible static-arm one-step fits, the default capped calculation preserves
+point estimates but reports unavailable inference with `:truncated_weights`.
+Request `weight_truncation=false` explicitly for the untruncated static-arm EIF,
+subject to its overlap, nuisance-model and moment assumptions. Small-sample
+nominal coverage remains unresolved; see [Methods](docs/src/methods.md).
+
 **Documentation:** [simonab.github.io/CausalMediation.jl](https://simonab.github.io/CausalMediation.jl/dev/)
 (after the Documentation workflow has run on `main`).
 
@@ -67,7 +73,7 @@ CI develops tip CausalDynamics and CausalTargeted so `RepresentationSpec` and nu
 |-----------|------------------|-------|
 | **Unit / API** | Effect gates (interventional, natural, organic, CDE, recanting twin), `MediationSpec` / `run_mediation*`, identify natural vs interventional, schema guards, categorical-$A$ policies | `test/runtests.jl` |
 | **Synthetic recovery** | Binary and continuous MTP mediation; intermediate confounding (`moc`); TE / NDE / NIE vs simulation oracles | `test/runtests.jl` (`simulate_*` DGPs) |
-| **Missing data** | Shared MAR $Y$ helper; scalar path checks truth vs `:ipcw`; bootstrap / TMLE3 check finite `:drop`≠`:ipcw` | `test/runtests.jl` |
+| **Missing data** | Shared MAR $Y$ helper; scalar and bootstrap `:drop`/`:ipcw` checks; retired TMLE3 NDE helper rejects both options before fitting | `test/runtests.jl`, `test/test_tmle3_contract.jl` |
 | **Representation bridge** | High-dim spectrum → codes → mediation grid on encoded panel | `test/test_representation_bridge.jl` |
 | **Integration** | CausalDynamics identification certificates; CausalTargeted Super Learner / schema utilities | `test/runtests.jl` |
 | **Stack stress (pre-ship)** | Mediation curves, missing-$M$ / missing-$Y$, freeze comparisons on conservation and CI benchmarks | [CausalTargeted stress_validation.qmd](https://github.com/SimonAB/CausalTargeted.jl/blob/main/docs/stress/stress_validation.qmd) |

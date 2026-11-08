@@ -102,6 +102,7 @@ function _run_mediation_discrete(
     n_mc::Int,
     rng::AbstractRNG,
     handle_missing::Symbol = :drop,
+    weight_truncation::Bool = true,
     kwargs...,
 )
     trt = spec.treatment
@@ -141,6 +142,7 @@ function _run_mediation_discrete(
     est, se, ic = _interventional_effects_discrete_a(
         df, spec.outcome, trt, covar, mediators, a0, a1, folds, rng;
         learners = learners, n_mc = n_mc, estimator = estimator, ipcw_w = ipcw_w,
+        weight_truncation = weight_truncation,
     )
     table = _discrete_mediation_table(est, se; positivity = pos)
     attach_missingness_metadata!(table, miss.meta)
@@ -229,6 +231,11 @@ end
 Binary contrast `d0=0` vs `d1=1` with NDE / NIE / TE rows.
 The omitted estimator selects `:plugin` for `ControlledDirect` and `:onestep`
 otherwise. Controlled direct plug-in rows have NaN SE and confidence limits.
+
+`weight_truncation=true` (default) retains the configured propensity and
+mediator-ratio caps; capped static-arm fits report unavailable EIF inference.
+Set it to `false` for uncapped static binary or factor-arm one-step inference.
+The opt-out errors for non-static treatment policies and unsupported estimators.
 """
 function run_mediation_scalar(
     data::DataFrame,
@@ -245,6 +252,7 @@ function run_mediation_scalar(
     effect::MediationEffect = InterventionalMediation(),
     rng = StableRNG(42),
     handle_missing::Symbol = :drop,
+    weight_truncation::Bool = true,
 )
     estimator = _resolve_mediation_estimator(effect, estimator, moc)
     all_cols = unique(vcat(covar, mediators, moc, [trt]))
@@ -270,6 +278,7 @@ function run_mediation_scalar(
         moc = moc,
         epochs = epochs,
         ipcw_w = ipcw_w,
+        weight_truncation = weight_truncation,
     )
     table = _result_table(est, se)
     attach_missingness_metadata!(table, miss.meta)

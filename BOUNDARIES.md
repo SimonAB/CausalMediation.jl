@@ -22,8 +22,10 @@
 
 ## Missingness
 
-- Reuse CausalTargeted `handle_missing_data` on grids / TMLE3 / PPL bootstrap;
+- Reuse CausalTargeted `handle_missing_data` on grids / scalar / PPL bootstrap;
   keep strategy parity with Targeted where scientifically valid
+- The retired `run_tmle3_nde` entry point throws before fitting or applying a
+  missingness strategy; use the documented static-arm migration path.
 - Same stratum × rung rule: no silent `Missing` → `Float64`; survival/censoring
   semantics stay in Targeted
 

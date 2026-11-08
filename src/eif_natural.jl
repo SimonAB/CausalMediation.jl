@@ -25,6 +25,7 @@ function _natural_effects(
     shift = nothing,
     fold_cache = nothing,
     ipcw_w = nothing,
+    weight_truncation::Bool = true,
 )
     # Natural = interventional when moc empty
     return _interventional_effects(
@@ -39,5 +40,6 @@ function _natural_effects(
         fold_cache = fold_cache,
         epochs = 1,
         ipcw_w = ipcw_w,
+        weight_truncation = weight_truncation,
     )
 end

@@ -69,6 +69,7 @@ function _mediation_inference_status(
     observed_treatment::Union{Nothing, AbstractVector} = nothing,
     binary_treatment::Bool = false,
     factor_treatment::Bool = false,
+    weight_truncation::Bool = true,
 )
     length(a0) == length(a1) || throw(ArgumentError("treatment arm lengths must match"))
     length(ipcw_w) == length(a0) || throw(ArgumentError("IPCW weight length must match treatment arms"))
@@ -84,7 +85,7 @@ function _mediation_inference_status(
         observed = Set(observed_treatment)
         all(x -> x in observed, (first(a0), first(a1))) || return :unsupported_positivity
     end
-    return :available
+    return weight_truncation ? :truncated_weights : :available
 end
 
 """Replace unvalidated mediation standard errors while preserving point fits."""
@@ -98,17 +99,23 @@ function _without_mediation_inference(result, reason::Symbol)
     return est, merge(unavailable, (inference_status = reason,)), unavailable_ic
 end
 
-"""Static binary-arm propensity weights with structural off-arm zeros preserved."""
+"""Static binary-arm propensity weights with structural off-arm zeros preserved.
+
+`trunc=nothing` returns uncapped ratios; a numeric cap uses CausalTargeted's
+standard weight truncator.
+"""
 function _static_binary_arm_weights(
     A::AbstractVector{<:Real},
     e::AbstractVector{<:Real};
-    trunc::Real = 10.0,
+    trunc::Union{Nothing, Real} = 10.0,
 )
     length(A) == length(e) || throw(ArgumentError("treatment and propensity lengths must match"))
     A_float = Float64.(A)
     e_float = Float64.(e)
-    H1 = CausalTargeted.truncate_weights(A_float ./ e_float; trunc = trunc)
-    H0 = CausalTargeted.truncate_weights((1 .- A_float) ./ (1 .- e_float); trunc = trunc)
+    H1_raw = A_float ./ e_float
+    H0_raw = (1 .- A_float) ./ (1 .- e_float)
+    H1 = trunc === nothing ? H1_raw : CausalTargeted.truncate_weights(H1_raw; trunc = trunc)
+    H0 = trunc === nothing ? H0_raw : CausalTargeted.truncate_weights(H0_raw; trunc = trunc)
     H1[A_float .== 0.0] .= 0.0
     H0[A_float .== 1.0] .= 0.0
     return H0, H1
@@ -129,6 +136,13 @@ function _summarise_mediation_influence(
         ic = (nde = zeros(n), nie = zeros(n), te = zeros(n))
         return est, se, ic
     end
+    if inference_status === :available
+        for score in (psi_nde, psi_nie, psi_te)
+            all(isfinite, score) || throw(DomainError(
+                score, "available mediation inference requires finite influence scores",
+            ))
+        end
+    end
     uniform = all(w -> isapprox(w, 1.0; atol = 1e-12, rtol = 0.0), ipcw_w)
     if uniform
         est = (nde = mean(psi_nde), nie = mean(psi_nie), te = mean(psi_te))
@@ -145,6 +159,17 @@ function _summarise_mediation_influence(
         est = (nde = s_nde.estimate, nie = s_nie.estimate, te = s_te.estimate)
         se_values = (nde = s_nde.se, nie = s_nie.se, te = s_te.se)
         ic = (nde = s_nde.ic, nie = s_nie.ic, te = s_te.ic)
+    end
+    if inference_status === :available
+        all(isfinite, values(est)) || throw(DomainError(
+            est, "available mediation inference requires finite point estimates",
+        ))
+        all(isfinite, values(se_values)) || throw(DomainError(
+            se_values, "available mediation inference requires finite standard errors",
+        ))
+        all(all(isfinite, score) for score in values(ic)) || throw(DomainError(
+            ic, "available mediation inference requires finite influence scores",
+        ))
     end
     se = inference_status === :available ?
         merge(se_values, (inference_status = inference_status,)) :

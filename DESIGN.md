@@ -3,9 +3,14 @@
 This package is the **mediation estimation layer**: interventional, natural, organic,
 controlled direct, and recanting-twin effects with cross-fitted EIF / one-step / TMLE.
 An estimator name does not by itself guarantee an inferential score. Static
-discrete arms, empty `moc`, uniform observation weights and the one-step route
-have the implemented two-stage EIF contract. Other point-fit routes report
-unavailable uncertainty with an explicit reason; see `docs/src/methods.md`.
+binary or factor arms, empty `moc`, uniform observation weights and the one-step
+route have the implemented two-stage EIF contract. `weight_truncation=true`
+selects the compatibility default capped route: it preserves point fits but
+reports otherwise eligible inference as unavailable with `:truncated_weights`,
+even if no observed weight reaches the cap. Static arms may opt out with `weight_truncation=false` to request the
+untruncated EIF; this does not remove the overlap, nuisance-model or moment
+assumptions, and does not guarantee finite-sample coverage. Other point-fit routes
+report unavailable uncertainty with an explicit reason; see `docs/src/methods.md`.
 For continuous-mediator controlled direct effects, the current estimator is
 cross-fitted outcome-regression plug-in only. A point intervention has no
 ordinary nonparametric EIF; one-step / TMLE and inferential SEs are not claimed.

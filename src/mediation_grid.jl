@@ -15,6 +15,11 @@ effects with nonempty `moc` or explicit `:onestep` / `:tmle` are refused.
 Prefer [`run_mediation`](@ref) with a [`MediationSpec`](@ref) when you already
 have an identification certificate. Pass `effect` to select natural / organic /
 RT / controlled-direct families (default `InterventionalMediation()`).
+
+`weight_truncation=true` (default) retains the configured propensity and
+mediator-ratio caps; capped static-arm fits report unavailable EIF inference.
+Set it to `false` only for uncapped static binary or factor-arm one-step
+inference. This δ-grid uses non-static policies and rejects that opt-out.
 """
 function run_mediation_grid(
     data::DataFrame,
@@ -39,8 +44,13 @@ function run_mediation_grid(
     positivity::Bool = false,
     handle_missing::Symbol = :drop,
     effect::MediationEffect = InterventionalMediation(),
+    weight_truncation::Bool = true,
 )
     estimator = _resolve_mediation_estimator(effect, estimator, moc)
+    weight_truncation || throw(ArgumentError(
+        "weight_truncation=false is limited to static binary or factor-arm mediation; " *
+        "run_mediation_grid uses non-static treatment policies",
+    ))
     all_cols = unique(vcat(covar, mediators, moc, [trt]))
     miss = handle_missing_data(
         data, outcome, all_cols, handle_missing;
@@ -90,6 +100,7 @@ function run_mediation_grid(
             L, U, lower_q, upper_q, shift_scale, stratify_by, pooled,
             folds, epochs, local_rng, fold_cache, learners, n_mc, estimator, effect, j, n_jobs,
             ipcw_w,
+            weight_truncation,
         )
     end
 
@@ -160,6 +171,7 @@ function _mediation_delta_job(
     job_i::Int,
     n_jobs::Int,
     ipcw_w::AbstractVector{<:Real},
+    weight_truncation::Bool,
 )
     stratum_mask = BitVector(string.(df.STRAT) .== stratum)
     scale_by = pooled ? mean(stratum_mask) : 1.0
@@ -206,6 +218,7 @@ function _mediation_delta_job(
             fold_cache = fold_cache,
             epochs = epochs,
             ipcw_w = ipcw_w,
+            weight_truncation = weight_truncation,
         )
         rows = NamedTuple[]
         labs = if haskey(est, :path_direct)
@@ -284,6 +297,10 @@ function _effects_dispatch(
     chosen = _resolve_mediation_estimator(
         effect, get(kw, :estimator, nothing), get(kw, :moc, Symbol[]),
     )
+    weight_truncation = get(kw, :weight_truncation, true)
+    if !weight_truncation && !(effect isa InterventionalMediation || effect isa NaturalMediation)
+        throw(ArgumentError("weight_truncation=false is supported only for static interventional or natural mediation"))
+    end
     if effect isa NaturalMediation
         moc = get(kw, :moc, Symbol[])
         isempty(moc) || throw(ArgumentError("Natural effects require empty moc"))
@@ -297,6 +314,7 @@ function _effects_dispatch(
             shift = get(kw, :shift, nothing),
             fold_cache = get(kw, :fold_cache, nothing),
             ipcw_w = get(kw, :ipcw_w, nothing),
+            weight_truncation = weight_truncation,
         )
     elseif effect isa OrganicMediation
         return _without_mediation_inference(_organic_effects(
@@ -349,6 +367,7 @@ function _effects_dispatch(
             fold_cache = get(kw, :fold_cache, nothing),
             epochs = get(kw, :epochs, 1),
             ipcw_w = get(kw, :ipcw_w, nothing),
+            weight_truncation = weight_truncation,
         )
     end
 end

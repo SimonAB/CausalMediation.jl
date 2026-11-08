@@ -61,6 +61,20 @@ synthetic calibration is documented in the CDCS uncertainty report; these
 intervals are asymptotic and have not demonstrated nominal coverage throughout
 the tested small-sample settings.
 
+`weight_truncation::Bool=true` is the compatibility default capped route. For
+otherwise eligible static-arm one-step inference, point estimates are preserved
+while inferential SEs, confidence limits and influence curves are unavailable
+with `inference_status = :truncated_weights`, even if no observed weight reaches
+the cap. This status follows the configured route; it is not an empirical
+cap-activation test. Prior unsupported or trivial statuses take precedence. Set
+`weight_truncation=false` only for
+genuinely static binary or factor arms to request the untruncated EIF. Numerical
+and Super Learner guards still apply; opting out of weight truncation does not
+remove the usual positivity/overlap, nuisance-model or moment assumptions and
+does not guarantee finite-sample coverage. Non-static or continuous policies
+reject this opt-out. In particular, continuous `ShiftPolicy` grids and
+row-dependent identity-versus-recode policies are not static-arm targets.
+
 Other routes retain point estimates but return `NaN` inferential SEs and
 limits, with an `inference_status` explaining the restriction. These include
 plug-in fits, the current outcome-only `:tmle` fluctuation, factual-treatment
@@ -154,7 +168,7 @@ categorical columns encode consistently across folds.
 
 Mediation runners forward incompleteness to CausalTargeted
 [`handle_missing_data`](https://simonab.github.io/CausalTargeted.jl/dev/missingness/).
-`run_mediation_grid`, `run_mediation_scalar`, `run_tmle3_nde`, and
+`run_mediation_grid`, `run_mediation_scalar`, and
 `conjugate_mediation_bootstrap` (via `run_mediation_scalar_ppl`) accept
 `handle_missing` (`:drop` default; `:ipcw` reweights interventional, natural,
 organic, and recanting-twin influence summaries and the controlled direct
@@ -166,6 +180,12 @@ separate mediation-specific missingness estimand. Structural MAR/MNAR claims
 remain CausalDynamics certificates; this package does not invent fills inside
 the EIF. Full policy catalogue:
 [CausalTargeted Missingness](https://simonab.github.io/CausalTargeted.jl/dev/missingness/).
+
+`run_tmle3_nde` is retained as a fail-fast migration entry point and throws
+without fitting. Numeric static-arm users should migrate to
+`run_mediation_scalar(...; estimator = :onestep, weight_truncation = false)`;
+static discrete-arm users should use `run_mediation` with static policies. The
+function does not silently switch to the package's one-step or targeted route.
 
 Do not pass `learners=(:mean,)` alone for treatment contrasts.
 
