@@ -37,6 +37,7 @@ function run_mediation(
     assert_natural_admissible!(spec)
     assert_moc_for_ri!(spec)
     estimator = _resolve_mediation_estimator(spec.effect, estimator, spec.moc)
+    _reject_recanting_twin(spec.effect)
     if _discrete_spec(spec)
         return _run_mediation_discrete(
             spec, data;
@@ -255,6 +256,7 @@ function run_mediation_scalar(
     weight_truncation::Bool = true,
 )
     estimator = _resolve_mediation_estimator(effect, estimator, moc)
+    _reject_recanting_twin(effect)
     all_cols = unique(vcat(covar, mediators, moc, [trt]))
     miss = handle_missing_data(
         data, outcome, all_cols, handle_missing;

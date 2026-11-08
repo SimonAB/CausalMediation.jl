@@ -5,8 +5,10 @@
 This package is part of the [CDCS Julia package set](https://github.com/SimonAB/causal-dynamics-book/tree/main/packages), which supports the [Causal Dynamics of Complex Systems book](https://simonab.github.io/causal-dynamics-book/).
 
 Cross-fitted mediation for the CDCS Julia stack: interventional (RI), natural,
-organic, controlled direct, and recanting-twin effects, with intermediate
-confounding (`moc`) and continuous MTP one-step / TMLE estimators.
+organic, and controlled direct effects, with intermediate confounding (`moc`)
+and continuous MTP one-step / TMLE estimators. `RecantingTwinMediation` remains
+exported as a reserved compatibility type; estimation rejects it because this
+package does not currently implement a path-specific estimator.
 
 For eligible static-arm one-step fits, the default capped calculation preserves
 point estimates but reports unavailable inference with `:truncated_weights`.
@@ -71,7 +73,7 @@ CI develops tip CausalDynamics and CausalTargeted so `RepresentationSpec` and nu
 
 | Guardrail | What we exercise | Where |
 |-----------|------------------|-------|
-| **Unit / API** | Effect gates (interventional, natural, organic, CDE, recanting twin), `MediationSpec` / `run_mediation*`, identify natural vs interventional, schema guards, categorical-$A$ policies | `test/runtests.jl` |
+| **Unit / API** | Effect gates (interventional, natural, organic, CDE, reserved recanting-twin rejection), `MediationSpec` / `run_mediation*`, identify natural vs interventional, schema guards, categorical-$A$ policies | `test/runtests.jl` |
 | **Synthetic recovery** | Binary and continuous MTP mediation; intermediate confounding (`moc`); TE / NDE / NIE vs simulation oracles | `test/runtests.jl` (`simulate_*` DGPs) |
 | **Missing data** | Shared MAR $Y$ helper; scalar and bootstrap `:drop`/`:ipcw` checks; retired TMLE3 NDE helper rejects both options before fitting | `test/runtests.jl`, `test/test_tmle3_contract.jl` |
 | **Representation bridge** | High-dim spectrum → codes → mediation grid on encoded panel | `test/test_representation_bridge.jl` |

@@ -77,7 +77,7 @@ include("test_uncertainty_contracts.jl")
     end
     df = DataFrame(A = a, W = w, M = m, Y = y)
 
-    for effect in (NaturalMediation(), OrganicMediation(), RecantingTwinMediation(), ControlledDirect(:M => 0.0))
+    for effect in (NaturalMediation(), OrganicMediation(), ControlledDirect(:M => 0.0))
         estimator = effect isa ControlledDirect ? :plugin : :onestep
         opts = (covar = [:W], mediators = [:M], effect = effect,
             estimator = estimator, learners = (:glm_interact,), folds = 3, n_mc = 4)
@@ -89,6 +89,33 @@ include("test_uncertainty_contracts.jl")
         @test abs(te_ipcw - 0.5) < 0.2
         @test abs(te_drop - te_ipcw) > 0.2
     end
+
+    # The compatibility type remains exported, but no longer labels an
+    # interventional decomposition as path-specific mediation. The default
+    # cached route must reject before fitting nuisance models.
+    rt = RecantingTwinMediation()
+    rt_spec = MediationSpec(:A, :Y; mediators = [:M], covariates = [:W], effect = rt)
+    err = try
+        run_mediation(rt_spec, df; deltas = [1.0], folds = 3, n_mc = 4,
+            learners = (:glm_interact,), parallel = false, rng = StableRNG(1))
+        nothing
+    catch caught
+        caught
+    end
+    @test err isa ArgumentError
+    @test occursin("InterventionalMediation", sprint(showerror, err))
+
+    # Public lower-level entry points reject at effect dispatch as well,
+    # including their default cache_nuisances=true path.
+    @test_throws ArgumentError run_mediation_grid(
+        df, :A, :Y; covar = [:W], mediators = [:M], effect = rt,
+        deltas = [1.0], folds = 3, learners = (:glm_interact,),
+        parallel = false, rng = StableRNG(1),
+    )
+    @test_throws ArgumentError run_mediation_scalar(
+        df, :A, :Y; covar = [:W], mediators = [:M], effect = rt,
+        folds = 3, learners = (:glm_interact,), rng = StableRNG(1),
+    )
 
     grid_opts = (covar = [:W], mediators = [:M], effect = ControlledDirect(:M => 0.0),
         deltas = [1.0], learners = (:glm_interact,), folds = 3,

@@ -45,9 +45,10 @@ shifted treatment; outcome regressions are cross-fitted Super Learners.
 finite `A` (`DiscreteTreatmentPolicy` on both `MediationSpec` arms; default
 identity versus recode). Outcome and mediator regressions dummy-code `A`;
 treatment density ratios reuse CausalTargeted Díaz–Williams classifiers. Nested
-Monte Carlo for continuous `M` is unchanged. Natural / organic / recanting-twin /
+Monte Carlo for continuous `M` is unchanged. Natural / organic /
 controlled-direct families, nonempty `moc`, and `run_mediation_grid` remain
-numeric-`A` only. Mixed `ShiftPolicy` / discrete arms throw.
+numeric-`A` only. Mixed `ShiftPolicy` / discrete arms throw. The reserved
+`RecantingTwinMediation` compatibility type always errors; it has no estimator.
 
 **Uncertainty contract.** Constant discrete treatment arms, empty `moc`,
 uniform weights and `estimator=:onestep` use both outcome and mediator-stage
@@ -140,22 +141,22 @@ Hierarchical longitudinal mediation (``A_t``, ``M_t``) remains deferred
 
 ## Recanting twins and path-specific effects
 
-Recanting-twin (RT) constructions isolate path-specific effects when
-intermediate confounding blocks natural effects (Vo–Díaz line of work; R
-`crumble` `effect="RT"`). CausalDynamics may suggest `moc` from graph witnesses;
-CausalMediation estimates RT contrasts via `RecantingTwinMediation`.
+Recanting-twin constructions can define path-specific effects in settings
+where natural effects are not identified (Vo–Díaz and related work). The
+current `RecantingTwinMediation` type is retained as a reserved compatibility
+name, but every estimation entry point throws an explanatory `ArgumentError`.
+Its former implementation only relabelled an interventional decomposition and
+therefore did not estimate the requested path-specific target. When an
+interventional estimand is intended, request `InterventionalMediation()`
+explicitly; its own identification and inference conditions still apply. The
+`simulate_recanting_twin_mediation` helper remains available to generate
+synthetic data for graph and model demonstrations, not to imply that the
+path-specific estimator is implemented.
 
 | Topic | Primary sources | CausalMediation surface |
 |-------|-----------------|-------------------------|
-| Recanting twins / path-specific | Vo & Díaz (and related) | `RecantingTwinMediation`, path terms in `decompose` |
+| Recanting twins / path-specific | Vo & Díaz (and related) | No estimator; reserved compatibility type |
 | Target-trial mediation framing | Hernán & Robins (2020) spirit | `TargetTrialMediation`, `target_trial_mediation` |
-
-```@example methods-rt
-using CausalMediation, StableRNGs
-
-df, _ = simulate_recanting_twin_mediation(180; rng = StableRNG(11))
-first(names(df), 6)
-```
 
 ## Cross-fitting, Super Learner, and diagnostics
 
@@ -170,9 +171,9 @@ Mediation runners forward incompleteness to CausalTargeted
 [`handle_missing_data`](https://simonab.github.io/CausalTargeted.jl/dev/missingness/).
 `run_mediation_grid`, `run_mediation_scalar`, and
 `conjugate_mediation_bootstrap` (via `run_mediation_scalar_ppl`) accept
-`handle_missing` (`:drop` default; `:ipcw` reweights interventional, natural,
-organic, and recanting-twin influence summaries and the controlled direct
-plug-in contrast; for the conjugate bootstrap it draws rows with IPCW
+`handle_missing` (`:drop` default; `:ipcw` reweights supported interventional,
+natural, and organic influence summaries and the controlled direct plug-in
+contrast; for the conjugate bootstrap it draws rows with IPCW
 probabilities; `:impute` /
 `:ipcw_impute` for covariate gaps). Missing mediators are treated as covariates
 for that policy (complete-case or mean-impute with indicators), not as a

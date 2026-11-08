@@ -3,8 +3,8 @@
 """
     MediationEffect
 
-Supertype for mediation estimand families (interventional, natural, organic,
-recanting-twin, controlled direct).
+Supertype for mediation effect types (interventional, natural, organic,
+controlled direct, and reserved compatibility labels).
 """
 abstract type MediationEffect end
 
@@ -17,7 +17,7 @@ struct NaturalMediation <: MediationEffect end
 """Organic direct/indirect effects (Lok 2015)."""
 struct OrganicMediation <: MediationEffect end
 
-"""Recanting-twin / path-specific effects (Vo–Díaz)."""
+"""Reserved compatibility type; path-specific estimation is not implemented."""
 struct RecantingTwinMediation <: MediationEffect end
 
 """
@@ -191,7 +191,7 @@ function assert_natural_admissible!(spec::MediationSpec)
     if spec.effect isa NaturalMediation && !isempty(spec.moc)
         throw(ArgumentError(
             "Natural effects require empty moc; got $(spec.moc). " *
-            "Use InterventionalMediation or RecantingTwinMediation when intermediate confounders exist.",
+            "Consider InterventionalMediation() if its target and assumptions are appropriate.",
         ))
     end
     return nothing
@@ -358,7 +358,7 @@ end
 """
     decompose(result) -> NamedTuple
 
-Extract TE / NDE / NIE (or path-specific components) from a `MediationResult`.
+Extract TE / NDE / NIE from a `MediationResult`.
 """
 function decompose(result::MediationResult)
     est = result.estimates

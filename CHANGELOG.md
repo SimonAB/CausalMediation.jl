@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `RecantingTwinMediation` is now a reserved unsupported compatibility entry.
+  Public estimation routes fail with an explanatory error instead of relabelling
+  an interventional decomposition as path-specific effects.
 - `run_tmle3_nde` is retained as a fail-fast migration entry point. It now
   throws an informative error rather than fitting or silently changing to a
   different estimator.
@@ -38,8 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Explicit one-step / TMLE and nonempty `moc` are refused because the previous
   residual correction was not a valid continuous-mediator point-intervention
   EIF. SEs and confidence limits are `NaN` until suitable inference is added.
-- Forward IPCW weights through natural, organic, recanting-twin, and controlled
-  direct estimators, including their scalar, grid, and spec entry points.
+- Forward IPCW weights through natural, organic, and controlled direct
+  estimators, including their scalar, grid, and spec entry points.
 
 ### Changed
 

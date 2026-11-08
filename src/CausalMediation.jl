@@ -2,7 +2,9 @@
     CausalMediation
 
 Cross-fitted mediation estimation for the CDCS stack: interventional (RI),
-natural, organic, controlled direct, and recanting-twin path-specific effects.
+natural, organic, and controlled direct effects. `RecantingTwinMediation` is
+reserved for compatibility and fails explicitly because path-specific
+estimation is unsupported.
 
 Depends on CausalDynamics for identification certificates and CausalTargeted
 for Super Learner, `ShiftPolicy` / `DiscreteTreatmentPolicy`, fold helpers, and density ratios.

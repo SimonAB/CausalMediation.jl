@@ -1,7 +1,9 @@
 # CausalMediation.jl — design principles
 
 This package is the **mediation estimation layer**: interventional, natural, organic,
-controlled direct, and recanting-twin effects with cross-fitted EIF / one-step / TMLE.
+controlled direct effects with cross-fitted EIF / one-step / TMLE. The exported
+`RecantingTwinMediation` type is reserved for compatibility and is rejected by
+all estimation entry points; no path-specific estimator is currently provided.
 An estimator name does not by itself guarantee an inferential score. Static
 binary or factor arms, empty `moc`, uniform observation weights and the one-step
 route have the implemented two-stage EIF contract. `weight_truncation=true`

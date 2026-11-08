@@ -47,6 +47,7 @@ function run_mediation_grid(
     weight_truncation::Bool = true,
 )
     estimator = _resolve_mediation_estimator(effect, estimator, moc)
+    _reject_recanting_twin(effect)
     weight_truncation || throw(ArgumentError(
         "weight_truncation=false is limited to static binary or factor-arm mediation; " *
         "run_mediation_grid uses non-static treatment policies",

@@ -16,6 +16,11 @@ CausalMediation
 
 ## Effect types and specification
 
+`RecantingTwinMediation` remains exported for compatibility, but it is a
+reserved unsupported entry point: estimation throws an explanatory
+`ArgumentError`. Use `InterventionalMediation()` explicitly when that is the
+intended estimand; this does not make a path-specific claim.
+
 ```@docs
 MediationEffect
 InterventionalMediation

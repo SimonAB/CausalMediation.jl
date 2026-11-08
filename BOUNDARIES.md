@@ -4,7 +4,7 @@
 
 ## CausalMediation.jl (this package)
 
-- Mediation estimands: interventional (RI), natural, organic, controlled direct, recanting twin
+- Mediation estimands: interventional (RI), natural, organic, and controlled direct. `RecantingTwinMediation` is a reserved compatibility type; path-specific estimation is unsupported.
 - Cross-fitted EIF / one-step / TMLE / plugin nested-MC
 - Numeric MTP (`ShiftPolicy`) and factor recodes (`DiscreteTreatmentPolicy`) for interventional TE/NDE/NIE (continuous `M`, empty `moc` on the factor path)
 - `moc` intermediate confounding; δ-grids; target-trial constructors

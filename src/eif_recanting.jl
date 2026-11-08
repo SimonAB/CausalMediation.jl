@@ -1,12 +1,22 @@
-"""Recanting-twin / path-specific EIF scaffolding."""
+"""Reserved recanting-twin compatibility entry; path-specific estimation is unsupported."""
+
+function _reject_recanting_twin(effect::MediationEffect)
+    effect isa RecantingTwinMediation || return nothing
+    throw(ArgumentError(
+        "RecantingTwinMediation is reserved but unsupported: this implementation " *
+        "only relabelled an interventional decomposition and did not identify the " *
+        "requested path-specific effect. If an interventional mediation estimand " *
+        "is intended, request InterventionalMediation() explicitly; its usual " *
+        "identification and inference assumptions still apply.",
+    ))
+end
 
 """
     _recanting_twin_effects(...) -> (est, se, ic)
 
-Path-specific decomposition with an IC remainder term (Vo–Díaz / Díaz).
-When a single mediator is present, path_direct ≈ NDE and path_indirect ≈ NIE
-under interventional laws; the remainder captures non-additive path interaction
-estimated as `TE − (path_direct + path_indirect)` on the influence scale.
+This compatibility entry is reserved because the former implementation only
+relabelled an interventional decomposition and did not estimate a path-specific
+effect.
 """
 function _recanting_twin_effects(
     df::DataFrame,
@@ -28,46 +38,5 @@ function _recanting_twin_effects(
     fold_cache = nothing,
     ipcw_w = nothing,
 )
-    est, se, ic = _interventional_effects(
-        df, outcome, trt, covar, mediators, a_nat, a_shift, folds, rng;
-        learners = learners,
-        n_mc = n_mc,
-        estimator = estimator,
-        moc = moc,
-        L = L,
-        U = U,
-        shift = shift,
-        fold_cache = fold_cache,
-        epochs = 1,
-        ipcw_w = ipcw_w,
-    )
-    # Path labels + IC remainder for falsification / reporting
-    rem_ic = ic.te .- (ic.nde .+ ic.nie)
-    rem = est.te - (est.nde + est.nie)
-    rem_se = std(rem_ic .- rem) / sqrt(length(rem_ic))
-    est_rt = (
-        te = est.te,
-        nde = est.nde,
-        nie = est.nie,
-        path_direct = est.nde,
-        path_indirect = est.nie,
-        ic_remainder = rem,
-    )
-    se_rt = (
-        te = se.te,
-        nde = se.nde,
-        nie = se.nie,
-        path_direct = se.nde,
-        path_indirect = se.nie,
-        ic_remainder = rem_se,
-    )
-    ic_rt = (
-        te = ic.te,
-        nde = ic.nde,
-        nie = ic.nie,
-        path_direct = ic.nde,
-        path_indirect = ic.nie,
-        ic_remainder = rem_ic,
-    )
-    return est_rt, se_rt, ic_rt
+    _reject_recanting_twin(RecantingTwinMediation())
 end

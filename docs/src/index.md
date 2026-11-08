@@ -7,7 +7,9 @@ CurrentModule = CausalMediation
 CausalMediation implements cross-fitted estimators for modern mediation
 contrasts: interventional (randomised intermediate) TE / NDE / NIE under
 modified treatment policies, natural and organic effects when admissible,
-controlled direct effects, and recanting-twin / path-specific summaries.
+and controlled direct effects. The exported `RecantingTwinMediation` type is
+reserved for compatibility and currently errors; it does not estimate a
+path-specific effect.
 Intermediate confounders (`moc`) are first-class. Defaults reuse lean Super
 Learner profiles from [CausalTargeted.jl](https://simonab.github.io/CausalTargeted.jl/dev/).
 
@@ -23,7 +25,7 @@ estimates parameters once the query, mediators, and `moc` are known.
 | Interventional TE/NDE/NIE + MTP | Yes | R `crumble` (`effect="RI"`), `medoutcon` |
 | Intermediate confounding (`moc`) | Yes | `crumble`, `medoutcon`, `medRCT` |
 | Natural / organic / controlled direct | Yes | `crumble` `"N"`/`"O"`; VanderWeele CDE |
-| Recanting-twin / path-specific | Yes (API) | `crumble` `"RT"`, Vo–Díaz |
+| Recanting-twin / path-specific | Unsupported (reserved API) | `crumble` `"RT"`, Vo–Díaz |
 | Typed ID certificate → estimate | **Unique** | Partial |
 | LMTP (non-mediated) | — (use CausalTargeted) | R `lmtp`, Ananke |
 
@@ -111,8 +113,9 @@ hlines!(ax, [0.0]; color = :gray, linestyle = :dash)
 fig
 ```
 
-With intermediate confounding, pass `moc` (and prefer interventional or
-recanting-twin effects—natural effects are refused):
+With intermediate confounding, pass `moc` and use an interventional effect;
+natural effects are refused, and the reserved recanting-twin label is
+unsupported:
 
 ```julia
 spec = MediationSpec(:A, :Y; mediators = [:M], covariates = [:W], moc = [:L])

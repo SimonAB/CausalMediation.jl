@@ -76,7 +76,7 @@ using Statistics
 
     @testset "natural / organic / CDE / RT dispatch" begin
         df, _ = CausalMediation.simulate_mediation(200; rng = StableRNG(4))
-        for eff in (NaturalMediation(), OrganicMediation(), ControlledDirect(:M => 0.0), RecantingTwinMediation())
+        for eff in (NaturalMediation(), OrganicMediation(), ControlledDirect(:M => 0.0))
             spec = MediationSpec(:A, :Y; mediators = [:M], covariates = [:W], effect = eff)
             res = run_mediation(spec, df; deltas = [1.0], folds = 2, n_mc = 4,
                 estimator = eff isa ControlledDirect ? :plugin : :onestep,
@@ -85,6 +85,13 @@ using Statistics
             d = decompose(res)
             @test haskey(d, :te)
         end
+        @test_throws ArgumentError run_mediation(
+            MediationSpec(:A, :Y; mediators = [:M], covariates = [:W],
+                effect = RecantingTwinMediation()),
+            DataFrame(); deltas = [1.0], folds = 2, n_mc = 4,
+            estimator = :onestep, learners = SMALL_N_SL_LEARNERS,
+            parallel = false, rng = StableRNG(4),
+        )
         tt = target_trial_mediation(:A, :Y; mediators = [:M], covariates = [:W])
         @test tt.effect isa InterventionalMediation
     end

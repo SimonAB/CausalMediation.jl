@@ -234,14 +234,14 @@ fig, _, _ = dagplot(g_id;
 fig
 ```
 
-Natural / organic / recanting-twin / controlled-direct families and nonempty
-`moc` remain numeric-`A` only.
+Natural / organic / controlled-direct families and nonempty `moc` remain
+numeric-`A` only. `RecantingTwinMediation` is reserved and unsupported.
 
 ## 3. Intermediate confounding (`moc`)
 
 When a post-treatment confounder `L` sits on the `A → M → Y` pathway, natural
-effects are not admissible. Pass `moc = [:L]` and keep an interventional (or
-recanting-twin / organic) effect kind.
+effects are not admissible. Pass `moc = [:L]` and select an interventional
+effect kind.
 
 ```@example moc-walk
 using CausalMediation, CausalTargeted, StableRNGs
@@ -351,8 +351,9 @@ typed graph).
 
 Applied work often has **causally ordered** mediators (`M₁ → M₂`) with direct arms
 from `A` to each (Hong et al. 2024, Fig. 3; Vansteelandt & Daniel 2017). Interventional
-TE / NDE / NIE treat the mediator vector jointly; path-specific contrasts need
-`RecantingTwinMediation` (§5).
+TE / NDE / NIE treat the mediator vector jointly. A path-specific target needs
+an estimator that matches its identification assumptions; the reserved
+`RecantingTwinMediation` compatibility type currently errors (§5).
 
 ```@example multi-walk
 using CausalMediation, CausalTargeted, StableRNGs
@@ -411,36 +412,18 @@ fig, _, _ = dagplot(g_multi;
 fig
 ```
 
-## 5. Recanting twins (path-specific)
+## 5. Recanting structures and supported targets
 
-When mediators share a **recanting** structure (`A → M₁ → M₂`, `A → M₂`), natural
-path-specific effects are not identified without twin substitutions (Vo & Díaz;
-see [Methods — recanting twins](methods.md)). Use `RecantingTwinMediation` for
-`path_direct` / `path_indirect` summaries.
-
-```@example rt-walk
-using CausalMediation, CausalTargeted, StableRNGs
-
-df, _ = simulate_recanting_twin_mediation(200; rng = StableRNG(15))
-spec = MediationSpec(
-    :A, :Y;
-    mediators = [:M1, :M2],
-    covariates = [:W],
-    effect = RecantingTwinMediation(),
-)
-res = run_mediation(
-    spec, df;
-    deltas = [1.0],
-    folds = 2,
-    n_mc = 12,
-    parallel = false,
-    learners = DEFAULT_SL_LEARNERS,
-    rng = StableRNG(16),
-)
-d = CausalMediation.decompose(res)
-# Under RecantingTwinMediation, table rows NDE / NIE ≈ path_direct / path_indirect.
-(d.te, d.nde, d.nie)
-```
+When mediators share a **recanting** structure (`A → M₁ → M₂`, `A → M₂`),
+natural path-specific effects require identification conditions beyond the
+ordinary interventional decomposition (Vo & Díaz; see
+[Methods — recanting twins](methods.md)). `RecantingTwinMediation` is retained
+as a reserved compatibility type, but estimation throws: its former
+implementation only relabelled interventional effects and did not estimate a
+path-specific target. If the interventional target is intended, select
+`InterventionalMediation()` explicitly and interpret it under its own
+assumptions. `simulate_recanting_twin_mediation` remains a synthetic-data helper
+for demonstrating graph structure.
 
 **Graph (path structure).** Highlight the `M₁` arm (via `M₂`) versus the direct `A → M₂` shortcut.
 
@@ -497,7 +480,7 @@ mediation_stability_markdown(sweep)
 | `InterventionalMediation()` | Default RI / randomised intermediate under `moc` |
 | `NaturalMediation()` | Classical NDE/NIE when `moc` is empty |
 | `OrganicMediation()` | Lok organic effects |
-| `RecantingTwinMediation()` | Path-specific / RT contrasts |
+| `RecantingTwinMediation()` | Reserved compatibility type; estimation throws |
 | `ControlledDirect(m = …)` | Fix mediators at specified levels; defaults to `:plugin`, with unavailable SE and confidence limits |
 
 See [Methods](methods.md) and [Naming](naming.md).

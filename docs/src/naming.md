@@ -15,7 +15,7 @@ is the short source of truth; this page expands it for Documenter readers.
 | `InterventionalMediation` / `:interventional` | `effect="RI"` | Randomised intermediate / interventional TE, NDE, NIE |
 | `NaturalMediation` / `:natural` | `effect="N"` | Natural direct and indirect effects |
 | `OrganicMediation` / `:organic` | `effect="O"` | Organic effects (Lok) |
-| `RecantingTwinMediation` / `:recanting_twin` | `effect="RT"` | Recanting-twin / path-specific |
+| `RecantingTwinMediation` / `:recanting_twin` | `effect="RT"` | Reserved compatibility name; estimation throws because no path-specific estimator is implemented |
 | `ControlledDirect` / `:controlled_direct` | (related CDE APIs) | Controlled direct effect at fixed mediator levels |
 
 Construct specs with the type, or pass a symbol through
@@ -27,7 +27,7 @@ Construct specs with the type, or pass a symbol through
 |-------|-----------|
 | `moc` | Intermediate confounders; often `Z` in R tutorials |
 | `IdentificationResult.moc` | Filled by CausalDynamics when witnesses exist |
-| `MediationSpec.moc` | Required for honest RI / RT estimation when present |
+| `MediationSpec.moc` | Used by supported interventional estimation when present; RT is unsupported |
 
 ## Entry points
 

@@ -2,8 +2,10 @@
 
 CausalMediation estimates modern mediation contrasts after identification:
 interventional TE / NDE / NIE under modified treatment policies, natural and
-organic effects when admissible, controlled direct effects, and recanting-twin /
-path-specific summaries. Intermediate confounders (`moc`) are first-class.
+organic effects when admissible, and controlled direct effects. The exported
+`RecantingTwinMediation` name is reserved for compatibility and estimation
+throws; it does not provide path-specific effects. Intermediate confounders
+(`moc`) are first-class for supported interventional targets.
 Super Learner, `ShiftPolicy`, and fold helpers come from
 [CausalTargeted.jl](https://simonab.github.io/CausalTargeted.jl/dev/); graphs and
 certificates from
@@ -54,7 +56,7 @@ flowchart LR
 | Intermediate confounding (`moc`) | Yes | Yes (`crumble`, `medoutcon`, `medRCT`) | Partial |
 | Natural effects (empty `moc`) | Yes | Yes (`crumble` `"N"`) | Partial |
 | Organic effects | Yes | Yes (`crumble` `"O"`) | — |
-| Recanting-twin / path-specific | Yes | Partial (`crumble` `"RT"`) | — |
+| Recanting-twin / path-specific | Unsupported (reserved API) | Partial (`crumble` `"RT"`) | — |
 | Controlled direct effect | Yes | Yes (VanderWeele / related) | Partial |
 | Typed ID certificate → estimate | Unique | Partial | Partial |
 | Cross-fit Super Learner (shared with LMTP) | Yes (via CausalTargeted) | Yes (sl3 + crumble) | Partial |
