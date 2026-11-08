@@ -19,7 +19,7 @@ nominal coverage remains unresolved; see [Methods](docs/src/methods.md).
 **Documentation:** [simonab.github.io/CausalMediation.jl](https://simonab.github.io/CausalMediation.jl/dev/)
 (after the Documentation workflow has run on `main`).
 
-> On the Julia **General** registry (`Pkg.add("CausalMediation")`). Requires Julia **1.12+**,
+> The registered **0.1.2** release (`Pkg.add("CausalMediation")`) requires Julia **1.12+**,
 > [CausalDynamics](https://github.com/SimonAB/CausalDynamics.jl) **0.4+**, and
 > [CausalTargeted](https://github.com/SimonAB/CausalTargeted.jl) **0.3+**.
 > Registry tracking: [REGISTRATION.md](REGISTRATION.md).
@@ -31,10 +31,18 @@ using Pkg
 Pkg.add("CausalMediation")
 ```
 
-Development tip of `main` (before a new version hits General):
+Development version **0.2.0** is not yet registered or tagged. Its API changes
+are listed in [CHANGELOG.md](CHANGELOG.md). Install compatible development
+versions of the CDCS packages together when following the current examples.
+
+Development tip of `main`:
 
 ```julia
-Pkg.add(url="https://github.com/SimonAB/CausalMediation.jl.git")
+Pkg.add([
+    PackageSpec(url="https://github.com/SimonAB/CausalDynamics.jl.git"),
+    PackageSpec(url="https://github.com/SimonAB/CausalTargeted.jl.git"),
+    PackageSpec(url="https://github.com/SimonAB/CausalMediation.jl.git"),
+])
 ```
 
 ## Quick start

@@ -1,5 +1,9 @@
 ## Registration status
 
+Development version **0.2.0** is prepared in `Project.toml` and
+[CHANGELOG.md](CHANGELOG.md). It is not yet registered or tagged;
+`Pkg.add("CausalMediation")` continues to select a registered version.
+
 CausalMediation.jl is on the Julia **General** registry.
 
 Install: `Pkg.add("CausalMediation")`. Requires Julia **1.12+**,
@@ -19,9 +23,10 @@ Tracking: [issue #1](https://github.com/SimonAB/CausalMediation.jl/issues/1).
 
 Registration is complete; the General registry contains version **0.1.2**.
 
-The development tip includes subsequent controlled-direct-effect contract and
-IPCW forwarding corrections. These are documented under **Unreleased** in
-[CHANGELOG.md](CHANGELOG.md) and are not part of the registered **0.1.2** release.
+The development version **0.2.0** includes the controlled-direct-effect,
+static-arm EIF, unsupported-estimator and IPCW contracts documented in
+[CHANGELOG.md](CHANGELOG.md). It requires CausalDynamics 0.5 and CausalTargeted
+0.4; these changes are not part of the registered **0.1.2** release.
 
 ## Register 0.1.1 (done)
 
@@ -49,5 +54,9 @@ Pkg.add("CausalMediation")
 Development tip of `main` (before a new version hits General):
 
 ```julia
-Pkg.add(url="https://github.com/SimonAB/CausalMediation.jl.git")
+Pkg.add([
+    PackageSpec(url="https://github.com/SimonAB/CausalDynamics.jl.git"),
+    PackageSpec(url="https://github.com/SimonAB/CausalTargeted.jl.git"),
+    PackageSpec(url="https://github.com/SimonAB/CausalMediation.jl.git"),
+])
 ```
