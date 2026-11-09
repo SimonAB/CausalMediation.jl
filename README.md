@@ -31,8 +31,8 @@ using Pkg
 Pkg.add("CausalMediation")
 ```
 
-Development version **0.2.0** is not yet registered or tagged. Its API changes
-are listed in [CHANGELOG.md](CHANGELOG.md). Install compatible development
+Source release **0.2.0** is not yet registered in General. Its API changes
+are listed in [CHANGELOG.md](CHANGELOG.md). Install compatible source
 versions of the CDCS packages together when following the current examples.
 
 Development tip of `main`:
