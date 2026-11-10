@@ -1,8 +1,6 @@
 ## Registration status
 
-Source release **0.2.0** is documented in [CHANGELOG.md](CHANGELOG.md)
-and identified by tag `v0.2.0`. General registration remains pending;
-`Pkg.add("CausalMediation")` continues to select a registered version.
+Source release **0.2.0** is on General ([#175643](https://github.com/JuliaRegistries/General/pull/175643), merged 2026-11-10) and identified by tag `v0.2.0`.
 
 CausalMediation.jl is on the Julia **General** registry.
 
@@ -13,6 +11,7 @@ Install: `Pkg.add("CausalMediation")`. Requires Julia **1.12+**,
 
 | Version | Status |
 |---------|--------|
+| **0.2.0** | On General ([#175643](https://github.com/JuliaRegistries/General/pull/175643), merged 2026-11-10); TagBot tagged `v0.2.0` |
 | **0.1.0** | On General ([#163653](https://github.com/JuliaRegistries/General/pull/163653), merged 2026-08-08); TagBot tagged `v0.1.0` |
 | **0.1.1** | On General (tree `b873813`); TagBot `v0.1.1` — categorical-`A` interventional mediation |
 | **0.1.2** | On General (tree `92f7d287bfc12127c6ad19d3fc5b4cdc0c900d73`) — missingness metadata on grids/scalar; nested-units BOUNDARIES; representation-bridge docs |
@@ -23,10 +22,9 @@ Tracking: [issue #1](https://github.com/SimonAB/CausalMediation.jl/issues/1).
 
 Registration is complete; the General registry contains version **0.1.2**.
 
-The development version **0.2.0** includes the controlled-direct-effect,
-static-arm EIF, unsupported-estimator and IPCW contracts documented in
-[CHANGELOG.md](CHANGELOG.md). It requires CausalDynamics 0.5 and CausalTargeted
-0.4; these changes are not part of the registered **0.1.2** release.
+Release **0.2.0** includes the controlled-direct-effect, static-arm EIF,
+unsupported-estimator and IPCW contracts documented in [CHANGELOG.md](CHANGELOG.md).
+It requires CausalDynamics 0.5 and CausalTargeted 0.4.
 
 ## Register 0.1.1 (done)
 
