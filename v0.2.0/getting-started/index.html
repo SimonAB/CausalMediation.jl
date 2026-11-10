@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="referrer" content="no-referrer"/><title>Getting started · CausalMediation.jl</title><meta name="title" content="Getting started · CausalMediation.jl"/><meta property="og:title" content="Getting started · CausalMediation.jl"/><meta property="twitter:title" content="Getting started · CausalMediation.jl"/><meta name="description" content="Documentation for CausalMediation.jl."/><meta property="og:description" content="Documentation for CausalMediation.jl."/><meta property="twitter:description" content="Documentation for CausalMediation.jl."/><meta property="og:url" content="https://simonab.github.io/CausalMediation.jl/getting-started/"/><meta property="twitter:url" content="https://simonab.github.io/CausalMediation.jl/getting-started/"/><link rel="canonical" href="https://simonab.github.io/CausalMediation.jl/getting-started/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.63.2/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">CausalMediation.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li class="is-active"><a class="tocitem" href>Getting started</a><ul class="internal"><li><a class="tocitem" href="#1.-Interventional-mediation-(NDE-/-NIE)"><span>1. Interventional mediation (NDE / NIE)</span></a></li><li><a class="tocitem" href="#2.-Factor-treatment-(recode-MTP)"><span>2. Factor treatment (recode MTP)</span></a></li><li><a class="tocitem" href="#3.-Intermediate-confounding-(moc)"><span>3. Intermediate confounding (<code>moc</code>)</span></a></li><li><a class="tocitem" href="#4.-Multiple-ordered-mediators"><span>4. Multiple ordered mediators</span></a></li><li><a class="tocitem" href="#5.-Recanting-structures-and-supported-targets"><span>5. Recanting structures and supported targets</span></a></li><li><a class="tocitem" href="#Estimators-and-nested-Monte-Carlo"><span>Estimators and nested Monte Carlo</span></a></li><li><a class="tocitem" href="#Effect-families"><span>Effect families</span></a></li><li><a class="tocitem" href="#Soft-façades-in-CausalTargeted"><span>Soft façades in CausalTargeted</span></a></li></ul></li><li><a class="tocitem" href="../comparison/">Comparison</a></li><li><a class="tocitem" href="../methods/">Methods and literature</a></li><li><a class="tocitem" href="../naming/">Naming</a></li><li><a class="tocitem" href="../api/">API overview</a></li><li><a class="tocitem" href="../references/">References</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Getting started</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Getting started</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/SimonAB/CausalMediation.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/SimonAB/CausalMediation.jl/blob/main/docs/src/getting-started.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Getting-started"><a class="docs-heading-anchor" href="#Getting-started">Getting started</a><a id="Getting-started-1"></a><a class="docs-heading-anchor-permalink" href="#Getting-started" title="Permalink"></a></h1><p>CausalMediation estimates interventional TE / NDE / NIE (and related families) once <a href="https://github.com/SimonAB/CausalDynamics.jl">CausalDynamics.jl</a> has supplied a <code>MediationQuery</code> and adjustment set. <a href="https://simonab.github.io/CausalTargeted.jl/dev/">CausalTargeted.jl</a> provides Super Learner profiles and MTP nuisances.</p><p>DAG figures follow Cinelli, Forney &amp; Pearl (2022, <a href="https://doi.org/10.1177/00491241221099552">SMR</a>) for good/bad controls, and Hong et al. (2024, <a href="https://doi.org/10.1007/s10742-024-00327-4">HSORM</a>) / Vansteelandt &amp; Daniel (2017, <a href="https://doi.org/10.1097/EDE.0000000000000596">Epidemiology</a>) for multiple mediators and post-treatment confounding. Plotting uses DAGMakie directly (<code>dagplot</code>, <code>dagplot_mediation</code>, <code>structural_edge_labels</code>, <code>edge_routing</code>, <a href="https://simonab.github.io/DAGMakie.jl/dev/"><code>CurvedEdge</code></a>).</p><pre><code class="language-julia hljs">using Pkg
+Pkg.add(&quot;CausalMediation&quot;)</code></pre><p>Load plotting backends when you want figures:</p><pre><code class="language-julia hljs">using CausalMediation, CausalTargeted, CausalDynamics, Graphs, DAGMakie, CairoMakie</code></pre><p>Each walk-through uses a <strong>full mediation DAG</strong> for identification (adjust baseline confounders only; never treat the mediator as a good control), then a slimmer <strong>estimand diagram</strong> for path labels. Use <a href="https://simonab.github.io/DAGMakie.jl/dev/"><code>edge_routing</code></a> / <a href="https://simonab.github.io/DAGMakie.jl/dev/"><code>CurvedEdge</code></a> when a fork or skip chord needs a bow (spine edges stay straight); skip chords on the baseline usually bow downward (<code>side = :right</code>), elevated forks upward.</p><h2 id="1.-Interventional-mediation-(NDE-/-NIE)"><a class="docs-heading-anchor" href="#1.-Interventional-mediation-(NDE-/-NIE)">1. Interventional mediation (NDE / NIE)</a><a id="1.-Interventional-mediation-(NDE-/-NIE)-1"></a><a class="docs-heading-anchor-permalink" href="#1.-Interventional-mediation-(NDE-/-NIE)" title="Permalink"></a></h2><p><strong>Graph.</strong> Baseline confounding with mediator <code>M</code> on <code>A → Y</code>.</p><pre><code class="language-julia hljs">using CausalMediation, CausalTargeted, CausalDynamics, Graphs, StableRNGs
+
+g = DiGraph(4)
+add_edge!(g, 1, 2); add_edge!(g, 1, 3); add_edge!(g, 1, 4)
+add_edge!(g, 2, 3); add_edge!(g, 2, 4); add_edge!(g, 3, 4)
+names = Dict(1 =&gt; :W, 2 =&gt; :A, 3 =&gt; :M, 4 =&gt; :Y)
+
+id = identify(
+    g, MediationQuery(:A, :Y, [:M]; effect_kind = :interventional);
+    node_names = names,
+)
+spec = spec_from_identification(id)
+spec.mediators, spec.covariates, spec.moc</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">([:M], [:W], Symbol[])</code></pre><p><strong>Graph (identification).</strong> Full mediation DAG; adjust <code>W</code> only (<code>M</code> is a mediator, not a good control).</p><pre><code class="language-julia hljs">using DAGMakie, CairoMakie
+
+g_id = DiGraph(4)
+add_edge!(g_id, 1, 2); add_edge!(g_id, 1, 3); add_edge!(g_id, 1, 4)
+add_edge!(g_id, 2, 3); add_edge!(g_id, 2, 4); add_edge!(g_id, 3, 4)
+layout_id = [
+    Point2f(0.0, 0.0),   # W
+    Point2f(1.2, 0.0),   # A
+    Point2f(2.4, 1.0),   # M  (elevated fork)
+    Point2f(3.6, 0.0),   # Y
+]
+fig, _, _ = dagplot(g_id;
+    layout = layout_id,
+    labels = [&quot;W&quot;, &quot;A&quot;, &quot;M&quot;, &quot;Y&quot;],
+    color_by = :adjustment,
+    exposure = 2,
+    outcome = 4,
+    adjustment = Set([1]),
+    edge_routing = Dict(
+        (1, 4) =&gt; CurvedEdge(bow = 0.18, side = :right),
+        (1, 3) =&gt; CurvedEdge(bow = 0.12),
+    ),
+    title = &quot;Good control W (mediation DAG)&quot;,
+)
+fig</code></pre><img src="a47dd4e8.png" alt="Example block output" width="600" height="400"/><p><strong>Estimate.</strong> One-step interventional decomposition at δ = 0.5.</p><pre><code class="language-julia hljs">df, _truth = simulate_continuous_mtp_mediation(200; rng = StableRNG(7))
+res = run_mediation(
+    spec, df;
+    deltas = [0.5],
+    folds = 2,
+    n_mc = 16,
+    estimator = :onestep,
+    learners = DEFAULT_SL_LEARNERS,
+    parallel = false,
+    rng = StableRNG(8),
+)
+d = CausalMediation.decompose(res)
+d</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(te = 0.3003748139168566, nde = 0.10327575795693239, nie = 0.19709905595992425)</code></pre><p>This clamped continuous-policy example retains point estimates. Its table&#39;s <code>inference_status</code> explains the unavailable SEs and confidence limits. Static discrete treatment arms with empty <code>moc</code> have a separate supported one-step score; see <a href="../methods/">Methods</a> for the assumptions and observed calibration limits.</p><p>The default <code>weight_truncation=true</code> selects the capped route and preserves static-arm point estimates, while marking otherwise eligible inference as <code>:truncated_weights</code> even if no observed weight reaches the cap. This status follows the configured route; it is not an empirical cap-activation test. The untruncated option is for genuinely static binary or factor arms; it is not valid for this continuous shift or the row-dependent identity/recode example below.</p><p>For a static binary contrast, the two intervention arms are constant across subjects. Setting <code>weight_truncation=false</code> requests the untruncated two-stage EIF; ordinary overlap, nuisance-model and moment assumptions still apply, and this does not guarantee nominal finite-sample coverage.</p><pre><code class="language-julia hljs">df_static, _ = simulate_mediation(200; rng = StableRNG(11))
+df_static.A = string.(Int.(df_static.A))
+spec_static = MediationSpec(
+    :A, :Y;
+    mediators = [:M],
+    covariates = [:W],
+    policy_d0 = discrete_static_policy(&quot;0&quot;; levels = [&quot;0&quot;, &quot;1&quot;]),
+    policy_d1 = discrete_static_policy(&quot;1&quot;; levels = [&quot;0&quot;, &quot;1&quot;]),
+)
+static_res = run_mediation(
+    spec_static, df_static;
+    estimator = :onestep,
+    learners = (:glm, :mean),
+    folds = 2,
+    weight_truncation = false,
+    parallel = false,
+    rng = StableRNG(12),
+)
+(static_res.estimates, static_res.se, static_res.diagnostics.inference_status)</code></pre><p><strong>Graph (mediation paths).</strong> Direct and indirect routes with <code>W</code> omitted (already adjusted).</p><pre><code class="language-julia hljs">fig, _, _ = dagplot_mediation([&quot;A&quot;, &quot;M&quot;, &quot;Y&quot;];
+    title = &quot;Mediation paths (A → M → Y, A → Y)&quot;,
+)
+fig</code></pre><img src="c98f5711.png" alt="Example block output" width="600" height="400"/><p><strong>Graph (NDE / NIE).</strong> NDE on the direct path <code>A → Y</code>; NIE via the mediator arm <code>A → M</code> (δ = 0.5).</p><pre><code class="language-julia hljs">using Graphs: edges, src, dst
+
+g_med, _ = mediation_graph([&quot;A&quot;, &quot;M&quot;, &quot;Y&quot;])
+elookup = Dict(
+    (1, 3) =&gt; &quot;NDE\n$(round(d.nde; digits = 2))&quot;,
+    (1, 2) =&gt; &quot;NIE\n$(round(d.nie; digits = 2))&quot;,
+)
+fig, _, _ = dagplot_mediation([&quot;A&quot;, &quot;M&quot;, &quot;Y&quot;];
+    elabels = structural_edge_labels(g_med, [
+        get(elookup, (src(e), dst(e)), &quot;&quot;) for e in edges(g_med)
+    ]),
+    elabels_fontsize = 13,
+    elabels_distance = 14,
+    elabels_rotation = 0,
+    title = &quot;Interventional mediation (δ = 0.5)&quot;,
+)
+fig</code></pre><img src="16483ec9.png" alt="Example block output" width="600" height="400"/><p>Without a graph, construct <code>MediationSpec</code> by hand (same estimation path):</p><pre><code class="language-julia hljs">spec = MediationSpec(:A, :Y; mediators = [:M], covariates = [:W])</code></pre><h2 id="2.-Factor-treatment-(recode-MTP)"><a class="docs-heading-anchor" href="#2.-Factor-treatment-(recode-MTP)">2. Factor treatment (recode MTP)</a><a id="2.-Factor-treatment-(recode-MTP)-1"></a><a class="docs-heading-anchor-permalink" href="#2.-Factor-treatment-(recode-MTP)" title="Permalink"></a></h2><p>Interventional TE / NDE / NIE under a finite recode of categorical <code>A</code> (continuous <code>M</code>). Both arms must be <code>DiscreteTreatmentPolicy</code>.</p><pre><code class="language-julia hljs">using CausalMediation, CausalTargeted, StableRNGs
+
+df, truth = simulate_categorical_a_mediation(280; rng = StableRNG(9))
+identity = discrete_recode_policy(Dict{String, String}())
+recode = discrete_recode_policy(truth.recode)
+spec = MediationSpec(
+    :A, :Y;
+    mediators = [:M],
+    covariates = [:W],
+    policy_d0 = identity,
+    policy_d1 = recode,
+)
+res = run_mediation(
+    spec, df;
+    folds = 2, n_mc = 16, estimator = :onestep,
+    learners = DEFAULT_SL_LEARNERS,
+    rng = StableRNG(10),
+)
+CausalMediation.decompose(res)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(te = 0.09370654986871288, nde = 0.1684654292622804, nie = -0.07475887939356753)</code></pre><p><strong>Graph (identification).</strong> Same confounded mediation DAG as §1 (<code>W</code> good control; <code>M</code> on causal paths).</p><pre><code class="language-julia hljs">using Graphs, DAGMakie, CairoMakie
+
+g_id = DiGraph(4)
+add_edge!(g_id, 1, 2); add_edge!(g_id, 1, 3); add_edge!(g_id, 1, 4)
+add_edge!(g_id, 2, 3); add_edge!(g_id, 2, 4); add_edge!(g_id, 3, 4)
+layout_id = [
+    Point2f(0.0, 0.0), Point2f(1.2, 0.0), Point2f(2.4, 1.0), Point2f(3.6, 0.0),
+]
+fig, _, _ = dagplot(g_id;
+    layout = layout_id,
+    labels = [&quot;W&quot;, &quot;A&quot;, &quot;M&quot;, &quot;Y&quot;],
+    color_by = :adjustment,
+    exposure = 2,
+    outcome = 4,
+    adjustment = Set([1]),
+    edge_routing = Dict(
+        (1, 4) =&gt; CurvedEdge(bow = 0.18, side = :right),
+        (1, 3) =&gt; CurvedEdge(bow = 0.12),
+    ),
+    title = &quot;Factor A — mediation DAG (good control W)&quot;,
+)
+fig</code></pre><img src="8121a0a6.png" alt="Example block output" width="600" height="400"/><p>Natural / organic / controlled-direct families and nonempty <code>moc</code> remain numeric-<code>A</code> only. <code>RecantingTwinMediation</code> is reserved and unsupported.</p><h2 id="3.-Intermediate-confounding-(moc)"><a class="docs-heading-anchor" href="#3.-Intermediate-confounding-(moc)">3. Intermediate confounding (<code>moc</code>)</a><a id="3.-Intermediate-confounding-(moc)-1"></a><a class="docs-heading-anchor-permalink" href="#3.-Intermediate-confounding-(moc)" title="Permalink"></a></h2><p>When a post-treatment confounder <code>L</code> sits on the <code>A → M → Y</code> pathway, natural effects are not admissible. Pass <code>moc = [:L]</code> and select an interventional effect kind.</p><pre><code class="language-julia hljs">using CausalMediation, CausalTargeted, StableRNGs
+
+df, _ = simulate_intermediate_confounding_mediation(200; rng = StableRNG(3))
+spec = MediationSpec(
+    :A, :Y;
+    mediators = [:M],
+    covariates = [:W],
+    moc = [:L],
+    effect = InterventionalMediation(),
+)
+res = run_mediation(
+    spec, df;
+    deltas = [0.5],
+    folds = 2,
+    n_mc = 12,
+    parallel = false,
+    rng = StableRNG(4),
+)
+d = CausalMediation.decompose(res)
+assumptions(spec)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(effect = InterventionalMediation, moc = [:L], natural_admissible = false, requires_moc = true, mediators = [:M], treatment = :A, outcome = :Y)</code></pre><p><strong>Graph (structure).</strong> <code>L</code> is a <strong>mediator-outcome confounder</strong> (<code>moc</code>): it sits on <code>A → L → M</code> and opens bias if ignored.</p><pre><code class="language-julia hljs">using Graphs, DAGMakie, CairoMakie
+
+g_moc = DiGraph(5)
+add_edge!(g_moc, 1, 2); add_edge!(g_moc, 1, 3); add_edge!(g_moc, 1, 4); add_edge!(g_moc, 1, 5)
+add_edge!(g_moc, 2, 3); add_edge!(g_moc, 2, 4); add_edge!(g_moc, 2, 5)
+add_edge!(g_moc, 3, 4); add_edge!(g_moc, 3, 5); add_edge!(g_moc, 4, 5)
+layout_moc = [
+    Point2f(0.0, 0.0),   # W
+    Point2f(1.2, 0.0),   # A
+    Point2f(2.4, 1.0),   # L  (moc)
+    Point2f(3.6, 0.0),   # M
+    Point2f(4.8, 0.0),   # Y
+]
+fig, _, _ = dagplot(g_moc;
+    layout = layout_moc,
+    labels = [&quot;W&quot;, &quot;A&quot;, &quot;L&quot;, &quot;M&quot;, &quot;Y&quot;],
+    color_by = :adjustment,
+    exposure = 2,
+    outcome = 5,
+    adjustment = Set([1]),
+    edge_routing = Dict(
+        (1, 5) =&gt; CurvedEdge(bow = 0.18, side = :right),
+        (2, 5) =&gt; CurvedEdge(bow = 0.18, side = :right),
+        (3, 5) =&gt; CurvedEdge(bow = 0.14, side = :right),
+        (1, 4) =&gt; CurvedEdge(bow = 0.10, side = :right),
+        (1, 3) =&gt; CurvedEdge(bow = 0.10),
+    ),
+    title = &quot;Intermediate confounding (moc = L)&quot;,
+)
+fig</code></pre><img src="355c7869.png" alt="Example block output" width="600" height="400"/><p><strong>Graph (interventional effects).</strong> Post-treatment confounder <code>L</code> on the <code>A → M</code> arm; estimation conditions on <code>L</code> via <code>moc = [:L]</code> (Coffman-style partial paths; see Hong et al. 2024, Fig. 4).</p><pre><code class="language-julia hljs">using Graphs: edges, src, dst
+
+g_eff = DiGraph(4)
+add_edge!(g_eff, 1, 2); add_edge!(g_eff, 1, 3); add_edge!(g_eff, 1, 4)
+add_edge!(g_eff, 2, 3); add_edge!(g_eff, 3, 4)
+layout_eff = [
+    Point2f(0.0, 0.0),   # A
+    Point2f(1.2, 1.0),   # L
+    Point2f(2.4, 0.0),   # M
+    Point2f(3.6, 0.0),   # Y
+]
+elookup = Dict(
+    (1, 4) =&gt; &quot;NDE\n$(round(d.nde; digits = 2))&quot;,
+    (1, 3) =&gt; &quot;NIE\n$(round(d.nie; digits = 2))&quot;,
+)
+fig, _, _ = dagplot(g_eff;
+    layout = layout_eff,
+    labels = [&quot;A&quot;, &quot;L&quot;, &quot;M&quot;, &quot;Y&quot;],
+    edge_routing = Dict((1, 4) =&gt; CurvedEdge(bow = 0.14, side = :right)),
+    elabels = structural_edge_labels(g_eff, [
+        get(elookup, (src(e), dst(e)), &quot;&quot;) for e in edges(g_eff)
+    ]),
+    elabels_fontsize = 13,
+    elabels_distance = 14,
+    elabels_rotation = 0,
+    title = &quot;Interventional effects (moc = [L])&quot;,
+)
+fig</code></pre><img src="fc7763ab.png" alt="Example block output" width="600" height="400"/><p><code>assert_natural_admissible!</code> throws if you request <code>NaturalMediation</code> with nonempty <code>moc</code> (the same gate as CausalDynamics <code>identify</code>). <code>assert_causal_mediator_paths!</code> (and <code>plan_mediation(...; relation_kinds=…)</code>) refuse constitutive, participation, or measurement relations as ordinary NDE/NIE mediator routes — those are not causal-influence paths. Relation kind is declared, never inferred: pass <code>(source, target) =&gt; kind</code> for every edge on each treatment → mediator → outcome route, or the CausalDynamics <code>TemporalDAGSpec</code> whose <code>LaggedEdge.relation_kind</code> values carry the declarations. A route edge with no declaration is refused rather than assumed causal, and <code>plan_mediation</code> insists on <code>relation_kinds</code> whenever the certificate carries a <code>semantic_fingerprint</code> (i.e. came from a semantically typed graph).</p><h2 id="4.-Multiple-ordered-mediators"><a class="docs-heading-anchor" href="#4.-Multiple-ordered-mediators">4. Multiple ordered mediators</a><a id="4.-Multiple-ordered-mediators-1"></a><a class="docs-heading-anchor-permalink" href="#4.-Multiple-ordered-mediators" title="Permalink"></a></h2><p>Applied work often has <strong>causally ordered</strong> mediators (<code>M₁ → M₂</code>) with direct arms from <code>A</code> to each (Hong et al. 2024, Fig. 3; Vansteelandt &amp; Daniel 2017). Interventional TE / NDE / NIE treat the mediator vector jointly. A path-specific target needs an estimator that matches its identification assumptions; the reserved <code>RecantingTwinMediation</code> compatibility type currently errors (§5).</p><pre><code class="language-julia hljs">using CausalMediation, CausalTargeted, StableRNGs
+
+df, _ = simulate_recanting_twin_mediation(220; rng = StableRNG(13))
+spec = MediationSpec(
+    :A, :Y;
+    mediators = [:M1, :M2],
+    covariates = [:W],
+    effect = InterventionalMediation(),
+)
+res = run_mediation(
+    spec, df;
+    deltas = [1.0],
+    folds = 2,
+    n_mc = 12,
+    parallel = false,
+    learners = DEFAULT_SL_LEARNERS,
+    rng = StableRNG(14),
+)
+CausalMediation.decompose(res)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(te = 0.49366908052017094, nde = 0.1683603399054139, nie = 0.325308740614757)</code></pre><p><strong>Graph (identification).</strong> Baseline <code>W</code>; ordered chain <code>A → M₁ → M₂ → Y</code> plus direct <code>A → M₂</code> and <code>A → Y</code>.</p><pre><code class="language-julia hljs">using Graphs, DAGMakie, CairoMakie
+
+g_multi = DiGraph(5)
+add_edge!(g_multi, 1, 2); add_edge!(g_multi, 1, 3); add_edge!(g_multi, 1, 4); add_edge!(g_multi, 1, 5)
+add_edge!(g_multi, 2, 3); add_edge!(g_multi, 2, 4); add_edge!(g_multi, 2, 5)
+add_edge!(g_multi, 3, 4); add_edge!(g_multi, 3, 5); add_edge!(g_multi, 4, 5)
+layout_multi = [
+    Point2f(0.0, 0.0),   # W
+    Point2f(1.2, 0.0),   # A
+    Point2f(2.4, 1.0),   # M1
+    Point2f(3.6, 0.0),   # M2
+    Point2f(4.8, 0.0),   # Y
+]
+fig, _, _ = dagplot(g_multi;
+    layout = layout_multi,
+    labels = [&quot;W&quot;, &quot;A&quot;, &quot;M₁&quot;, &quot;M₂&quot;, &quot;Y&quot;],
+    color_by = :adjustment,
+    exposure = 2,
+    outcome = 5,
+    adjustment = Set([1]),
+    edge_routing = Dict(
+        (1, 5) =&gt; CurvedEdge(bow = 0.18, side = :right),
+        (2, 5) =&gt; CurvedEdge(bow = 0.18, side = :right),
+        (3, 5) =&gt; CurvedEdge(bow = 0.14, side = :right),
+        (1, 4) =&gt; CurvedEdge(bow = 0.10, side = :right),
+        (1, 3) =&gt; CurvedEdge(bow = 0.10),
+    ),
+    title = &quot;Ordered mediators (good control W)&quot;,
+)
+fig</code></pre><img src="317e33fe.png" alt="Example block output" width="600" height="400"/><h2 id="5.-Recanting-structures-and-supported-targets"><a class="docs-heading-anchor" href="#5.-Recanting-structures-and-supported-targets">5. Recanting structures and supported targets</a><a id="5.-Recanting-structures-and-supported-targets-1"></a><a class="docs-heading-anchor-permalink" href="#5.-Recanting-structures-and-supported-targets" title="Permalink"></a></h2><p>When mediators share a <strong>recanting</strong> structure (<code>A → M₁ → M₂</code>, <code>A → M₂</code>), natural path-specific effects require identification conditions beyond the ordinary interventional decomposition (Vo &amp; Díaz; see <a href="../methods/">Methods — recanting twins</a>). <code>RecantingTwinMediation</code> is retained as a reserved compatibility type, but estimation throws: its former implementation only relabelled interventional effects and did not estimate a path-specific target. If the interventional target is intended, select <code>InterventionalMediation()</code> explicitly and interpret it under its own assumptions. <code>simulate_recanting_twin_mediation</code> remains a synthetic-data helper for demonstrating graph structure.</p><p><strong>Graph (path structure).</strong> Highlight the <code>M₁</code> arm (via <code>M₂</code>) versus the direct <code>A → M₂</code> shortcut.</p><pre><code class="language-julia hljs">using Graphs, DAGMakie, CairoMakie
+
+g_rt = DiGraph(4)
+add_edge!(g_rt, 1, 2); add_edge!(g_rt, 1, 3); add_edge!(g_rt, 1, 4)
+add_edge!(g_rt, 2, 3); add_edge!(g_rt, 2, 4); add_edge!(g_rt, 3, 4)
+layout_rt = [
+    Point2f(0.0, 0.0),   # A
+    Point2f(1.2, 1.0),   # M1
+    Point2f(2.4, 0.0),   # M2
+    Point2f(3.6, 0.0),   # Y
+]
+fig, _, _ = dagplot(g_rt;
+    layout = layout_rt,
+    labels = [&quot;A&quot;, &quot;M₁&quot;, &quot;M₂&quot;, &quot;Y&quot;],
+    edge_routing = Dict(
+        (1, 2) =&gt; CurvedEdge(bow = 0.18),
+        (1, 4) =&gt; CurvedEdge(bow = 0.20, side = :right),
+    ),
+    title = &quot;Recanting structure (A → M₁ → M₂ → Y, A → M₂)&quot;,
+)
+fig</code></pre><img src="097bdd8e.png" alt="Example block output" width="600" height="400"/><h2 id="Estimators-and-nested-Monte-Carlo"><a class="docs-heading-anchor" href="#Estimators-and-nested-Monte-Carlo">Estimators and nested Monte Carlo</a><a id="Estimators-and-nested-Monte-Carlo-1"></a><a class="docs-heading-anchor-permalink" href="#Estimators-and-nested-Monte-Carlo" title="Permalink"></a></h2><table><tr><th style="text-align: right"><code>estimator</code></th><th style="text-align: right">Role</th></tr><tr><td style="text-align: right"><code>:plugin</code></td><td style="text-align: right">Nested-MC plug-in contrasts</td></tr><tr><td style="text-align: right"><code>:onestep</code></td><td style="text-align: right">Plugin plus EIF correction (default except for <code>ControlledDirect</code>)</td></tr><tr><td style="text-align: right"><code>:tmle</code></td><td style="text-align: right">Targeting step on the same nuisances</td></tr></table><p><code>n_mc</code> controls nested mediator draws. At small <em>n</em>, sweep it:</p><pre><code class="language-julia hljs">sweep = mediation_n_mc_sweep(
+    df, :A, :Y;
+    covar = [:W],
+    mediators = [:M],
+    n_mc_values = [8, 16, 32],
+    delta = 0.5,
+    folds = 2,
+)
+mediation_stability_markdown(sweep)</code></pre><h2 id="Effect-families"><a class="docs-heading-anchor" href="#Effect-families">Effect families</a><a id="Effect-families-1"></a><a class="docs-heading-anchor-permalink" href="#Effect-families" title="Permalink"></a></h2><table><tr><th style="text-align: right">Construct</th><th style="text-align: right">Typical use</th></tr><tr><td style="text-align: right"><code>InterventionalMediation()</code></td><td style="text-align: right">Default RI / randomised intermediate under <code>moc</code></td></tr><tr><td style="text-align: right"><code>NaturalMediation()</code></td><td style="text-align: right">Classical NDE/NIE when <code>moc</code> is empty</td></tr><tr><td style="text-align: right"><code>OrganicMediation()</code></td><td style="text-align: right">Lok organic effects</td></tr><tr><td style="text-align: right"><code>RecantingTwinMediation()</code></td><td style="text-align: right">Reserved compatibility type; estimation throws</td></tr><tr><td style="text-align: right"><code>ControlledDirect(m = …)</code></td><td style="text-align: right">Fix mediators at specified levels; defaults to <code>:plugin</code>, with unavailable SE and confidence limits</td></tr></table><p>See <a href="../methods/">Methods</a> and <a href="../naming/">Naming</a>.</p><h2 id="Soft-façades-in-CausalTargeted"><a class="docs-heading-anchor" href="#Soft-façades-in-CausalTargeted">Soft façades in CausalTargeted</a><a id="Soft-façades-in-CausalTargeted-1"></a><a class="docs-heading-anchor-permalink" href="#Soft-façades-in-CausalTargeted" title="Permalink"></a></h2><p>Older CT names (<code>run_crumble_*</code>, engine <code>:crumble</code>) soft-deprecate to this package’s APIs. Prefer <code>using CausalMediation</code> and <code>run_mediation</code> in new code.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><a class="docs-footer-nextpage" href="../comparison/">Comparison »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.20.0 on <span class="colophon-date" title="Tuesday 10 November 2026 11:38">Tuesday 10 November 2026</span>. Using Julia version 1.13.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
