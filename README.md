@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21812342.svg)](https://doi.org/10.5281/zenodo.21812342)
 
-This package is part of the [CDCS Julia package set](https://github.com/SimonAB/causal-dynamics-book/tree/main/packages), which supports the [Causal Dynamics of Complex Systems book](https://simonab.github.io/causal-dynamics-book/).
+This package is part of the [CDCS Julia package set](https://github.com/SimonAB/causal-dynamics-book/tree/main/packages). The packages are the primary software; an early draft of [*Causal Dynamics of Complex Systems*](https://simonab.github.io/causal-dynamics-book/) uses them as a pedagogical implementation.
 
 Cross-fitted mediation for the CDCS Julia stack: interventional (RI), natural,
 organic, and controlled direct effects, with intermediate confounding (`moc`)
