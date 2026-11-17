@@ -1,9 +1,8 @@
 # Methods and literature
 
 This page maps **CausalMediation** APIs to the papers that define the estimands,
-identification conditions, and estimators. Implementations are Julia-native
-analogues of ideas in the modern mediation literature (including R `crumble` /
-`medoutcon`); they are not line-for-line ports. Full bibliographic entries are in
+identification conditions, and estimators implemented in Julia. Closest R
+companions include `crumble` and `medoutcon`. Full bibliographic entries are in
 [References](references.md). Keys such as `diaz2020mediation` match
 `references.bib` in the CDCS book. Engine naming (`:interventional`, not
 `"RI"`) is summarised in [Naming](naming.md).
@@ -31,11 +30,11 @@ NIE decompositions under weaker conditions
 
 | Topic | Primary sources | CausalMediation surface |
 |-------|-----------------|-------------------------|
-| Interventional effects, multiple mediators | Vansteelandt & Daniel (2017), *Epidemiology* | `InterventionalMediation`, TE/NDE/NIE |
-| Stochastic intervention mediation | Díaz & Hejazi (2020), *JRSS-B* | Target definitions; continuous-A nested MC currently has unavailable EIF uncertainty |
-| Intermediate confounding | Hejazi et al. (2023), *Biostatistics* | `moc` on `MediationSpec` |
-| Unified targeted mediation + MTP | Liu et al. (2024), arXiv:2408.14620 | `run_mediation` / `run_mediation_grid` |
-| R software companion | Liu et al. (2025), arXiv:2604.09902 (`crumble`) | Conceptual catalogue; Julia uses mediation names |
+| Interventional effects, multiple mediators | Vansteelandt & Daniel (2017), *Epidemiology* ([doi](https://doi.org/10.1097/EDE.0000000000000596)) | `InterventionalMediation`, TE/NDE/NIE |
+| Stochastic intervention mediation | Díaz & Hejazi (2020), *JRSS-B* ([doi](https://doi.org/10.1111/rssb.12362)) | Target definitions; continuous-A nested MC currently has unavailable EIF uncertainty |
+| Intermediate confounding | Hejazi et al. (2023), *Biostatistics* ([doi](https://doi.org/10.1093/biostatistics/kxac002)) | `moc` on `MediationSpec` |
+| Unified targeted mediation + MTP | Liu et al. (2024), [arXiv:2408.14620](https://arxiv.org/abs/2408.14620) | `run_mediation` / `run_mediation_grid` |
+| Software companion (R) | Liu et al. (2025), [arXiv:2604.09902](https://arxiv.org/abs/2604.09902) (`crumble`) | Estimand catalogue; Julia uses mediation names |
 
 **Continuous MTP.** Treatment shifts follow CausalTargeted `ShiftPolicy` (z-scale
 or natural scale, quantile clamps). Nested Monte Carlo draws mediators under
@@ -133,9 +132,15 @@ treatment arm.
 When observations nest in clusters, CausalDynamics owns **generative** nested
 ``U`` (`RandomEffectSpec`, `unroll_hierarchical_dag`). CausalTargeted owns
 **sampling** hierarchy via `cluster=` on repeated-outcome / parametric MSM
-(cluster-robust IF sandwich). CausalMediation should reuse the same missingness
-stratum rules and, when cluster-robust mediation IF lands, the same `cluster=`
-contract — without introducing MixedModels or BLUP estimands here.
+(cluster-robust IF sandwich). Sampling dependence and causal interference are
+distinct: changing an ordinary mediation estimator's covariance does not identify
+a joint mediator intervention.
+The separate experimental [clustered reference](cluster-mediation.md) now
+implements static joint-mediator stochastic interventions with intermediate
+confounding and within-cluster interference. It uses a restricted Gaussian
+backend and cluster-level cross-fitting, with an explicitly different target
+from the existing `MediationSpec` sampler. It does not extend that sampler's
+uncertainty contract or supply an automatic identification certificate.
 Hierarchical longitudinal mediation (``A_t``, ``M_t``) remains deferred
 ([BOUNDARIES](https://github.com/SimonAB/CausalMediation.jl/blob/main/BOUNDARIES.md)).
 

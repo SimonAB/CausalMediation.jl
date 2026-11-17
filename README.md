@@ -112,11 +112,62 @@ Design notes in-repo: [DESIGN.md](DESIGN.md) · [BOUNDARIES.md](BOUNDARIES.md) �
 [ecosystem principles](https://github.com/SimonAB/causal-dynamics-book/blob/main/packages/DESIGN_PRINCIPLES.md) ·
 [ECOSYSTEM_COMPARISON.md](https://github.com/SimonAB/causal-dynamics-book/blob/main/packages/ECOSYSTEM_COMPARISON.md).
 
+## Acknowledgements
+
+Developed in the [CDCS Julia package set](https://github.com/SimonAB/causal-dynamics-book/tree/main/packages).
+Maintainer: [Simon A. Babayan](https://orcid.org/0000-0002-4949-1117).
+
+Mediation estimands and one-step / TMLE estimators follow Díaz, Hejazi,
+Rudolph, Williams, Liu, Vansteelandt, Daniel, and collaborators, with
+targeted-learning foundations from van der Laan, Rose, and co-authors. Closest
+R companions are [`crumble`](https://cran.r-project.org/package=crumble),
+[`medoutcon`](https://cran.r-project.org/package=medoutcon),
+[`medRCT`](https://cran.r-project.org/package=medRCT), and
+[`lmtp`](https://cran.r-project.org/package=lmtp). The experimental clustered
+canonical reference implements the parametric form of Theorem 2 in Ham, Cheng &
+Li (2026); see [cluster-mediation.md](docs/src/cluster-mediation.md) for scope
+and limitations.
+
+## Related literature and software
+
+Highlights (full list in [docs/src/references.md](docs/src/references.md)):
+
+- Díaz & Hejazi (2020). Causal mediation analysis for stochastic interventions. *JRSS-B*. [doi:10.1111/rssb.12362](https://doi.org/10.1111/rssb.12362)
+- Hejazi, Rudolph, van der Laan & Díaz (2023). Stochastic interventional (in)direct effects. *Biostatistics*. [doi:10.1093/biostatistics/kxac002](https://doi.org/10.1093/biostatistics/kxac002)
+- Liu, Williams, Rudolph & Díaz (2024). General targeted machine learning for modern causal mediation analysis. [arXiv:2408.14620](https://arxiv.org/abs/2408.14620)
+- Liu, Williams, Rudolph & Díaz (2025). crumble: A comprehensive framework for modern causal mediation analysis. [arXiv:2604.09902](https://arxiv.org/abs/2604.09902)
+- Vansteelandt & Daniel (2017). Interventional effects for mediation analysis with multiple mediators. *Epidemiology*. [doi:10.1097/EDE.0000000000000596](https://doi.org/10.1097/EDE.0000000000000596)
+- Pearl (2001); Robins & Greenland (1992); VanderWeele (2015). Natural / classical mediation identification
+- Díaz, Williams, Hoffman & Schenck (2023). Longitudinal modified treatment policies. *JASA*. [doi:10.1080/01621459.2021.1955691](https://doi.org/10.1080/01621459.2021.1955691)
+- Ham, Cheng & Li (2026). Semiparametric causal mediation analysis in cluster-randomized trials. [arXiv:2611.11903](https://arxiv.org/abs/2611.11903)
+
+Related software: R [`crumble`](https://cran.r-project.org/package=crumble),
+[`medoutcon`](https://cran.r-project.org/package=medoutcon),
+[`medRCT`](https://cran.r-project.org/package=medRCT),
+[`lmtp`](https://cran.r-project.org/package=lmtp);
+Python [Ananke](https://github.com/UH-CAnD3/ananke);
+Julia [CausalDynamics.jl](https://github.com/SimonAB/CausalDynamics.jl),
+[CausalTargeted.jl](https://github.com/SimonAB/CausalTargeted.jl),
+[DAGMakie.jl](https://github.com/SimonAB/DAGMakie.jl).
+
 ## License
 
 MIT © Simon A. Babayan
 
 ## Citation
+
+For the experimental clustered stochastic-mediation method, cite the original
+methodological paper as well as the software:
+
+Ham, D., Cheng, C., & Li, F. (2026). *Semiparametric causal mediation analysis
+in cluster-randomized trials with post-treatment confounding*.
+arXiv:2611.11903v1.
+[doi:10.48550/arXiv.2611.11903](https://doi.org/10.48550/arXiv.2611.11903).
+The [clustered mediation manual](docs/src/cluster-mediation.md) maps the code to
+its equations, distinguishes our restricted Gaussian backend and synthetic
+validation from their study, and records the current inferential limitations.
+
+Software citation:
 
 ```bibtex
 @software{Babayan2026_CausalMediation,

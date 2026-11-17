@@ -21,6 +21,8 @@ chapters and package docs stay aligned. Prefer DOIs when citing externally.
 
 - Liu, R., Williams, N. T., Rudolph, K. E., & Díaz, I. (2025). crumble: A comprehensive framework for modern causal mediation analysis with intermediate confounding. arXiv:2604.09902. [doi:10.48550/arXiv.2604.09902](https://doi.org/10.48550/arXiv.2604.09902) — key `liu2025crumble`
 
+- Ham, D., Cheng, C., & Li, F. (2026). *Semiparametric causal mediation analysis in cluster-randomized trials with post-treatment confounding*. arXiv:2611.11903v1 (9 November 2026). [Paper](https://arxiv.org/abs/2611.11903); [doi:10.48550/arXiv.2611.11903](https://doi.org/10.48550/arXiv.2611.11903). Targets: equations (1)--(4); canonical scores: Theorem 2, equations (5)--(7); weighted intercept fluctuation: Appendix I.2. Preprint; key `ham2026cluster`.
+
 ## Organic effects and recanting twins
 
 - Lok, J. J. (2015). Organic direct and indirect effects with multiple mediators. *Statistics in Medicine* (and related Lok papers). — cite via book bibliography when key is present

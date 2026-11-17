@@ -6,12 +6,14 @@ CurrentModule = CausalMediation
 
 CausalMediation implements cross-fitted estimators for modern mediation
 contrasts: interventional (randomised intermediate) TE / NDE / NIE under
-modified treatment policies, natural and organic effects when admissible,
-and controlled direct effects. The exported `RecantingTwinMediation` type is
-reserved for compatibility and currently errors; it does not estimate a
-path-specific effect.
-Intermediate confounders (`moc`) are first-class. Defaults reuse lean Super
-Learner profiles from [CausalTargeted.jl](https://simonab.github.io/CausalTargeted.jl/dev/).
+modified treatment policies (Vansteelandt & Daniel, 2017; Díaz & Hejazi, 2020;
+Liu et al., 2024), natural and organic effects when admissible, and controlled
+direct effects. Intermediate confounding follows Hejazi et al. (2023). The
+exported `RecantingTwinMediation` type is reserved for compatibility and
+currently errors; it does not estimate a path-specific effect. Intermediate
+confounders (`moc`) are first-class. Defaults reuse lean Super Learner profiles
+from [CausalTargeted.jl](https://simonab.github.io/CausalTargeted.jl/dev/).
+Method-to-API mapping: [Methods](methods.md); DOIs: [References](references.md).
 
 Identification is delegated to
 [CausalDynamics.jl](https://simonab.github.io/CausalDynamics.jl/dev/)

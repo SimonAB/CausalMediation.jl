@@ -9,13 +9,16 @@ CausalMediation estimates interventional TE / NDE / NIE (and related families) o
 `MediationQuery` and adjustment set. [CausalTargeted.jl](https://simonab.github.io/CausalTargeted.jl/dev/)
 provides Super Learner profiles and MTP nuisances.
 
-DAG figures follow Cinelli, Forney & Pearl (2022,
+DAG figures follow Cinelli, Forney & Pearl (2024,
 [SMR](https://doi.org/10.1177/00491241221099552)) for good/bad controls, and
 Hong et al. (2024, [HSORM](https://doi.org/10.1007/s10742-024-00327-4)) /
 Vansteelandt & Daniel (2017, [Epidemiology](https://doi.org/10.1097/EDE.0000000000000596))
 for multiple mediators and post-treatment confounding. Plotting uses DAGMakie
 directly (`dagplot`, `dagplot_mediation`, `structural_edge_labels`, `edge_routing`,
 [`CurvedEdge`](https://simonab.github.io/DAGMakie.jl/dev/)).
+
+Papers implemented in each section are named at the section opening; the full
+map is in [Methods](methods.md) and [References](references.md).
 
 ```julia
 using Pkg
@@ -36,6 +39,12 @@ chord needs a bow (spine edges stay straight); skip chords on the baseline usual
 bow downward (`side = :right`), elevated forks upward.
 
 ## 1. Interventional mediation (NDE / NIE)
+
+Implements interventional TE / NDE / NIE under MTP shifts following
+Vansteelandt & Daniel (2017,
+[Epidemiology](https://doi.org/10.1097/EDE.0000000000000596)), Díaz & Hejazi
+(2020, [JRSS-B](https://doi.org/10.1111/rssb.12362)), and Liu et al. (2024,
+[arXiv:2408.14620](https://arxiv.org/abs/2408.14620)).
 
 **Graph.** Baseline confounding with mediator `M` on `A → Y`.
 
@@ -182,8 +191,10 @@ spec = MediationSpec(:A, :Y; mediators = [:M], covariates = [:W])
 
 ## 2. Factor treatment (recode MTP)
 
-Interventional TE / NDE / NIE under a finite recode of categorical `A`
-(continuous `M`). Both arms must be `DiscreteTreatmentPolicy`.
+Implements the same interventional mediation targets on a finite treatment
+recode (Díaz–Williams classification density ratios via CausalTargeted; Liu et
+al., 2024). Interventional TE / NDE / NIE under a finite recode of categorical
+`A` (continuous `M`). Both arms must be `DiscreteTreatmentPolicy`.
 
 ```@example factor-walk
 using CausalMediation, CausalTargeted, StableRNGs
@@ -239,9 +250,10 @@ numeric-`A` only. `RecantingTwinMediation` is reserved and unsupported.
 
 ## 3. Intermediate confounding (`moc`)
 
-When a post-treatment confounder `L` sits on the `A → M → Y` pathway, natural
-effects are not admissible. Pass `moc = [:L]` and select an interventional
-effect kind.
+Implements intermediate-confounder mediation of Hejazi et al. (2023,
+[Biostatistics](https://doi.org/10.1093/biostatistics/kxac002)). When a
+post-treatment confounder `L` sits on the `A → M → Y` pathway, natural effects
+are not admissible. Pass `moc = [:L]` and select an interventional effect kind.
 
 ```@example moc-walk
 using CausalMediation, CausalTargeted, StableRNGs

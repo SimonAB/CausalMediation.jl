@@ -47,6 +47,9 @@ spec_from_identification
 
 ## Estimation
 
+Implements Díaz & Hejazi (2020), Hejazi et al. (2023), and Liu et al. (2024)
+mediation functionals (see [Methods](methods.md)).
+
 For otherwise eligible static-arm one-step inference, `weight_truncation=true`
 selects the compatibility default capped route. Point fits are retained but
 uncertainty is unavailable with `inference_status = :truncated_weights`, even
