@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21812342.svg)](https://doi.org/10.5281/zenodo.21812342)
 
-This package is part of the [CDCS Julia package set](https://github.com/SimonAB/causal-dynamics-book/tree/main/packages). The packages are the primary software; an early draft of [*Causal Dynamics of Complex Systems*](https://simonab.github.io/causal-dynamics-book/) uses them as a pedagogical implementation.
+This package is part of the [CDCS Julia package set](https://github.com/SimonAB/causal-dynamics-book/tree/main/packages). An early draft of [*Causal Dynamics of Complex Systems*](https://simonab.github.io/causal-dynamics-book/) uses the packages as a pedagogical implementation.
 
 Cross-fitted mediation for the CDCS Julia stack: interventional (RI), natural,
 organic, and controlled direct effects, with intermediate confounding (`moc`)
@@ -130,16 +130,15 @@ and limitations.
 
 ## Related literature and software
 
-Highlights (full list in [docs/src/references.md](docs/src/references.md)):
+This package provides Julia-native implementations of the following papers
+(full list in [docs/src/references.md](docs/src/references.md)):
 
+- Vansteelandt & Daniel (2017). Interventional effects for mediation analysis with multiple mediators. *Epidemiology*. [doi:10.1097/EDE.0000000000000596](https://doi.org/10.1097/EDE.0000000000000596) — RI TE / NDE / NIE
 - Díaz & Hejazi (2020). Causal mediation analysis for stochastic interventions. *JRSS-B*. [doi:10.1111/rssb.12362](https://doi.org/10.1111/rssb.12362)
-- Hejazi, Rudolph, van der Laan & Díaz (2023). Stochastic interventional (in)direct effects. *Biostatistics*. [doi:10.1093/biostatistics/kxac002](https://doi.org/10.1093/biostatistics/kxac002)
-- Liu, Williams, Rudolph & Díaz (2024). General targeted machine learning for modern causal mediation analysis. [arXiv:2408.14620](https://arxiv.org/abs/2408.14620)
-- Liu, Williams, Rudolph & Díaz (2025). crumble: A comprehensive framework for modern causal mediation analysis. [arXiv:2604.09902](https://arxiv.org/abs/2604.09902)
-- Vansteelandt & Daniel (2017). Interventional effects for mediation analysis with multiple mediators. *Epidemiology*. [doi:10.1097/EDE.0000000000000596](https://doi.org/10.1097/EDE.0000000000000596)
-- Pearl (2001); Robins & Greenland (1992); VanderWeele (2015). Natural / classical mediation identification
-- Díaz, Williams, Hoffman & Schenck (2023). Longitudinal modified treatment policies. *JASA*. [doi:10.1080/01621459.2021.1955691](https://doi.org/10.1080/01621459.2021.1955691)
-- Ham, Cheng & Li (2026). Semiparametric causal mediation analysis in cluster-randomized trials. [arXiv:2611.11903](https://arxiv.org/abs/2611.11903)
+- Hejazi, Rudolph, van der Laan & Díaz (2023). Stochastic interventional (in)direct effects. *Biostatistics*. [doi:10.1093/biostatistics/kxac002](https://doi.org/10.1093/biostatistics/kxac002) — intermediate confounding (`moc`)
+- Liu, Williams, Rudolph & Díaz (2024). General targeted machine learning for modern causal mediation analysis. [arXiv:2408.14620](https://arxiv.org/abs/2408.14620) — `run_mediation` / grids
+- Pearl (2001); Robins & Greenland (1992); VanderWeele (2015). Natural / classical mediation — `NaturalMediation` when admissible
+- Ham, Cheng & Li (2026). Semiparametric causal mediation analysis in cluster-randomized trials. [arXiv:2611.11903](https://arxiv.org/abs/2611.11903) — experimental clustered reference
 
 Related software: R [`crumble`](https://cran.r-project.org/package=crumble),
 [`medoutcon`](https://cran.r-project.org/package=medoutcon),
