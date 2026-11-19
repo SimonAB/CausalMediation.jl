@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Experimental parametric hierarchical Bayesian clustered stochastic mediation:
+  `BayesianClusterMediationFit`, `cluster_mediation_design_dimensions`,
+  `fit_bayesian_cluster_mediation`, and `bayesian_mediation_effects` (with
+  optional `correction = :psis` via `CausalTargetedPSISExt` after `using PSIS`).
+  Reuses `ClusterMediationSpec` (`weighting` and `π` metadata) and fits
+  factorised one-level random-intercept Gaussian mechanisms via
+  `CausalTargeted`'s structured variational engine
+  `q(β, b) q(σ_ε⁻²) q(σ_b⁻²)`, followed by exact $O(1)$ exchangeable-covariance
+  Gaussian integration over random intercepts and `(Z, M)` across shared
+  posterior draws. This is a parametric Bayesian alternative rather than a
+  semiparametric EIF estimator: it trades density-ratio instability for explicit
+  parametric mechanism and prior assumptions.
 - Independent experimental canonical cluster-mediation reference from Ham,
   Cheng & Li (2026): `ClusterMediationSpec` / `run_cluster_mediation`, Gaussian
   process laws, quadratic outcome regression and exact Gaussian integration.

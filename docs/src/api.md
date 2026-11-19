@@ -75,15 +75,31 @@ for static discrete treatment policies use `run_mediation` with two
 
 ## Clustered mediation
 
-Separate subsection for the static clustered path (not `MediationSpec`).
-Implements the parametric canonical reference of Ham, Cheng & Li (2026,
-[arXiv:2611.11903](https://arxiv.org/abs/2611.11903)). See
-[Clustered mediation](cluster-mediation.md) for targets, parametric
+Separate subsection for the static clustered path (not `MediationSpec`),
+covering two distinct estimation routes on `ClusterMediationSpec`:
+
+- **Frequentist Theorem 2 EIF reference**: `run_cluster_mediation` implements
+  the parametric canonical-score reference of Ham, Cheng & Li (2026,
+  [arXiv:2611.11903](https://arxiv.org/abs/2611.11903)).
+- **Experimental parametric hierarchical Bayesian route**:
+  `fit_bayesian_cluster_mediation`, `bayesian_mediation_effects`, and
+  `cluster_mediation_design_dimensions` fit factorised random-intercept
+  Gaussian mechanisms via structured variational inference (Nolan, Menictas &
+  Wand 2020) with exact ``O(1)`` exchangeable-covariance integration and optional
+  `correction = :psis` importance refinement (Vehtari et al. 2024). This route
+  is not a semiparametric EIF estimator; it trades density-ratio instability for
+  explicit parametric mechanism and prior assumptions.
+
+See [Clustered mediation](cluster-mediation.md) for targets, parametric
 restrictions, and inference assumptions.
 
 ```@docs
 ClusterMediationSpec
 run_cluster_mediation
+BayesianClusterMediationFit
+cluster_mediation_design_dimensions
+fit_bayesian_cluster_mediation
+bayesian_mediation_effects
 ```
 
 ## Influence functions and caches

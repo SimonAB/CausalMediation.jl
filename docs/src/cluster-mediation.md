@@ -1,9 +1,12 @@
 # Clustered mediation
 
 `ClusterMediationSpec` and `run_cluster_mediation` provide an experimental
-parametric reference for the canonical estimator of Ham, Cheng and Li (2026),
-Theorem 2. This page is the dedicated documentation for that path; it is not
-part of the ordinary `MediationSpec` / `run_mediation` API.
+frequentist parametric reference for the canonical Theorem 2 EIF estimator of
+Ham, Cheng and Li (2026). This page also documents the separate experimental
+parametric hierarchical Bayesian route (`fit_bayesian_cluster_mediation` and
+`bayesian_mediation_effects`), which reuses `ClusterMediationSpec` for the same
+targets. Neither route is part of the ordinary `MediationSpec` / `run_mediation`
+API.
 
 Daeyoung Ham, Chao Cheng and Fan Li (2026). *Semiparametric causal mediation
 analysis in cluster-randomized trials with post-treatment confounding*.
@@ -279,3 +282,78 @@ The existing `MediationSpec` `moc` path uses a different confounder-mediator
 coupling. This API does not replace it or enable its unavailable uncertainty.
 Flexible learners, the low-dimensional classification estimator, missingness
 and longitudinal mediation remain outside this reference implementation.
+
+## Hierarchical Bayesian clustered mediation
+
+`fit_bayesian_cluster_mediation` and `bayesian_mediation_effects` provide an
+experimental **parametric Bayesian** alternative for the same clustered targets
+(`te`, `stochastic_total`, `ide`, `iie`, `iime`, and `isme`), reusing
+`ClusterMediationSpec` (`weighting` and `π` metadata) while remaining separate
+from the frequentist `run_cluster_mediation` Theorem 2 EIF reference. Rather
+than forming inverse-probability and mediator density ratios, this route models
+the joint law parametrically and propagates parameter uncertainty from the
+posterior. It is not a semiparametric or doubly robust EIF estimator: it trades
+density-ratio instability for explicit parametric mechanism forms, Gaussian
+random-intercept assumptions, and declared prior specifications. Causal
+identification remains `:user_assumed`.
+
+The model factorises across three one-level random-intercept Gaussian
+mechanisms:
+
+- Post-treatment confounder ``p(Z \mid A, C, N)`` linear in ``[1, A, N, C_j, \bar{C}]``.
+- Mediator ``p(M \mid A, Z, C, N)`` linear in ``[1, A, N, C_j, \bar{C}, Z_j, \bar{Z}_{-j}]``.
+- Outcome ``p(Y \mid A, Z, M, C, N)`` using ``[\phi_d(x_{kj}), A_k \phi_d(x_{kj})]``,
+  where ``\phi_d`` is the linear (`outcome_degree=1`) or quadratic
+  (`outcome_degree=2`, default) polynomial in ``[N, C_j, \bar{C}, Z_j, \bar{Z}_{-j}, M_j, \bar{M}_{-j}]``.
+
+Each mechanism is fitted via `CausalTargeted`'s structured variational engine
+``q(\beta, b)\,q(\sigma_\varepsilon^{-2})\,q(\sigma_b^{-2})`` (Nolan, Menictas
+& Wand 2020) with exact Schur-complement block algebra and exact affine design
+reparameterisation. Query `cluster_mediation_design_dimensions(spec; outcome_degree)`
+to construct explicit `ClusterGaussianPrior` entries for `:confounder`,
+`:mediator`, and `:outcome`; no outcome-derived prior scaling is performed.
+
+For each shared draw from the three fitted mechanism posteriors,
+`bayesian_mediation_effects` integrates analytically over the outcome random
+intercept and over ``(Z_k, M_k)`` using exact ``O(1)`` exchangeable-covariance
+algebra (without allocating ``N_k \times N_k`` cluster matrices), returning
+joint posterior means, SDs, credible intervals, MCSEs, and joint covariance
+under `:cluster` or `:individual` weighting. If any mechanism fit has
+`status !== :converged`, intervals and joint covariance are withheld (`NaN` /
+`intervals_available = false`).
+
+Loading `PSIS` (`using PSIS`, activating `CausalTargetedPSISExt`) enables
+`correction = :psis`, which applies Pareto-smoothed importance sampling
+(Vehtari et al. 2024) across the joint global parameter draws. Operational gates
+(`khat < 0.7`, `ess >= 400`, and `mcse / sd <= 0.05` across non-degenerate
+effects) withhold intervals and covariance (`NaN` / `intervals_available = false`)
+on failure without silently falling back to raw variational intervals.
+
+```julia
+using CausalMediation, CausalTargeted, LinearAlgebra, PSIS
+
+dims = cluster_mediation_design_dimensions(spec; outcome_degree = 2)
+mkprior(p) = ClusterGaussianPrior(
+    mean = zeros(p),
+    covariance = 4.0 * Matrix{Float64}(I, p, p),
+    residual_shape = 3.0,
+    residual_scale = 2.0,
+    cluster_shape = 3.0,
+    cluster_scale = 1.0,
+)
+priors = (
+    confounder = mkprior(dims.confounder),
+    mediator = mkprior(dims.mediator),
+    outcome = mkprior(dims.outcome),
+)
+
+fit = fit_bayesian_cluster_mediation(spec, train_df; priors, outcome_degree = 2)
+res = bayesian_mediation_effects(fit, target_df; correction = :psis)
+res.estimates
+```
+
+References: Ham, Cheng & Li (2026, [arXiv:2611.11903](https://arxiv.org/abs/2611.11903));
+Nolan, Menictas & Wand (2020, *Streamlined computing for variational inference
+with higher level random effects*, *JMLR* 21(157):1–62); Vehtari, Simpson,
+Gelman, Yao & Gabry (2024, *Pareto smoothed importance sampling*, *JMLR*
+25(72):1–58).
