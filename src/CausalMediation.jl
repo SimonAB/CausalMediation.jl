@@ -42,6 +42,7 @@ include("nuisance.jl")
 include("mediation_eif.jl")
 include("eif_interventional.jl")
 include("cluster_mediation.jl")
+include("bayesian_cluster_mediation.jl")
 include("mediation_fold_cache.jl")
 include("estimators.jl")
 include("eif_natural.jl")
@@ -63,6 +64,8 @@ export InterventionalMediation, NaturalMediation, OrganicMediation
 export RecantingTwinMediation, ControlledDirect
 export MediationSpec, MediationResult
 export ClusterMediationSpec, run_cluster_mediation
+export BayesianClusterMediationFit, cluster_mediation_design_dimensions
+export fit_bayesian_cluster_mediation, bayesian_mediation_effects
 export assumptions, assert_natural_admissible!, assert_moc_for_ri!
 export assert_causal_mediator_paths!, MediationRelationKinds
 export plan_mediation, spec_from_identification
