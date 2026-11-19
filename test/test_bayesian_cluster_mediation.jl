@@ -279,7 +279,7 @@ end
             outcome_degree = 1)
 
         fit_ok = fit_bayesian_cluster_mediation(spec, df; priors, outcome_degree = 1)
-        @test_throws ArgumentError bayesian_mediation_effects(fit_ok, target; correction = :psis)
+        @test_throws ArgumentError bayesian_mediation_effects(fit_ok, target; correction = :unknown)
 
         df_nonbin = copy(df)
         df_nonbin.A[df_nonbin.id .== 1] .= 2

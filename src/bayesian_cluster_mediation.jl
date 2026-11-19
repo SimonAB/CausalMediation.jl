@@ -190,34 +190,51 @@ function _bayesian_cm_arm_beta(β_y::AbstractVector{Float64}, a_y::Float64)
     return a_y == 0.0 ? view(β_y, 1:q) : (view(β_y, 1:q) .+ view(β_y, (q + 1):(2 * q)))
 end
 
-"""
-Compute exact cluster-level outcome expectation for one draw of parameters
-given `(μ_z, Σ_z, μ_m, Σ_m, Σ_zm)` under outcome treatment arm `a_y`.
-"""
-function _bayesian_cm_cluster_mean(β_y::AbstractVector{Float64}, degree::Int,
-        a_y::Float64, N::Int, C::Matrix{Float64}, C̄::Vector{Float64},
-        μ_z::Vector{Float64}, Σ_z::Matrix{Float64},
-        μ_m::Vector{Float64}, Σ_m::Matrix{Float64}, Σ_zm::Matrix{Float64})
-    β_arm = _bayesian_cm_arm_beta(β_y, a_y)
-    μ = [μ_z; μ_m]
-    Σ = [Σ_z Σ_zm; Σ_zm' Σ_m]
-    Nf = Float64(N)
-    total = 0.0
-    for j in 1:N
-        T = _cluster_summary_map(N, j)
-        Cj = isempty(C) ? Float64[] : vec(C[j, :])
-        prefix = [Nf; Cj; C̄]
-        np = length(prefix)
-        μ_x = [prefix; T * μ]
-        Σ_x = zeros(Float64, np + 4, np + 4)
-        Σ_x[(np + 1):end, (np + 1):end] = T * Σ * T'
-        total += _bayesian_cm_quad_mean(β_arm, μ_x, Σ_x, degree)
+function _exchangeable_summary_cov(N::Int, wz::Float64, bz::Float64,
+        wm::Float64, bm::Float64, wzm::Float64, bzm::Float64; indep_own_peer_m::Bool = false)
+    # Exact 4×4 covariance of [Z_j, Z̄_{-j}, M_j, M̄_{-j}] in O(1) without N×N matrices.
+    S = zeros(Float64, 4, 4)
+    S[1, 1] = wz + bz
+    S[3, 3] = wm + bm
+    S[1, 3] = S[3, 1] = wzm + bzm
+    if N > 1
+        inv_nm1 = 1.0 / (N - 1)
+        S[1, 2] = S[2, 1] = bz
+        S[2, 2] = wz * inv_nm1 + bz
+        S[3, 4] = S[4, 3] = indep_own_peer_m ? 0.0 : bm
+        S[4, 4] = wm * inv_nm1 + bm
+        S[1, 4] = S[4, 1] = bzm
+        S[2, 3] = S[3, 2] = bzm
+        S[2, 4] = S[4, 2] = wzm * inv_nm1 + bzm
     end
-    return total / N
+    return S
+end
+
+function _eval_quad_with_tail_cov(β::AbstractVector{Float64}, μ_x::AbstractVector{Float64},
+        S_tail::Matrix{Float64}, np::Int, degree::Int)
+    d = length(μ_x)
+    val = β[1]
+    @inbounds for j in 1:d
+        val += β[1 + j] * μ_x[j]
+    end
+    degree == 1 && return val
+    idx = 1 + d
+    @inbounds for j in 1:d
+        μj = μ_x[j]
+        tj = j - np
+        for k in j:d
+            idx += 1
+            tk = k - np
+            cov_jk = (tj >= 1 && tk >= 1) ? S_tail[tj, tk] : 0.0
+            val += β[idx] * (μj * μ_x[k] + cov_jk)
+        end
+    end
+    return val
 end
 
 """
-Exact cluster-level mediation functionals for one joint parameter draw.
+Exact cluster-level mediation functionals for one joint parameter draw,
+using exact O(1) exchangeable covariance algebra (zero N×N allocations).
 Returns `(te, stochastic_total, ide, iie, iime, isme, θ00, θ10, θ11, τ, μ_nat0, μ_nat1)`.
 """
 function _evaluate_bayesian_cm_draw(target_clusters, degree::Int, weighting::Symbol,
@@ -234,6 +251,8 @@ function _evaluate_bayesian_cm_draw(target_clusters, degree::Int, weighting::Sym
     γ_own = β_m[end - 1]
     γ_peer = β_m[end]
     β_m_base = view(β_m, 1:(length(β_m) - 2))
+    β_arm0 = _bayesian_cm_arm_beta(β_y, 0.0)
+    β_arm1 = _bayesian_cm_arm_beta(β_y, 1.0)
 
     θ00 = 0.0; θ10 = 0.0; θ11 = 0.0; τ_val = 0.0
     μ_nat0 = 0.0; μ_nat1 = 0.0
@@ -241,57 +260,85 @@ function _evaluate_bayesian_cm_draw(target_clusters, degree::Int, weighting::Sym
     for (idx, cl) in enumerate(target_clusters)
         w = weights[idx]
         N = cl.N
-        I_N = Matrix{Float64}(I, N, N)
-        J_N = ones(Float64, N, N)
-        zero_N = zeros(Float64, N, N)
+        Nf = Float64(N)
+        inv_nm1 = N > 1 ? 1.0 / (N - 1) : 0.0
 
-        # Confounder laws Z | a
+        # Confounder means μ_Z(0), μ_Z(1) and exchangeable covariance (wz, bz)
         μ_z0 = cl.X_base0 * β_z
         μ_z1 = cl.X_base1 * β_z
-        Σ_z = σ2_ez .* I_N .+ σ2_bz .* J_N
+        wz, bz = σ2_ez, σ2_bz
 
-        # Linear operator G_M mapping Z -> γ_own Z_j + γ_peer Z̄_{-j}
-        G_M = N == 1 ? (γ_own .* I_N) :
-            ((γ_own - γ_peer / (N - 1)) .* I_N .+ (γ_peer / (N - 1)) .* J_N)
+        # Exchangeable operator G_M = α I + β J
+        α = N == 1 ? γ_own : (γ_own - γ_peer * inv_nm1)
+        βg = N == 1 ? 0.0 : (γ_peer * inv_nm1)
 
-        # Marginal mediator laws M | a (integrating out Z | a)
-        μ_m0 = cl.X_base0 * β_m_base + G_M * μ_z0
-        μ_m1 = cl.X_base1 * β_m_base + G_M * μ_z1
-        Σ_m_given_z = σ2_em .* I_N .+ σ2_bm .* J_N
-        Σ_zm = Σ_z * G_M'
-        Σ_m = Matrix(Symmetric(Σ_m_given_z + G_M * Σ_z * G_M'))
+        # Marginal mediator means μ_M(a) = X_base(a) β_m_base + G_M μ_Z(a) in O(N)
+        sum_z0 = sum(μ_z0)
+        sum_z1 = sum(μ_z1)
+        μ_m0 = cl.X_base0 * β_m_base .+ α .* μ_z0 .+ (βg * sum_z0)
+        μ_m1 = cl.X_base1 * β_m_base .+ α .* μ_z1 .+ (βg * sum_z1)
+        sum_m0 = sum(μ_m0)
+        sum_m1 = sum(μ_m1)
 
-        # θ(0, 0), θ(1, 0), θ(1, 1) with independent Z and M draws (Σ_zm = 0)
-        θ00 += w * _bayesian_cm_cluster_mean(β_y, degree, 0.0, N, cl.C, cl.C̄, μ_z0, Σ_z, μ_m0, Σ_m, zero_N)
-        θ10 += w * _bayesian_cm_cluster_mean(β_y, degree, 1.0, N, cl.C, cl.C̄, μ_z1, Σ_z, μ_m0, Σ_m, zero_N)
-        θ11 += w * _bayesian_cm_cluster_mean(β_y, degree, 1.0, N, cl.C, cl.C̄, μ_z1, Σ_z, μ_m1, Σ_m, zero_N)
+        # Exchangeable covariances Σ_ZM = (wzm, bzm) and Σ_M = (wm, bm) in O(1)
+        wzm = wz * α
+        bzm = wz * βg + bz * α + Nf * bz * βg
+        wm = σ2_em + α * wzm
+        bm = σ2_bm + α * bzm + βg * wzm + Nf * βg * bzm
 
-        # Natural joint means (retaining Σ_zm)
-        μ_nat0 += w * _bayesian_cm_cluster_mean(β_y, degree, 0.0, N, cl.C, cl.C̄, μ_z0, Σ_z, μ_m0, Σ_m, Σ_zm)
-        μ_nat1 += w * _bayesian_cm_cluster_mean(β_y, degree, 1.0, N, cl.C, cl.C̄, μ_z1, Σ_z, μ_m1, Σ_m, Σ_zm)
+        S_indep = _exchangeable_summary_cov(N, wz, bz, wm, bm, 0.0, 0.0)
+        S_nat = _exchangeable_summary_cov(N, wz, bz, wm, bm, wzm, bzm)
+        S_tau = _exchangeable_summary_cov(N, wz, bz, wm, bm, 0.0, 0.0; indep_own_peer_m = true)
 
-        # τ: outcome arm 1, Z ~ p(Z|1), independent own M_j ~ p(M_j|1) and peers M_{-j} ~ p(M_{-j}|0)
-        β_arm1 = _bayesian_cm_arm_beta(β_y, 1.0)
-        τ_cluster = 0.0
-        Nf = Float64(N)
-        for j in 1:N
-            μ_m_tau = copy(μ_m0)
-            Σ_m_tau = copy(Σ_m)
-            μ_m_tau[j] = μ_m1[j]
-            Σ_m_tau[j, :] .= 0.0
-            Σ_m_tau[:, j] .= 0.0
-            Σ_m_tau[j, j] = Σ_m[j, j]
-            T = _cluster_summary_map(N, j)
-            Cj = isempty(cl.C) ? Float64[] : vec(cl.C[j, :])
-            prefix = [Nf; Cj; cl.C̄]
-            np = length(prefix)
-            μ_x = [prefix; T * [μ_z1; μ_m_tau]]
-            Σ_x = zeros(Float64, np + 4, np + 4)
-            Σ_joint = [Σ_z zero_N; zero_N Σ_m_tau]
-            Σ_x[(np + 1):end, (np + 1):end] = T * Σ_joint * T'
-            τ_cluster += _bayesian_cm_quad_mean(β_arm1, μ_x, Σ_x, degree)
+        np = 1 + 2 * size(cl.C, 2)
+        μ_x = Vector{Float64}(undef, np + 4)
+        μ_x[1] = Nf
+        if !isempty(cl.C̄)
+            dc = length(cl.C̄)
+            @inbounds for c in 1:dc
+                μ_x[1 + dc + c] = cl.C̄[c]
+            end
         end
-        τ_val += w * (τ_cluster / N)
+
+        c_θ00 = 0.0; c_θ10 = 0.0; c_θ11 = 0.0; c_τ = 0.0
+        c_nat0 = 0.0; c_nat1 = 0.0
+        dc = size(cl.C, 2)
+
+        @inbounds for j in 1:N
+            for c in 1:dc
+                μ_x[1 + c] = cl.C[j, c]
+            end
+            z0j = μ_z0[j]; z0p = N > 1 ? (sum_z0 - z0j) * inv_nm1 : 0.0
+            z1j = μ_z1[j]; z1p = N > 1 ? (sum_z1 - z1j) * inv_nm1 : 0.0
+            m0j = μ_m0[j]; m0p = N > 1 ? (sum_m0 - m0j) * inv_nm1 : 0.0
+            m1j = μ_m1[j]; m1p = N > 1 ? (sum_m1 - m1j) * inv_nm1 : 0.0
+
+            # Arm 0, (Z0, M0): θ00 (indep) and μ_nat0 (joint)
+            μ_x[np + 1] = z0j; μ_x[np + 2] = z0p; μ_x[np + 3] = m0j; μ_x[np + 4] = m0p
+            c_θ00 += _eval_quad_with_tail_cov(β_arm0, μ_x, S_indep, np, degree)
+            c_nat0 += _eval_quad_with_tail_cov(β_arm0, μ_x, S_nat, np, degree)
+
+            # Arm 1, (Z1, M0): θ10
+            μ_x[np + 1] = z1j; μ_x[np + 2] = z1p; μ_x[np + 3] = m0j; μ_x[np + 4] = m0p
+            c_θ10 += _eval_quad_with_tail_cov(β_arm1, μ_x, S_indep, np, degree)
+
+            # Arm 1, (Z1, M1): θ11 (indep) and μ_nat1 (joint)
+            μ_x[np + 3] = m1j; μ_x[np + 4] = m1p
+            c_θ11 += _eval_quad_with_tail_cov(β_arm1, μ_x, S_indep, np, degree)
+            c_nat1 += _eval_quad_with_tail_cov(β_arm1, μ_x, S_nat, np, degree)
+
+            # Arm 1, (Z1, own M1, peer M0): τ
+            μ_x[np + 3] = m1j; μ_x[np + 4] = m0p
+            c_τ += _eval_quad_with_tail_cov(β_arm1, μ_x, S_tau, np, degree)
+        end
+
+        inv_N = 1.0 / N
+        θ00 += w * (c_θ00 * inv_N)
+        θ10 += w * (c_θ10 * inv_N)
+        θ11 += w * (c_θ11 * inv_N)
+        τ_val += w * (c_τ * inv_N)
+        μ_nat0 += w * (c_nat0 * inv_N)
+        μ_nat1 += w * (c_nat1 * inv_N)
     end
 
     ide = θ10 - θ00
@@ -341,8 +388,8 @@ function bayesian_mediation_effects(fit::BayesianClusterMediationFit, target;
         n_draws::Integer = 2000, rng::AbstractRNG = Random.default_rng(),
         level::Real = 0.95, weighting::Symbol = fit.spec.weighting,
         correction::Symbol = :none)
-    correction === :none || throw(ArgumentError(
-        "correction=:$correction is not yet supported on BayesianClusterMediationFit; use correction=:none"))
+    correction in (:none, :psis) || throw(ArgumentError(
+        "correction must be :none or :psis"))
     weighting in (:cluster, :individual) || throw(ArgumentError("weighting must be :cluster or :individual"))
     n_draws >= 2 || throw(ArgumentError("n_draws must be at least 2"))
     isfinite(level) && 0 < level < 1 || throw(ArgumentError("level must lie strictly between zero and one"))
@@ -388,6 +435,36 @@ function bayesian_mediation_effects(fit::BayesianClusterMediationFit, target;
         draws[4, s] = ev.iie
         draws[5, s] = ev.iime
         draws[6, s] = ev.isme
+    end
+
+    if correction === :psis
+        lr_z = CausalTargeted._cluster_log_importance_ratios(fit.confounder.stats_raw,
+            fit.confounder.prior, fit.confounder.block_state,
+            fit.confounder.residual_shape, fit.confounder.residual_scale,
+            fit.confounder.cluster_shape, fit.confounder.cluster_scale,
+            dz.beta_draws, dz.σ2_eps, dz.σ2_b)
+        lr_m = CausalTargeted._cluster_log_importance_ratios(fit.mediator.stats_raw,
+            fit.mediator.prior, fit.mediator.block_state,
+            fit.mediator.residual_shape, fit.mediator.residual_scale,
+            fit.mediator.cluster_shape, fit.mediator.cluster_scale,
+            dm.beta_draws, dm.σ2_eps, dm.σ2_b)
+        lr_y = CausalTargeted._cluster_log_importance_ratios(fit.outcome.stats_raw,
+            fit.outcome.prior, fit.outcome.block_state,
+            fit.outcome.residual_shape, fit.outcome.residual_scale,
+            fit.outcome.cluster_shape, fit.outcome.cluster_scale,
+            dy.beta_draws, dy.σ2_eps, dy.σ2_b)
+        log_ratios = lr_z .+ lr_m .+ lr_y
+        psis_res = CausalTargeted._psis_weighted_summary(draws, log_ratios; level = Float64(level))
+        psis_diagnostics = (; passed = psis_res.passed, failures = psis_res.failures,
+            khat = psis_res.khat, ess = psis_res.ess, max_mcse_to_sd = psis_res.max_mcse_to_sd)
+        estimates = DataFrame(effect = effect_names, mean = psis_res.mean, sd = psis_res.sd,
+            lower = psis_res.lower, upper = psis_res.upper, mcse = psis_res.mcse)
+        metadata = (; fit.metadata..., weighting, n_target_clusters = length(target_clusters),
+            level = Float64(level), n_draws = S, correction,
+            uncertainty = psis_res.passed ? :psis_refined_moments : :unavailable,
+            intervals = psis_res.passed ? :pointwise : :unavailable,
+            intervals_available = psis_res.passed, psis_diagnostics)
+        return (; estimates, covariance = psis_res.covariance, draws, metadata)
     end
 
     α = (1.0 - Float64(level)) / 2.0
