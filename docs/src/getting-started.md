@@ -463,6 +463,31 @@ fig, _, _ = dagplot(g_rt;
 fig
 ```
 
+## 6. Clustered mediation
+
+Implements the static clustered interventional mediation reference of Ham, Cheng
+& Li (2026, [arXiv:2611.11903](https://arxiv.org/abs/2611.11903)). This path is
+separate from `MediationSpec` / `run_mediation`: it uses
+`ClusterMediationSpec` / `run_cluster_mediation`, a restricted Gaussian backend,
+and cluster-level cross-fitting for joint-mediator interventions under
+within-cluster interference.
+
+```julia
+using CausalMediation
+
+spec = ClusterMediationSpec(:A, :Y;
+    cluster = :id,
+    mediator = :M,
+    confounder = :Z,
+)
+result = run_cluster_mediation(spec, df; folds = 3, rng = StableRNG(1))
+result.table   # ide, iie, iime, isme, stochastic_total, te
+```
+
+Targets, assumptions, diagnostics, and inference limits are documented on the
+dedicated page: [Clustered mediation](cluster-mediation.md). See also
+[Methods — Clustered mediation](methods.md#clustered-mediation).
+
 ## Estimators and nested Monte Carlo
 
 | `estimator` | Role |

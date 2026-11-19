@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Independent experimental canonical cluster-mediation reference from Ham,
+  Cheng & Li (2026): `ClusterMediationSpec` / `run_cluster_mediation`, Gaussian
+  process laws, quadratic outcome regression and exact Gaussian integration.
+  Whole-cluster folds, cluster/individual weighting and joint EIF covariance
+  preserve the intervention target. Ordinary treatment `te` is separate from
+  `stochastic_total`. Capped fits withhold uncertainty. Includes analytic tests
+  and a synthetic example. Active log-ratio diagnostics accompany fits. Initial
+  400-replication calibration at each of 100 and 300 clusters shows extreme
+  uncapped estimates and undercoverage; routine inferential use is not advised.
+  Optional `stabilise=true` implements Appendix I.2's weighted intercept
+  fluctuation. Score-level agreement with the authors' R routines is checked;
+  point stability improves in the synthetic ablation but interval undercoverage
+  persists. Flexible learners and end-to-end fitted R concordance remain deferred.
+
+### Fixed
+
+- Centre and scale outcome inputs before forming quadratic monomials; transform
+  their Gaussian moments consistently. This preserves exact integration and
+  prevents numerical rank loss after changing a confounder's measurement origin.
+
 ## [0.2.0] - 2026-11-08
 
 ### Added

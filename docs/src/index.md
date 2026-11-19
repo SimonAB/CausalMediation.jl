@@ -54,13 +54,15 @@ Design notes:
 ## Methods and literature
 
 - [Comparison](comparison.md) — Julia vs R (`crumble`, `medoutcon`, `medRCT`) and Python
-- [Methods and literature](methods.md) — RI / natural / organic / RT / CDE, EIF, `moc`
+- [Methods and literature](methods.md) — RI / natural / organic / RT / CDE, EIF, `moc`, clustered mediation
+- [Clustered mediation](cluster-mediation.md) — Ham, Cheng & Li (2026) static-cluster reference
 - [Naming](naming.md) — Julia symbols vs R `crumble` strings
 - [References](references.md) — bibliographic list with DOIs
 
 Canonical sources include Vansteelandt & Daniel (2017); Díaz & Hejazi (2020);
-Liu et al. (2024); Vo–Díaz on recanting twins; Lok (2015) on organic effects.
-BibTeX keys such as `diaz2020mediation` live in the CDCS book `references.bib`.
+Liu et al. (2024); Ham, Cheng & Li (2026) for clustered mediation; Vo–Díaz on
+recanting twins; Lok (2015) on organic effects. BibTeX keys such as
+`diaz2020mediation` live in the CDCS book `references.bib`.
 
 ## Quick start
 

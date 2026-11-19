@@ -11,6 +11,7 @@ using StableRNGs
 using Statistics
 
 @testset "CausalMediation" begin
+    include("test_cluster_mediation.jl")
     include("test_mediation_oracles.jl")
     include("test_truncation_contract.jl")
     @testset "mediation sweep validation" begin

@@ -73,6 +73,19 @@ informative error and performs no fit. For numeric static-arm mediation use
 for static discrete treatment policies use `run_mediation` with two
 `discrete_static_policy` arms. Neither route silently substitutes an estimator.
 
+## Clustered mediation
+
+Separate subsection for the static clustered path (not `MediationSpec`).
+Implements the parametric canonical reference of Ham, Cheng & Li (2026,
+[arXiv:2611.11903](https://arxiv.org/abs/2611.11903)). See
+[Clustered mediation](cluster-mediation.md) for targets, parametric
+restrictions, and inference assumptions.
+
+```@docs
+ClusterMediationSpec
+run_cluster_mediation
+```
+
 ## Influence functions and caches
 
 ```@docs

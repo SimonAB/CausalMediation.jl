@@ -47,10 +47,29 @@ Treatment shifts on `MediationSpec` are CausalTargeted `ShiftPolicy` (numeric MT
   (CausalDynamics BOUNDARIES).
 
 
+## Static cluster reference
+
+`ClusterMediationSpec` / `run_cluster_mediation` implement a separate experimental
+Gaussian canonical reference for Ham, Cheng & Li (2026), Theorem 2. Its mediator
+draw is baseline-conditional and independent of the retained confounder vector.
+The existing `MediationSpec` `moc` sampler is not silently replaced. The new route
+returns ordinary `te` separately from `stochastic_total`, keeps joint cluster
+influence covariance, and marks identification as user-assumed. It does not
+consume the existing no-interference identification certificate. See
+[the manual](docs/src/cluster-mediation.md) for parametric and inferential limits.
+
+`stabilise=true` independently implements the paper's Appendix I.2 intercept
+fluctuation, with separate fold/target/weighting residual equations and unchanged
+ordinary `te`. It is opt-in because better point stability has not repaired
+interval calibration. Capping still withholds uncertainty. The outcome basis
+uses training-fold centring/scaling, with the same affine transformation of
+Gaussian means and covariances during exact integration.
+
 ## Source file roles
 
 | File | Role |
 |------|------|
+| `cluster_mediation.jl` | Static clustered stochastic mediation; Gaussian integration and canonical cluster scores |
 | `grid.jl` | Canonical `run_mediation(spec, data)` driver and scalar helpers |
 | `mediation_grid.jl` | δ-grid `run_mediation_grid` (TE / NDE / NIE × δ) |
 | `effects.jl` | `MediationSpec`, `moc`, effect families, assumption gates |

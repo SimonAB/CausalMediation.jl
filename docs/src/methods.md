@@ -127,22 +127,35 @@ until a suitable inference method is implemented. Nonempty `moc` is refused:
 its post-treatment distribution would also need to be integrated under each
 treatment arm.
 
-## Nested units / clustering
+## Nested units versus clustered mediation
 
 When observations nest in clusters, CausalDynamics owns **generative** nested
 ``U`` (`RandomEffectSpec`, `unroll_hierarchical_dag`). CausalTargeted owns
 **sampling** hierarchy via `cluster=` on repeated-outcome / parametric MSM
 (cluster-robust IF sandwich). Sampling dependence and causal interference are
 distinct: changing an ordinary mediation estimator's covariance does not identify
-a joint mediator intervention.
-The separate experimental [clustered reference](cluster-mediation.md) now
-implements static joint-mediator stochastic interventions with intermediate
-confounding and within-cluster interference. It uses a restricted Gaussian
-backend and cluster-level cross-fitting, with an explicitly different target
-from the existing `MediationSpec` sampler. It does not extend that sampler's
-uncertainty contract or supply an automatic identification certificate.
-Hierarchical longitudinal mediation (``A_t``, ``M_t``) remains deferred
+a joint mediator intervention. Hierarchical longitudinal mediation (``A_t``,
+``M_t``) remains deferred
 ([BOUNDARIES](https://github.com/SimonAB/CausalMediation.jl/blob/main/BOUNDARIES.md)).
+
+## Clustered mediation
+
+This package provides a Julia-native implementation of the static clustered
+interventional mediation reference of Ham, Cheng & Li (2026,
+[arXiv:2611.11903](https://arxiv.org/abs/2611.11903)). The public surface is
+`ClusterMediationSpec` / `run_cluster_mediation`.
+
+| Topic | Primary sources | CausalMediation surface |
+|-------|-----------------|-------------------------|
+| Cluster-randomised mediation with post-treatment confounding | Ham, Cheng & Li (2026), [arXiv:2611.11903](https://arxiv.org/abs/2611.11903) | `ClusterMediationSpec`, `run_cluster_mediation` |
+
+The estimator targets joint-mediator stochastic interventions with intermediate
+confounding and within-cluster interference under a restricted Gaussian backend
+and cluster-level cross-fitting. It is a different estimand from the
+`MediationSpec` nested-MC path, does not extend that path's uncertainty
+contract, and does not consume an automatic `MediationQuery` certificate
+(`identification=:user_assumed`). Full targets, equations, diagnostics, and
+limits: [Clustered mediation](cluster-mediation.md).
 
 ## Recanting twins and path-specific effects
 

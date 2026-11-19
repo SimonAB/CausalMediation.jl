@@ -26,6 +26,7 @@ makedocs(
         "Getting started" => "getting-started.md",
         "Comparison" => "comparison.md",
         "Methods and literature" => "methods.md",
+        "Clustered mediation" => "cluster-mediation.md",
         "Naming" => "naming.md",
         "API overview" => "api.md",
         "References" => "references.md",

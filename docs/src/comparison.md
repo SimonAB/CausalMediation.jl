@@ -61,6 +61,7 @@ flowchart LR
 | Typed ID certificate → estimate | Unique | Partial | Partial |
 | Cross-fit Super Learner (shared with LMTP) | Yes (via CausalTargeted) | Yes (sl3 + crumble) | Partial |
 | LMTP without mediators | — (use CausalTargeted) | Yes (`lmtp`) | Yes (Ananke) |
+| Clustered mediation (joint-mediator CRT reference) | Yes (`ClusterMediationSpec`; [docs](cluster-mediation.md)) | Partial / custom | — |
 | Full parity with every `crumble` option | — (deliberate) | Yes | — |
 
 ## Julia neighbours

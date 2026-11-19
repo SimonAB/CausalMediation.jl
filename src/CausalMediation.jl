@@ -13,6 +13,7 @@ for Super Learner, `ShiftPolicy` / `DiscreteTreatmentPolicy`, fold helpers, and 
 
 - `MediationSpec` / `run_mediation` — typed estimate
 - `run_mediation_grid` — δ-grid `DataFrame` API
+- `ClusterMediationSpec` / `run_cluster_mediation` — experimental static-cluster reference
 - `plan_mediation` / `spec_from_identification` — ID bridge
 - `decompose` — TE / NDE / NIE (or path) extraction
 
@@ -40,6 +41,7 @@ include("identify_bridge.jl")
 include("nuisance.jl")
 include("mediation_eif.jl")
 include("eif_interventional.jl")
+include("cluster_mediation.jl")
 include("mediation_fold_cache.jl")
 include("estimators.jl")
 include("eif_natural.jl")
@@ -60,6 +62,7 @@ export MediationEffect
 export InterventionalMediation, NaturalMediation, OrganicMediation
 export RecantingTwinMediation, ControlledDirect
 export MediationSpec, MediationResult
+export ClusterMediationSpec, run_cluster_mediation
 export assumptions, assert_natural_admissible!, assert_moc_for_ri!
 export assert_causal_mediator_paths!, MediationRelationKinds
 export plan_mediation, spec_from_identification

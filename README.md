@@ -98,7 +98,8 @@ julia --project=docs -e 'using Pkg; Pkg.develop(path="."); Pkg.instantiate()'
 julia --project=docs docs/make.jl
 ```
 
-Pages: home, getting started, comparison, methods, naming, API, references.
+Pages: home, getting started, comparison, methods, clustered mediation, naming,
+API, references.
 
 **Stress validation** (Quarto notebook + catalogued datasets):
 [CausalTargeted STRESS.md](https://github.com/SimonAB/CausalTargeted.jl/blob/main/STRESS.md) ·

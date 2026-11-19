@@ -9,6 +9,10 @@
 - Numeric MTP (`ShiftPolicy`) and factor recodes (`DiscreteTreatmentPolicy`) for interventional TE/NDE/NIE (continuous `M`, empty `moc` on the factor path)
 - `moc` intermediate confounding; δ-grids; target-trial constructors
 - Optional Lux Riesz-representer extension
+- Experimental static clustered stochastic mediation: `ClusterMediationSpec` /
+  `run_cluster_mediation`, Gaussian random-intercept laws and quadratic outcome
+  regression, exact integration and canonical cluster scores. Ordinary `te` and
+  `stochastic_total` remain distinct; no automatic graph certificate.
 
 ## CausalTargeted.jl
 
@@ -31,8 +35,9 @@
 
 ## Out of scope (for now)
 
-- Hierarchical longitudinal mediation (``A_t``, ``M_t`` under nested units);
-  static/clustered mediation may reuse Targeted cluster-robust IF later
+- Hierarchical longitudinal mediation (``A_t``, ``M_t`` under nested units),
+  flexible/classification-based clustered mediation and arbitrary cluster
+  covariance. The new static Gaussian reference is narrower than these targets.
 - Raw high-dimensional tensors as mediators (spectra, images): compress first via
   CausalDynamics `RepresentationSpec` / `encode_to_panel`, then pass **code**
   columns to `MediationSpec`; see [Methods](docs/src/methods.md#high-dimensional-mediators-via-codes)
