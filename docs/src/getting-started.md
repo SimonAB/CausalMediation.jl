@@ -488,6 +488,105 @@ Targets, assumptions, diagnostics, and inference limits are documented on the
 dedicated page: [Clustered mediation](cluster-mediation.md). See also
 [Methods — Clustered mediation](methods.md#clustered-mediation).
 
+## 7. Natural, organic, and controlled direct effects (no `moc`)
+
+When there is **no** exposure-induced mediator–outcome confounder (`moc` is
+empty), natural direct and indirect effects (`NaturalMediation`; Robins &
+Greenland, 1992; Pearl, 2001) and organic effects (`OrganicMediation`; Lok,
+2015) are admissible alongside interventional effects. When you can set the
+mediator to a specific constant value (for example, holding a hormone level at
+`0.0`), `ControlledDirect` estimates the controlled direct effect (VanderWeele,
+2015).
+
+```@example effects-walk
+using CausalMediation, CausalTargeted, StableRNGs
+
+df_nomoc, _ = simulate_continuous_mtp_mediation(200; rng = StableRNG(71))
+
+spec_nat = MediationSpec(:A, :Y; mediators = [:M], covariates = [:W], effect = NaturalMediation())
+spec_org = MediationSpec(:A, :Y; mediators = [:M], covariates = [:W], effect = OrganicMediation())
+spec_cde = MediationSpec(:A, :Y; mediators = [:M], covariates = [:W], effect = ControlledDirect(Dict(:M => 0.0)))
+
+res_nat = run_mediation(spec_nat, df_nomoc; deltas = [0.5], folds = 2, n_mc = 12,
+    learners = SMALL_N_SL_LEARNERS, parallel = false, rng = StableRNG(72))
+res_org = run_mediation(spec_org, df_nomoc; deltas = [0.5], folds = 2, n_mc = 12,
+    learners = SMALL_N_SL_LEARNERS, parallel = false, rng = StableRNG(72))
+res_cde = run_mediation(spec_cde, df_nomoc; deltas = [0.5], folds = 2, n_mc = 12,
+    learners = SMALL_N_SL_LEARNERS, parallel = false, rng = StableRNG(72))
+
+# Adding moc refuses NaturalMediation via assert_natural_admissible!
+spec_bad = MediationSpec(:A, :Y; mediators = [:M], covariates = [:W], moc = [:L], effect = NaturalMediation())
+natural_refused = try
+    assert_natural_admissible!(spec_bad)
+    false
+catch e
+    e isa ArgumentError
+end
+
+(
+    natural_te = round(res_nat.table.est[findfirst(==("TE"), string.(res_nat.table.estimand))]; digits = 3),
+    organic_te = round(res_org.table.est[findfirst(==("TE"), string.(res_org.table.estimand))]; digits = 3),
+    cde_est = round(res_cde.table.est[1]; digits = 3),
+    natural_refused_with_moc = natural_refused,
+)
+```
+
+## 8. Nested Monte Carlo stability audit
+
+Under continuous shift policies, interventional mediation integrates over
+mediator draws (`n_mc`). At small *n*, sweep `n_mc` with
+`mediation_n_mc_sweep` and inspect `mediation_stability_summary` to confirm that
+Monte Carlo error does not dominate the estimate (Díaz & Hejazi, 2020; Liu et
+al., 2024).
+
+```@example nmc-walk
+using CausalMediation, CausalTargeted, StableRNGs
+
+df_mc, _ = simulate_continuous_mtp_mediation(200; rng = StableRNG(81))
+sweep = mediation_n_mc_sweep(
+    df_mc, :A, :Y;
+    covar = [:W],
+    mediators = [:M],
+    n_mc_values = [8, 16, 32],
+    delta = 0.5,
+    folds = 2,
+    learners = SMALL_N_SL_LEARNERS,
+    rng = StableRNG(82),
+)
+summary = mediation_stability_summary(sweep)
+(n_rows = size(sweep, 1), sign_stable = summary.sign_stable)
+```
+
+## 9. Target-trial mediation (`target_trial_mediation`)
+
+`target_trial_mediation` constructs an interventional `MediationSpec` using
+target-trial contrast terminology (Hernán & Robins, 2020; Vansteelandt & Daniel,
+2017):
+
+```@example trial-walk
+using CausalMediation, CausalTargeted, StableRNGs
+
+df_tt, _ = simulate_intermediate_confounding_mediation(200; rng = StableRNG(91))
+spec_tt = target_trial_mediation(
+    :A, :Y;
+    mediators = [:M],
+    covariates = [:W],
+    moc = [:L],
+    intervention_d0 = 0.0,
+    intervention_d1 = 0.5,
+)
+res_tt = run_mediation(
+    spec_tt, df_tt;
+    deltas = [0.5],
+    folds = 2,
+    n_mc = 12,
+    learners = SMALL_N_SL_LEARNERS,
+    parallel = false,
+    rng = StableRNG(92),
+)
+res_tt.table[:, [:estimand, :est, :se]]
+```
+
 ## Estimators and nested Monte Carlo
 
 | `estimator` | Role |

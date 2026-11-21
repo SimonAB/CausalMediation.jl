@@ -4,6 +4,15 @@
 CurrentModule = CausalMediation
 ```
 
+Given data, an exposure, an outcome, and one or more intermediate biological
+mechanisms (mediators), CausalMediation decomposes the total causal effect into
+direct and indirect pathways, including under continuous exposure shifts and
+post-exposure mediator–outcome confounding (`moc`).
+
+**Deciding which mediation estimand fits your study?** See
+[Choosing an approach](orientation.md) to match your biological pathway,
+exposure type, and confounding structure to the right effect family and API.
+
 CausalMediation implements cross-fitted estimators for modern mediation
 contrasts: interventional (randomised intermediate) TE / NDE / NIE under
 modified treatment policies (Vansteelandt & Daniel, 2017; Díaz & Hejazi, 2020;
@@ -53,6 +62,7 @@ Design notes:
 
 ## Methods and literature
 
+- **[Choosing an approach](orientation.md)** — match biological pathway, `moc`, and exposure type to a mediation estimand
 - [Comparison](comparison.md) — Julia vs R (`crumble`, `medoutcon`, `medRCT`) and Python
 - [Methods and literature](methods.md) — RI / natural / organic / RT / CDE, EIF, `moc`, clustered mediation
 - [Clustered mediation](cluster-mediation.md) — Ham, Cheng & Li (2026) static-cluster reference
