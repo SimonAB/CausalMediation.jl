@@ -110,7 +110,7 @@ must pass those symbols into `MediationSpec`.
 |-------|-----------------|-------------------------|
 | Natural direct/indirect | Pearl (2001); Robins & Greenland (1992); VanderWeele (2015) | `NaturalMediation` (empty `moc` only) |
 | Organic effects | Lok (2015) | `OrganicMediation` |
-| Controlled direct effect | VanderWeele (2015) | `ControlledDirect(m=…)` |
+| Controlled direct effect | VanderWeele (2015) | `ControlledDirect(:M => …)` |
 
 Natural effects share the identification gate with CausalDynamics: nonempty `moc`
 throws. Organic and controlled-direct paths are available for specialised
@@ -154,8 +154,15 @@ confounding and within-cluster interference under a restricted Gaussian backend
 and cluster-level cross-fitting. It is a different estimand from the
 `MediationSpec` nested-MC path, does not extend that path's uncertainty
 contract, and does not consume an automatic `MediationQuery` certificate
-(`identification=:user_assumed`). Full targets, equations, diagnostics, and
-limits: [Clustered mediation](cluster-mediation.md).
+(`identification=:user_assumed`).
+
+For the same clustered targets, `fit_bayesian_cluster_mediation` and
+`bayesian_mediation_effects` provide a separate experimental **parametric
+hierarchical Bayesian** route (reusing `ClusterMediationSpec` with structured
+variational inference and optional `correction = :psis`), trading density-ratio
+instability for explicit Gaussian random-intercept mechanisms and priors. Full
+targets, equations, diagnostics, and limits:
+[Clustered mediation](cluster-mediation.md).
 
 ## Recanting twins and path-specific effects
 
@@ -227,7 +234,7 @@ Riesz nuisances are separate from **representation** (encoder → codes).
 ## High-dimensional mediators via codes
 
 Raw spectra or images are not `MediationSpec` mediators. Compress them first
-with CausalDynamics [`RepresentationSpec`](https://simonab.github.io/CausalDynamics.jl/dev/)
+with CausalDynamics [`RepresentationSpec`](https://simonab.github.io/CausalDynamics.jl/dev/api/mechanisms_contracts/#CausalDynamics.RepresentationSpec)
 and `encode_to_panel`, then treat the code columns as mediators:
 
 ```julia

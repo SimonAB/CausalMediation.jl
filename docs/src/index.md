@@ -20,9 +20,15 @@ Liu et al., 2024), natural and organic effects when admissible, and controlled
 direct effects. Intermediate confounding follows Hejazi et al. (2023). The
 exported `RecantingTwinMediation` type is reserved for compatibility and
 currently errors; it does not estimate a path-specific effect. Intermediate
-confounders (`moc`) are first-class. Defaults reuse lean Super Learner profiles
-from [CausalTargeted.jl](https://simonab.github.io/CausalTargeted.jl/dev/).
-Method-to-API mapping: [Methods](methods.md); DOIs: [References](references.md).
+confounders (`moc`) are first-class. For cluster-randomised trials with
+post-treatment confounding, `ClusterMediationSpec` also provides an experimental
+frequentist Theorem 2 EIF reference (`run_cluster_mediation`) alongside an
+experimental parametric hierarchical Bayesian route
+(`fit_bayesian_cluster_mediation` / `bayesian_mediation_effects`). Defaults reuse
+lean Super Learner profiles from
+[CausalTargeted.jl](https://simonab.github.io/CausalTargeted.jl/dev/).
+Method-to-API mapping: [Methods & estimators](methods.md); DOIs:
+[References](references.md).
 
 Identification is delegated to
 [CausalDynamics.jl](https://simonab.github.io/CausalDynamics.jl/dev/)
@@ -31,18 +37,13 @@ estimates parameters once the query, mediators, and `moc` are known.
 
 ## Compared with R and Python
 
-| Need | CausalMediation | Familiar elsewhere |
-|------|-----------------|--------------------|
-| Interventional TE/NDE/NIE + MTP | Yes | R `crumble` (`effect="RI"`), `medoutcon` |
-| Intermediate confounding (`moc`) | Yes | `crumble`, `medoutcon`, `medRCT` |
-| Natural / organic / controlled direct | Yes | `crumble` `"N"`/`"O"`; VanderWeele CDE |
-| Recanting-twin / path-specific | Unsupported (reserved API) | `crumble` `"RT"`, Vo–Díaz |
-| Typed ID certificate → estimate | **Unique** | Partial |
-| LMTP (non-mediated) | — (use CausalTargeted) | R `lmtp`, Ananke |
-
-**Choose CausalMediation** for Julia-native mediation with shared certificates and
-Super Learner. **Prefer `crumble` / `medoutcon`** when the pipeline is already R.
-Details: [Comparison](comparison.md) ·
+CausalMediation covers interventional, natural, organic, and controlled direct
+mediation in Julia—including `moc` and continuous modified treatment
+policies—paired directly with typed `IdentificationResult` certificates from
+CausalDynamics and shared Super Learner profiles from CausalTargeted. Choose
+CausalMediation for Julia-native mediation with shared certificates and
+nuisances; prefer R `crumble` or `medoutcon` when the pipeline is already R
+end-to-end. Details: [Ecosystem comparison](comparison.md) ·
 [ECOSYSTEM_COMPARISON.md](https://github.com/SimonAB/causal-dynamics-book/blob/main/packages/ECOSYSTEM_COMPARISON.md).
 
 ## Related packages
@@ -60,14 +61,14 @@ Design notes:
 [BOUNDARIES.md](https://github.com/SimonAB/CausalMediation.jl/blob/main/BOUNDARIES.md) ·
 [ecosystem principles](https://github.com/SimonAB/causal-dynamics-book/blob/main/packages/DESIGN_PRINCIPLES.md).
 
-## Methods and literature
+## Documentation
 
 - **[Choosing an approach](orientation.md)** — match biological pathway, `moc`, and exposure type to a mediation estimand
-- [Comparison](comparison.md) — Julia vs R (`crumble`, `medoutcon`, `medRCT`) and Python
-- [Methods and literature](methods.md) — RI / natural / organic / RT / CDE, EIF, `moc`, clustered mediation
-- [Clustered mediation](cluster-mediation.md) — Ham, Cheng & Li (2026) static-cluster reference
-- [Naming](naming.md) — Julia symbols vs R `crumble` strings
-- [References](references.md) — bibliographic list with DOIs
+- **[Getting Started](getting-started.md)** — end-to-end DAG identification, MTP shifts, factor treatments, `moc`, and nested-MC checks
+- **Guides:** [Methods & estimators](methods.md) (RI / natural / organic / RT / CDE, EIF, `moc`, clustered mediation) · [Clustered mediation](cluster-mediation.md) (Ham, Cheng & Li 2026 static-cluster reference and experimental hierarchical Bayesian route)
+- **[API Reference](api.md)** — exported types, specs, runners, diagnostics, and synthetic DGPs
+- **Architecture & Validation:** [Naming & legacy migrations](naming.md) · [Ecosystem comparison](comparison.md)
+- **[References](references.md)** — bibliographic list with DOIs
 
 Canonical sources include Vansteelandt & Daniel (2017); Díaz & Hejazi (2020);
 Liu et al. (2024); Ham, Cheng & Li (2026) for clustered mediation; Vo–Díaz on
@@ -143,13 +144,13 @@ Pkg.add("CausalMediation")
 using CausalMediation
 ```
 
-Requires Julia **1.12+**, CausalDynamics **0.4+**, and CausalTargeted **0.3+**.
+Requires Julia **1.12+**, CausalDynamics **0.5+**, and CausalTargeted **0.5+**.
 Development tip of `main`: `Pkg.add(url="https://github.com/SimonAB/CausalMediation.jl.git")`.
 
-From the CDCS monorepo:
+From a local clone:
 
 ```julia
-Pkg.develop(path="packages/CausalMediation.jl")
+Pkg.develop(path="path/to/CausalMediation.jl")
 ```
 
 ## See also

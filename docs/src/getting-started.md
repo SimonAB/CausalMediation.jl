@@ -5,7 +5,7 @@ CurrentModule = CausalMediation
 ```
 
 CausalMediation estimates interventional TE / NDE / NIE (and related families) once
-[CausalDynamics.jl](https://github.com/SimonAB/CausalDynamics.jl) has supplied a
+[CausalDynamics.jl](https://simonab.github.io/CausalDynamics.jl/dev/) has supplied a
 `MediationQuery` and adjustment set. [CausalTargeted.jl](https://simonab.github.io/CausalTargeted.jl/dev/)
 provides Super Learner profiles and MTP nuisances.
 
@@ -15,7 +15,7 @@ Hong et al. (2024, [HSORM](https://doi.org/10.1007/s10742-024-00327-4)) /
 Vansteelandt & Daniel (2017, [Epidemiology](https://doi.org/10.1097/EDE.0000000000000596))
 for multiple mediators and post-treatment confounding. Plotting uses DAGMakie
 directly (`dagplot`, `dagplot_mediation`, `structural_edge_labels`, `edge_routing`,
-[`CurvedEdge`](https://simonab.github.io/DAGMakie.jl/dev/)).
+[`CurvedEdge`](https://simonab.github.io/DAGMakie.jl/dev/api/)).
 
 Papers implemented in each section are named at the section opening; the full
 map is in [Methods](methods.md) and [References](references.md).
@@ -33,8 +33,8 @@ using CausalMediation, CausalTargeted, CausalDynamics, Graphs, DAGMakie, CairoMa
 
 Each walk-through uses a **full mediation DAG** for identification (adjust baseline
 confounders only; never treat the mediator as a good control), then a slimmer
-**estimand diagram** for path labels. Use [`edge_routing`](https://simonab.github.io/DAGMakie.jl/dev/)
-/ [`CurvedEdge`](https://simonab.github.io/DAGMakie.jl/dev/) when a fork or skip
+**estimand diagram** for path labels. Use [`edge_routing`](https://simonab.github.io/DAGMakie.jl/dev/api/)
+/ [`CurvedEdge`](https://simonab.github.io/DAGMakie.jl/dev/api/) when a fork or skip
 chord needs a bow (spine edges stay straight); skip chords on the baseline usually
 bow downward (`side = :right`), elevated forks upward.
 
@@ -130,7 +130,9 @@ subjects. Setting `weight_truncation=false` requests the untruncated two-stage
 EIF; ordinary overlap, nuisance-model and moment assumptions still apply, and
 this does not guarantee nominal finite-sample coverage.
 
-```julia
+```@example static-walk
+using CausalMediation, CausalTargeted, StableRNGs
+
 df_static, _ = simulate_mediation(200; rng = StableRNG(11))
 df_static.A = string.(Int.(df_static.A))
 spec_static = MediationSpec(
@@ -468,25 +470,14 @@ fig
 Implements the static clustered interventional mediation reference of Ham, Cheng
 & Li (2026, [arXiv:2611.11903](https://arxiv.org/abs/2611.11903)). This path is
 separate from `MediationSpec` / `run_mediation`: it uses
-`ClusterMediationSpec` / `run_cluster_mediation`, a restricted Gaussian backend,
-and cluster-level cross-fitting for joint-mediator interventions under
-within-cluster interference.
+`ClusterMediationSpec` with either `run_cluster_mediation` (a restricted
+Gaussian EIF backend with cluster-level cross-fitting) or the experimental
+parametric hierarchical Bayesian route (`fit_bayesian_cluster_mediation` /
+`bayesian_mediation_effects`).
 
-```julia
-using CausalMediation
-
-spec = ClusterMediationSpec(:A, :Y;
-    cluster = :id,
-    mediator = :M,
-    confounder = :Z,
-)
-result = run_cluster_mediation(spec, df; folds = 3, rng = StableRNG(1))
-result.table   # ide, iie, iime, isme, stochastic_total, te
-```
-
-Targets, assumptions, diagnostics, and inference limits are documented on the
-dedicated page: [Clustered mediation](cluster-mediation.md). See also
-[Methods — Clustered mediation](methods.md#clustered-mediation).
+Targets, runnable examples, assumptions, diagnostics, and inference limits are
+documented on the dedicated page: [Clustered mediation](cluster-mediation.md).
+See also [Methods — Clustered mediation](methods.md#clustered-mediation).
 
 ## 7. Natural, organic, and controlled direct effects (no `moc`)
 
@@ -554,7 +545,7 @@ sweep = mediation_n_mc_sweep(
     rng = StableRNG(82),
 )
 summary = mediation_stability_summary(sweep)
-(n_rows = size(sweep, 1), sign_stable = summary.sign_stable)
+(n_rows = size(sweep, 1), sign_stable = summary.sign_stable, markdown = mediation_stability_markdown(sweep))
 ```
 
 ## 9. Target-trial mediation (`target_trial_mediation`)
@@ -595,19 +586,9 @@ res_tt.table[:, [:estimand, :est, :se]]
 | `:onestep` | Plugin plus EIF correction (default except for `ControlledDirect`) |
 | `:tmle` | Targeting step on the same nuisances |
 
-`n_mc` controls nested mediator draws. At small *n*, sweep it:
-
-```julia
-sweep = mediation_n_mc_sweep(
-    df, :A, :Y;
-    covar = [:W],
-    mediators = [:M],
-    n_mc_values = [8, 16, 32],
-    delta = 0.5,
-    folds = 2,
-)
-mediation_stability_markdown(sweep)
-```
+`n_mc` controls nested mediator draws. At small *n*, sweep it with
+`mediation_n_mc_sweep` and format the check with `mediation_stability_markdown`,
+as in [§8](#8.-Nested-Monte-Carlo-stability-audit).
 
 ## Effect families
 
@@ -617,7 +598,7 @@ mediation_stability_markdown(sweep)
 | `NaturalMediation()` | Classical NDE/NIE when `moc` is empty |
 | `OrganicMediation()` | Lok organic effects |
 | `RecantingTwinMediation()` | Reserved compatibility type; estimation throws |
-| `ControlledDirect(m = …)` | Fix mediators at specified levels; defaults to `:plugin`, with unavailable SE and confidence limits |
+| `ControlledDirect(:M => …)` | Fix mediators at specified levels; defaults to `:plugin`, with unavailable SE and confidence limits |
 
 See [Methods](methods.md) and [Naming](naming.md).
 

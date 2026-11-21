@@ -142,7 +142,7 @@ function _assert_mediation_policies!(
     return nothing
 end
 
-"""True when both arms are [`DiscreteTreatmentPolicy`](@ref)."""
+"""True when both arms are `CausalTargeted.DiscreteTreatmentPolicy`."""
 _discrete_spec(spec::MediationSpec) = spec.policy_d0 isa DiscreteTreatmentPolicy
 
 """

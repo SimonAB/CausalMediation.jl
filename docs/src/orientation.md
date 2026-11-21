@@ -84,7 +84,7 @@ substituting an interventional effect.
 | **No `moc`, natural or organic decomposition** | Natural (NDE / NIE) or organic effects | `NaturalMediation()` or `OrganicMediation()` on `MediationSpec` | Pearl (2001); Robins & Greenland (1992); Lok (2015). [Methods](methods.md) |
 | **Setting a mediator to a specific value ``m``** (e.g. clamping hormone level experimentally) | Controlled Direct Effect (CDE) | `ControlledDirect()` on `MediationSpec` | VanderWeele (2015). [Methods](methods.md) |
 | **Multiple ordered mediators** (e.g. ``A \to M_1 \to M_2 \to Y``) | Joint interventional mediation across ordered mediators | `MediationSpec(:A, :Y; mediators = [:M1, :M2], ...)` + `run_mediation` | Vansteelandt & Daniel (2017); Liu et al. (2024). [Getting started](getting-started.md) |
-| **Start directly from a `CausalDynamics` graph** | Certified mediation plan (`adjustment`, `mediators`, `moc`) | `plan_mediation(id)` / `spec_from_identification(id)` | [Getting started](getting-started.md), [API overview](api.md) |
+| **Start directly from a `CausalDynamics` graph** | Certified mediation plan (`adjustment`, `mediators`, `moc`) | `plan_mediation(spec, id)` / `spec_from_identification(id)` | [Getting Started](getting-started.md), [API Reference](api.md) |
 | **Cluster-randomised trial (cages, pens, clinics)** with post-treatment confounding | Cluster-level interventional mediation (parametric Gaussian reference or experimental Bayesian route) | `ClusterMediationSpec` + `run_cluster_mediation` (or `fit_bayesian_cluster_mediation`) | Ham, Cheng & Li (2026). See caveats in [Clustered mediation](cluster-mediation.md) |
 
 ## Practical checks before interpreting mediation results

@@ -4,11 +4,17 @@
 
 This package is part of the [CDCS Julia package set](https://github.com/SimonAB/causal-dynamics-book/tree/main/packages). An early draft of [*Causal Dynamics of Complex Systems*](https://simonab.github.io/causal-dynamics-book/) uses the packages as a pedagogical implementation.
 
+CausalMediation implements selected methods from the causal mediation literature directly in Julia, using the published definitions and estimating equations. See [Related literature and software](#related-literature-and-software) for the original contributions and the [methods manual](docs/src/methods.md) for the scope of the implementations.
+
 Cross-fitted mediation for the CDCS Julia stack: interventional (RI), natural,
 organic, and controlled direct effects, with intermediate confounding (`moc`)
 and continuous MTP one-step / TMLE estimators. `RecantingTwinMediation` remains
 exported as a reserved compatibility type; estimation rejects it because this
-package does not currently implement a path-specific estimator.
+package does not currently implement a path-specific estimator. For
+cluster-randomised trials with post-treatment confounding, **0.3.0** also adds
+experimental `ClusterMediationSpec` routes: `run_cluster_mediation` (Theorem 2
+Gaussian EIF reference) and the parametric hierarchical Bayesian route
+(`fit_bayesian_cluster_mediation` / `bayesian_mediation_effects`).
 
 For eligible static-arm one-step fits, the default capped calculation preserves
 point estimates but reports unavailable inference with `:truncated_weights`.
@@ -19,9 +25,9 @@ nominal coverage remains unresolved; see [Methods](docs/src/methods.md).
 **Documentation:** [simonab.github.io/CausalMediation.jl](https://simonab.github.io/CausalMediation.jl/dev/)
 (after the Documentation workflow has run on `main`).
 
-> The registered **0.1.2** release (`Pkg.add("CausalMediation")`) requires Julia **1.12+**,
-> [CausalDynamics](https://github.com/SimonAB/CausalDynamics.jl) **0.4+**, and
-> [CausalTargeted](https://github.com/SimonAB/CausalTargeted.jl) **0.3+**.
+> The registered **0.3.0** release (`Pkg.add("CausalMediation")`) requires Julia **1.12+**,
+> [CausalDynamics](https://github.com/SimonAB/CausalDynamics.jl) **0.5+**, and
+> [CausalTargeted](https://github.com/SimonAB/CausalTargeted.jl) **0.5+**.
 > Registry tracking: [REGISTRATION.md](REGISTRATION.md).
 
 ## Install
@@ -31,7 +37,7 @@ using Pkg
 Pkg.add("CausalMediation")
 ```
 
-Source release **0.2.0** is registered in General. Its API changes are listed
+Source release **0.3.0** is registered in General. Its API changes are listed
 in [CHANGELOG.md](CHANGELOG.md); install compatible CDCS package versions when
 following the current examples.
 
@@ -98,8 +104,9 @@ julia --project=docs -e 'using Pkg; Pkg.develop(path="."); Pkg.instantiate()'
 julia --project=docs docs/make.jl
 ```
 
-Pages: home, getting started, comparison, methods, clustered mediation, naming,
-API, references.
+Pages: home, [choosing an approach](docs/src/orientation.md), getting started,
+methods & estimators, clustered mediation, API reference, naming & legacy
+migrations, ecosystem comparison, references.
 
 **Stress validation** (Quarto notebook + catalogued datasets):
 [CausalTargeted STRESS.md](https://github.com/SimonAB/CausalTargeted.jl/blob/main/STRESS.md) ·
@@ -126,8 +133,9 @@ R companions are [`crumble`](https://cran.r-project.org/package=crumble),
 [`medRCT`](https://cran.r-project.org/package=medRCT), and
 [`lmtp`](https://cran.r-project.org/package=lmtp). The experimental clustered
 canonical reference implements the parametric form of Theorem 2 in Ham, Cheng &
-Li (2026); see [cluster-mediation.md](docs/src/cluster-mediation.md) for scope
-and limitations.
+Li (2026), paired with an experimental parametric hierarchical Bayesian route
+(`fit_bayesian_cluster_mediation` / `bayesian_mediation_effects`); see
+[cluster-mediation.md](docs/src/cluster-mediation.md) for scope and limitations.
 
 ## Related literature and software
 
@@ -174,7 +182,7 @@ Software citation:
   author  = {Babayan, Simon A.},
   title   = {CausalMediation.jl},
   year    = {2026},
-  version = {v0.1.2},
+  version = {v0.3.0},
   doi     = {10.5281/zenodo.21812342},
   url     = {https://github.com/SimonAB/CausalMediation.jl}
 }

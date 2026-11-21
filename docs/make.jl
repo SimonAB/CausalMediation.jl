@@ -24,16 +24,20 @@ makedocs(
     pages = [
         "Home" => "index.md",
         "Choosing an approach" => "orientation.md",
-        "Getting started" => "getting-started.md",
-        "Comparison" => "comparison.md",
-        "Methods and literature" => "methods.md",
-        "Clustered mediation" => "cluster-mediation.md",
-        "Naming" => "naming.md",
-        "API overview" => "api.md",
+        "Getting Started" => "getting-started.md",
+        "Guides" => [
+            "Methods & estimators" => "methods.md",
+            "Clustered mediation" => "cluster-mediation.md",
+        ],
+        "API Reference" => "api.md",
+        "Architecture & Validation" => [
+            "Naming & legacy migrations" => "naming.md",
+            "Ecosystem comparison" => "comparison.md",
+        ],
         "References" => "references.md",
     ],
     checkdocs = :exports,
-    warnonly = [:missing_docs, :cross_references],
+    warnonly = false,
 )
 
 if get(ENV, "CI", nothing) == "true"

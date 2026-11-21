@@ -29,14 +29,10 @@ claim (full GPU Riesz nets, every survival flavour).
 Stack overview:
 [ECOSYSTEM_COMPARISON.md](https://github.com/SimonAB/causal-dynamics-book/blob/main/packages/ECOSYSTEM_COMPARISON.md).
 
-```mermaid
-flowchart LR
-  subgraph juliaStack [Julia_typed_pipeline]
-    G[Graph_CDM] --> ID[identify_certificate]
-    ID --> MED[CausalMediation]
-    ID --> LMTP[CausalTargeted_LMTP]
-    ID --> PLOT[DAGMakie]
-  end
+```text
+Graph / CDM (CausalDynamics) ──▶ IdentificationResult ──┬──▶ Mediation (CausalMediation)
+                                                          ├──▶ LMTP (CausalTargeted)
+                                                          └──▶ DAG figures (DAGMakie)
 ```
 
 ## Legend
@@ -61,7 +57,7 @@ flowchart LR
 | Typed ID certificate → estimate | Unique | Partial | Partial |
 | Cross-fit Super Learner (shared with LMTP) | Yes (via CausalTargeted) | Yes (sl3 + crumble) | Partial |
 | LMTP without mediators | — (use CausalTargeted) | Yes (`lmtp`) | Yes (Ananke) |
-| Clustered mediation (joint-mediator CRT reference) | Yes (`ClusterMediationSpec`; [docs](cluster-mediation.md)) | Partial / custom | — |
+| Clustered mediation (joint-mediator CRT reference & Bayesian route) | Reference (experimental; `ClusterMediationSpec`, [docs](cluster-mediation.md)) | Partial / custom | — |
 | Full parity with every `crumble` option | — (deliberate) | Yes | — |
 
 ## Julia neighbours

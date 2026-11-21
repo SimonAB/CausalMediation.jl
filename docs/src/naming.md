@@ -35,7 +35,7 @@ Construct specs with the type, or pass a symbol through
 |-------|---------------|
 | `run_mediation` | Preferred typed entry |
 | `run_mediation_grid` | δ-grid `DataFrame` API ≈ `crumble(...)` grids |
-| `run_mediation_scalar` | Binary $d_0=0$ vs $d_1=1$ |
+| `run_mediation_scalar` | Binary ``d_0=0`` vs ``d_1=1`` |
 | `ClusterMediationSpec` / `run_cluster_mediation` | Static clustered reference (Ham et al., 2026); separate from `MediationSpec` |
 | `plan_mediation` / `spec_from_identification` | Certificate merge (CT has `plan_mtp`) |
 | `decompose` | TE / NDE / NIE (or path) extraction |
