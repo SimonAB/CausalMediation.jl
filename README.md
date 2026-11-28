@@ -28,6 +28,7 @@ nominal coverage remains unresolved; see [Methods](docs/src/methods.md).
 > The registered **0.3.0** release (`Pkg.add("CausalMediation")`) requires Julia **1.12+**,
 > [CausalDynamics](https://github.com/SimonAB/CausalDynamics.jl) **0.5+**, and
 > [CausalTargeted](https://github.com/SimonAB/CausalTargeted.jl) **0.5+**.
+> Patch release **0.3.1** is prepared on `main` (pending `CausalTargeted` **0.5.3** on General).
 > Registry tracking: [REGISTRATION.md](REGISTRATION.md).
 
 ## Install
@@ -182,7 +183,7 @@ Software citation:
   author  = {Babayan, Simon A.},
   title   = {CausalMediation.jl},
   year    = {2026},
-  version = {v0.3.0},
+  version = {v0.3.1},
   doi     = {10.5281/zenodo.21812342},
   url     = {https://github.com/SimonAB/CausalMediation.jl}
 }

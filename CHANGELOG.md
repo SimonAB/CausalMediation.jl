@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-28
+
+### Added
+
+- Exported `TrialShiftPolicy` for explicit target-trial arm shifts in
+  `target_trial_mediation` and `MediationSpec(::TargetTrialMediation)`.
+- `Aqua.jl` quality test suite (`test/test_aqua.jl`), Julia `1.12` in the CI
+  matrix, and a core-only (extensions-unloaded) CI job (`test/run_core_tests.jl`).
+
+### Changed
+
+- Migrated all internal `CausalTargeted._*` helper calls to the documented
+  `CausalTargeted.MediationSPI` submodule (requires `CausalTargeted` `0.5.3+`).
+- Replaced `GLM.coef(lm(...))` in `conjugate_mediation_bootstrap` with
+  `LinearAlgebra`'s `\` solver and removed `GLM` from hard dependencies.
+- Documented the `0.3.0` Bayesian cluster mediation route in `DESIGN.md` and
+  `BOUNDARIES.md`, and removed stale `run_crumble_*` façade and recanting-twin
+  metadata claims.
+
+### Fixed
+
+- `target_trial_mediation` now wires `intervention_d0` and `intervention_d1`
+  into distinct `policy_d0` and `policy_d1` (`TrialShiftPolicy`) and propagates
+  `baseline_shift` through `run_mediation` / `run_mediation_grid`.
+- `CausalMediationLuxExt` now implements a genuine single-hidden-layer
+  `Lux.Chain(Lux.Dense(p => hidden, tanh), Lux.Dense(hidden => 1))` using
+  `Lux.setup` / `Lux.apply` with a closed-form ridge readout.
+- `spec_from_identification` now accepts `relation_kinds` and enforces the
+  `semantic_fingerprint !== nothing` refusal gate matching `plan_mediation`.
+
 ## [0.3.0] - 2026-11-20
 
 ### Added

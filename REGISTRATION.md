@@ -1,15 +1,16 @@
 ## Registration status
 
-Version **0.3.0** is on [General](https://github.com/JuliaRegistries/General/blob/master/C/CausalMediation/Versions.toml) and identified by tag [`v0.3.0`](https://github.com/SimonAB/CausalMediation.jl/releases/tag/v0.3.0). The registered tree is `0436d8dee5c614baa3f8bf1a7fbcad58b3b763e1` at commit `1b86e5d`. This release adds the experimental Gaussian EIF reference and hierarchical Bayesian routes for clustered stochastic mediation.
+Version **0.3.1** is prepared on `main` (pending `CausalTargeted` **0.5.3** on General). Version **0.3.0** is on [General](https://github.com/JuliaRegistries/General/blob/master/C/CausalMediation/Versions.toml) and identified by tag [`v0.3.0`](https://github.com/SimonAB/CausalMediation.jl/releases/tag/v0.3.0). The registered tree is `0436d8dee5c614baa3f8bf1a7fbcad58b3b763e1` at commit `1b86e5d`. This release adds the experimental Gaussian EIF reference and hierarchical Bayesian routes for clustered stochastic mediation.
 
 CausalMediation.jl is on the Julia **General** registry.
 
 Install: `Pkg.add("CausalMediation")`. Requires Julia **1.12+**,
 [CausalDynamics.jl](https://github.com/SimonAB/CausalDynamics.jl) **0.5.x**, and
-[CausalTargeted.jl](https://github.com/SimonAB/CausalTargeted.jl) **0.5.x** for this release.
+[CausalTargeted.jl](https://github.com/SimonAB/CausalTargeted.jl) **0.5.3+** for `0.3.1`.
 
 | Version | Status |
 |---------|--------|
+| **0.3.1** | Prepared on `main` (pending `CausalTargeted 0.5.3` on General) |
 | **0.3.0** | On General, tagged `v0.3.0` |
 | **0.2.0** | On General ([#175643](https://github.com/JuliaRegistries/General/pull/175643), merged 2026-11-10); TagBot tagged `v0.2.0` |
 | **0.1.0** | On General ([#163653](https://github.com/JuliaRegistries/General/pull/163653), merged 2026-08-08); TagBot tagged `v0.1.0` |
