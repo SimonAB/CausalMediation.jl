@@ -228,8 +228,9 @@ estimates and non-negative standard errors); it does not test exchangeability,
 positivity or other causal assumptions, which remain part of the certificate.
 
 Optional Lux Riesz representers load via weakdep (`fit_riesz_representer` after
-`using Lux`); `riesz_available()` reports whether the extension is loaded.
-Riesz nuisances are separate from **representation** (encoder → codes).
+`using Lux`, fitting a single-hidden-layer `Lux.Chain` random-feature map with
+a closed-form ridge readout); `riesz_available()` reports whether the extension
+is loaded. Riesz nuisances are separate from **representation** (encoder → codes).
 
 ## High-dimensional mediators via codes
 

@@ -14,7 +14,7 @@ function simulate_mediation(
     σ_y::Real = 0.5,
     rng = StableRNG(2),
 )
-    return CausalTargeted.simulate_mediation(
+    return CausalTargeted.MediationSPI.simulate_mediation(
         n; β_a = β_a, β_m = β_m, γ_a = γ_a, σ_m = σ_m, σ_y = σ_y, rng = rng,
     )
 end
@@ -25,7 +25,7 @@ end
 Continuous-exposure mediation DGP for MTP δ-grids (forwards to CausalTargeted).
 """
 function simulate_continuous_mtp_mediation(n::Int; kwargs...)
-    return CausalTargeted.simulate_continuous_mtp_mediation(n; kwargs...)
+    return CausalTargeted.MediationSPI.simulate_continuous_mtp_mediation(n; kwargs...)
 end
 
 """
@@ -34,7 +34,7 @@ end
 Mediation DGP with a post-treatment intermediate confounder `L` (`moc`).
 """
 function simulate_intermediate_confounding_mediation(n::Int; kwargs...)
-    return CausalTargeted.simulate_intermediate_confounding_mediation(n; kwargs...)
+    return CausalTargeted.MediationSPI.simulate_intermediate_confounding_mediation(n; kwargs...)
 end
 
 """

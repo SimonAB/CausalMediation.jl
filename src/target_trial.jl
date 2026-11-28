@@ -20,8 +20,8 @@ end
     target_trial_mediation(...) -> MediationSpec
 
 Build an interventional `MediationSpec` from target-trial contrasts.
-Policies use raw additive shifts of `intervention_d0` / `intervention_d1`
-(SD-scale via `ShiftPolicy`).
+Arms are encoded as [`TrialShiftPolicy`](@ref) values with raw additive shifts
+`intervention_d0` and `intervention_d1`.
 """
 function target_trial_mediation(
     treatment::Symbol,
@@ -34,16 +34,26 @@ function target_trial_mediation(
     lower_q::Real = 0.01,
     upper_q::Real = 0.99,
 )
-    # Encode trial arms as ShiftPolicy with raw scale; δ-grid uses intervention_d1
-    pol = ShiftPolicy(scale = "raw", lower_q = Float64(lower_q), upper_q = Float64(upper_q))
+    pol0 = TrialShiftPolicy(
+        Float64(intervention_d0);
+        scale = "raw",
+        lower_q = Float64(lower_q),
+        upper_q = Float64(upper_q),
+    )
+    pol1 = TrialShiftPolicy(
+        Float64(intervention_d1);
+        scale = "raw",
+        lower_q = Float64(lower_q),
+        upper_q = Float64(upper_q),
+    )
     return MediationSpec(
         treatment,
         outcome;
         mediators = mediators,
         covariates = covariates,
         moc = moc,
-        policy_d0 = pol,
-        policy_d1 = pol,
+        policy_d0 = pol0,
+        policy_d1 = pol1,
         effect = InterventionalMediation(),
     )
 end

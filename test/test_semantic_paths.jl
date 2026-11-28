@@ -134,4 +134,30 @@ using CausalTargeted: ShiftPolicy
         )
         @test planned.covariates == [:w]
     end
+
+    @testset "spec_from_identification requires kinds for semantically typed certificates" begin
+        query = MediationQuery(:a, :y, [:m]; effect_kind = :interventional)
+        untyped = IdentificationResult(
+            query = query, graph_hash = UInt64(1), adjustment = [:w], mediators = [:m],
+            strategy = :mediation_interventional, identifiable = true,
+        )
+        typed = IdentificationResult(
+            query = query, graph_hash = UInt64(1), adjustment = [:w], mediators = [:m],
+            strategy = :mediation_interventional, identifiable = true,
+            semantic_fingerprint = UInt64(42),
+        )
+        @test spec_from_identification(untyped) isa MediationSpec
+        @test_throws ArgumentError spec_from_identification(typed)
+        @test_throws ArgumentError spec_from_identification(
+            typed;
+            relation_kinds = Dict((:a, :m) => :constitutive_dependence, (:m, :y) => :causal_influence),
+        )
+        built = spec_from_identification(
+            typed;
+            relation_kinds = Dict((:a, :m) => :causal_influence, (:m, :y) => :causal_influence),
+        )
+        @test built isa MediationSpec
+        @test built.covariates == [:w]
+        @test built.mediators == [:m]
+    end
 end

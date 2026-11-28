@@ -47,7 +47,7 @@ function plan_mediation(
 end
 
 """
-    spec_from_identification(id_result; effect, policy_d0, policy_d1) -> MediationSpec
+    spec_from_identification(id_result; effect, policy_d0, policy_d1, relation_kinds) -> MediationSpec
 
 Build a [`MediationSpec`](@ref) from an `IdentificationResult` whose query is a
 CausalDynamics `MediationQuery`.
@@ -55,12 +55,19 @@ CausalDynamics `MediationQuery`.
 Uses `id_result.adjustment`, `.mediators`, and `.moc`. When `effect` is the
 default `:interventional` and the query carries a different `effect_kind`, that
 kind is preferred.
+
+`relation_kinds` (see [`MediationRelationKinds`](@ref)) declares the relation
+kind of every mediation route edge. When `id_result.semantic_fingerprint` is set
+the certificate came from a semantically typed graph and `relation_kinds` is
+**required** — matching [`plan_mediation`](@ref), the builder refuses to assume
+that imported paths are causal.
 """
 function spec_from_identification(
     id_result::IdentificationResult;
     effect::Union{MediationEffect, Symbol} = :interventional,
     policy_d0::MediationTreatmentPolicy = ShiftPolicy(scale = "z", lower_q = 0.01, upper_q = 0.99),
     policy_d1::MediationTreatmentPolicy = policy_d0,
+    relation_kinds::Union{Nothing, MediationRelationKinds} = nothing,
 )
     q = id_result.query
     q isa MediationQuery || throw(ArgumentError(
@@ -76,7 +83,7 @@ function spec_from_identification(
     if hasproperty(q, :moc) && isempty(moc)
         moc = Symbol.(q.moc)
     end
-    return MediationSpec(
+    spec = MediationSpec(
         Symbol(q.treatment),
         Symbol(q.outcome);
         mediators = Symbol.(id_result.mediators),
@@ -86,4 +93,7 @@ function spec_from_identification(
         policy_d1 = policy_d1,
         effect = eff,
     )
+    require_kinds = id_result.semantic_fingerprint !== nothing
+    assert_causal_mediator_paths!(spec; relation_kinds = relation_kinds, require = require_kinds)
+    return spec
 end

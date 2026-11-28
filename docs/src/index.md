@@ -51,7 +51,7 @@ end-to-end. Details: [Ecosystem comparison](comparison.md) ·
 | Package | Role |
 |---------|------|
 | **CausalDynamics** | Graphs, `MediationQuery` / `identify`, `moc` on certificates |
-| **CausalTargeted** | Super Learner, `ShiftPolicy`, LMTP, soft mediation façades |
+| **CausalTargeted** | Super Learner, `ShiftPolicy`, LMTP |
 | **CausalMediation** | Mediation EIF / one-step / TMLE / plugin grids |
 | **DAGMakie** | Optional DAG figures |
 

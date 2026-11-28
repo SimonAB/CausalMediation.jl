@@ -9,16 +9,23 @@
 - Numeric MTP (`ShiftPolicy`) and factor recodes (`DiscreteTreatmentPolicy`) for interventional TE/NDE/NIE (continuous `M`, empty `moc` on the factor path)
 - `moc` intermediate confounding; δ-grids; target-trial constructors
 - Optional Lux Riesz-representer extension
-- Experimental static clustered stochastic mediation: `ClusterMediationSpec` /
-  `run_cluster_mediation`, Gaussian random-intercept laws and quadratic outcome
-  regression, exact integration and canonical cluster scores. Ordinary `te` and
-  `stochastic_total` remain distinct; no automatic graph certificate.
+- Experimental static clustered stochastic mediation:
+  - Frequentist Theorem 2 reference: `ClusterMediationSpec` /
+    `run_cluster_mediation`, Gaussian random-intercept laws and quadratic outcome
+    regression, exact integration and canonical cluster scores. Ordinary `te` and
+    `stochastic_total` remain distinct; no automatic graph certificate.
+  - Parametric hierarchical Bayesian route (`0.3.0`):
+    `fit_bayesian_cluster_mediation` / `bayesian_mediation_effects`
+    (`BayesianClusterMediationFit`, `cluster_mediation_design_dimensions`),
+    fitting one-level random-intercept Gaussian mechanisms via `CausalTargeted`'s
+    structured VI engine with exact Gaussian integration and optional
+    `correction = :psis` via `CausalTargetedPSISExt`.
 
 ## CausalTargeted.jl
 
 - LMTP, sequential LMTP, Super Learner, `ShiftPolicy`, DiD, g-computation
 - `DiscreteTreatmentPolicy` / sequential factor recodes (LMTP; mediation EIF stays in CausalMediation)
-- Soft façades that forward mediation APIs here when this package is loaded
+- Internal `CausalTargeted.MediationSPI` helpers consumed by this package; CausalTargeted no longer exports mediation façades
 
 ## CausalDynamics.jl
 

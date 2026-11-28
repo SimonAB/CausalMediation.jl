@@ -155,7 +155,7 @@ using Statistics
             mediator_model, block, med_parents, :A, a1; schema = med_parents_schema,
         )
         function analytic(aout, μ)
-            cf = CausalTargeted._counterfactual_frame(block, :A, aout)
+            cf = CausalTargeted.MediationSPI.counterfactual_frame(block, :A, aout)
             cf.M = μ
             return CausalMediation._predict_sl(outcome_model, cf, adjust; schema = adjust_schema)
         end

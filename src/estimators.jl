@@ -25,6 +25,7 @@ function _interventional_effects(
     L::Union{Nothing, Real} = nothing,
     U::Union{Nothing, Real} = nothing,
     shift::Union{Nothing, Real} = nothing,
+    baseline_shift::Real = 0.0,
     fold_cache::Union{Nothing, MediationFoldCache} = nothing,
     epochs::Int = 1,
     organic::Bool = false,
@@ -176,11 +177,11 @@ function _interventional_effects(
             mu_te = predict_super_learner(sl_a, design_matrix(covar_schema, block))
             σ_a = robust_residual_sd(a[train_idx] .- mu_tr)
             if L !== nothing && U !== nothing && shift !== nothing
-                H1_raw = CausalTargeted._mtp_clever_covariate_clamp_aware(A_te, mu_te, σ_a, shift, L, U)
-                H0_raw = CausalTargeted._mtp_clever_covariate_clamp_aware(A_te, mu_te, σ_a, 0.0, L, U)
+                H1_raw = CausalTargeted.MediationSPI.mtp_clever_covariate_clamp_aware(A_te, mu_te, σ_a, shift, L, U)
+                H0_raw = CausalTargeted.MediationSPI.mtp_clever_covariate_clamp_aware(A_te, mu_te, σ_a, Float64(baseline_shift), L, U)
             else
-                H1_raw = CausalTargeted._mtp_clever_covariate_gaussian(A_te, a1, mu_te, σ_a)
-                H0_raw = CausalTargeted._mtp_clever_covariate_gaussian(A_te, a0, mu_te, σ_a)
+                H1_raw = CausalTargeted.MediationSPI.mtp_clever_covariate_gaussian(A_te, a1, mu_te, σ_a)
+                H0_raw = CausalTargeted.MediationSPI.mtp_clever_covariate_gaussian(A_te, a0, mu_te, σ_a)
             end
             H1 = truncate_weights(H1_raw; trunc = 10.0)
             H0 = truncate_weights(H0_raw; trunc = 10.0)

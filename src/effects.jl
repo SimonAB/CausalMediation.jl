@@ -44,8 +44,29 @@ function _treatment_column_kind(col)
     return :other
 end
 
-"""Numeric MTP or finite-support recode on a mediation arm."""
-const MediationTreatmentPolicy = Union{ShiftPolicy, DiscreteTreatmentPolicy}
+"""
+    TrialShiftPolicy(shift, scale, lower_q, upper_q)
+    TrialShiftPolicy(shift; scale="raw", lower_q=0.01, upper_q=0.99)
+
+Additive target-trial arm shift policy carrying an explicit `shift` value
+alongside `ShiftPolicy`-compatible `scale`, `lower_q`, and `upper_q` fields.
+"""
+struct TrialShiftPolicy
+    shift::Float64
+    scale::String
+    lower_q::Float64
+    upper_q::Float64
+end
+
+TrialShiftPolicy(
+    shift::Real;
+    scale::AbstractString = "raw",
+    lower_q::Real = 0.01,
+    upper_q::Real = 0.99,
+) = TrialShiftPolicy(Float64(shift), String(scale), Float64(lower_q), Float64(upper_q))
+
+"""Numeric MTP, target-trial arm shift, or finite-support recode on a mediation arm."""
+const MediationTreatmentPolicy = Union{ShiftPolicy, DiscreteTreatmentPolicy, TrialShiftPolicy}
 
 """
     MediationSpec(treatment, outcome; mediators, covariates, moc, policy_d0, policy_d1, effect)
@@ -121,16 +142,14 @@ function _assert_mediation_policies!(
     effect::MediationEffect,
     moc::Vector{Symbol},
 )
-    disc0 = policy_d0 isa DiscreteTreatmentPolicy
-    disc1 = policy_d1 isa DiscreteTreatmentPolicy
-    if disc0 != disc1
+    if typeof(policy_d0) !== typeof(policy_d1)
         throw(ArgumentError(
             "policy_d0 and policy_d1 must be the same kind " *
-            "(both ShiftPolicy or both DiscreteTreatmentPolicy); " *
+            "(both ShiftPolicy, both TrialShiftPolicy, or both DiscreteTreatmentPolicy); " *
             "got $(typeof(policy_d0)) and $(typeof(policy_d1))",
         ))
     end
-    if disc0
+    if policy_d0 isa DiscreteTreatmentPolicy
         effect isa InterventionalMediation || throw(ArgumentError(
             "discrete treatment policies are supported only for InterventionalMediation; " *
             "got $(typeof(effect))",

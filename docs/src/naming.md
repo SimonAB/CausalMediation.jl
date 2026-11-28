@@ -45,8 +45,8 @@ alias. It now throws without fitting or switching to one-step. Numeric static
 arms should use `run_mediation_scalar`; static discrete arms should use
 `run_mediation` with explicit `discrete_static_policy` values.
 
-CausalTargeted still exports soft-deprecated `run_crumble_*` façades that
-forward here. Prefer `using CausalMediation` in new scripts and book chunks.
+CausalTargeted no longer exports legacy `run_crumble_*` mediation façades.
+Use `using CausalMediation` directly in scripts and book chunks.
 
 ## Estimators
 

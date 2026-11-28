@@ -65,7 +65,7 @@ Graph / CDM (CausalDynamics) ──▶ IdentificationResult ──┬──▶ M
 | Package | Role |
 |---------|------|
 | [CausalDynamics.jl](https://simonab.github.io/CausalDynamics.jl/dev/) | `MediationQuery`, `identify`, `IdentificationResult.moc` |
-| [CausalTargeted.jl](https://simonab.github.io/CausalTargeted.jl/dev/) | SL, `ShiftPolicy`, LMTP; soft mediation façades |
+| [CausalTargeted.jl](https://simonab.github.io/CausalTargeted.jl/dev/) | SL, `ShiftPolicy`, LMTP |
 | [DAGMakie.jl](https://simonab.github.io/DAGMakie.jl/dev/) | Optional DAG figures |
 | [TMLE.jl](https://github.com/TARGENE/TMLE.jl) | Point-treatment CM / ATE (not mediation) |
 

@@ -65,11 +65,26 @@ interval calibration. Capping still withholds uncertainty. The outcome basis
 uses training-fold centring/scaling, with the same affine transformation of
 Gaussian means and covariances during exact integration.
 
+### Bayesian cluster mediation route (0.3.0)
+
+`fit_bayesian_cluster_mediation` and `bayesian_mediation_effects` (with
+`BayesianClusterMediationFit` and `cluster_mediation_design_dimensions`) provide
+an experimental parametric hierarchical Bayesian alternative over the same
+`ClusterMediationSpec`. Each mechanism (`Z`, `M`, `Y`) is fitted as a one-level
+random-intercept Gaussian model via `CausalTargeted.MediationSPI`'s structured
+variational inference engine (`q(β, b) q(σ_ε⁻²) q(σ_b⁻²)`), followed by exact
+`O(1)` exchangeable-covariance Gaussian integration across shared posterior
+draws (with optional `correction = :psis` via `CausalTargetedPSISExt` after
+`using PSIS`). This is a parametric Bayesian route rather than a semiparametric
+EIF estimator: it avoids density-ratio instability in exchange for explicit
+parametric mechanism and prior assumptions.
+
 ## Source file roles
 
 | File | Role |
 |------|------|
 | `cluster_mediation.jl` | Static clustered stochastic mediation; Gaussian integration and canonical cluster scores |
+| `bayesian_cluster_mediation.jl` | Experimental hierarchical Bayesian clustered mediation (`fit_bayesian_cluster_mediation`, `bayesian_mediation_effects`) |
 | `grid.jl` | Canonical `run_mediation(spec, data)` driver and scalar helpers |
 | `mediation_grid.jl` | δ-grid `run_mediation_grid` (TE / NDE / NIE × δ) |
 | `effects.jl` | `MediationSpec`, `moc`, effect families, assumption gates |

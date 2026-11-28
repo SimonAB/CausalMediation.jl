@@ -114,8 +114,8 @@ function mediator_density_ratio_vs_obs(
     for j in 1:p
         σj = max(σ[j], 1e-6)
         for i in 1:n
-            num = CausalTargeted._gaussian_density(m_obs[i, j], μ_pol[i, j], σj)
-            den = max(CausalTargeted._gaussian_density(m_obs[i, j], μ_obs[i, j], σj), 1e-12)
+            num = CausalTargeted.MediationSPI.gaussian_density(m_obs[i, j], μ_pol[i, j], σj)
+            den = max(CausalTargeted.MediationSPI.gaussian_density(m_obs[i, j], μ_obs[i, j], σj), 1e-12)
             r[i] *= clamp(num / den, 1 / trunc, trunc)
         end
     end

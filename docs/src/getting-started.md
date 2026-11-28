@@ -602,8 +602,8 @@ as in [§8](#8.-Nested-Monte-Carlo-stability-audit).
 
 See [Methods](methods.md) and [Naming](naming.md).
 
-## Soft façades in CausalTargeted
+## Package ownership
 
-Older CT names (`run_crumble_*`, engine `:crumble`) soft-deprecate to this
-package’s APIs. Prefer `using CausalMediation` and `run_mediation` in new code.
+CausalTargeted no longer exports legacy `run_crumble_*` mediation façades.
+Use `using CausalMediation` and `run_mediation` directly in new code.
 

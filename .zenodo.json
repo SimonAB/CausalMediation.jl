@@ -1,6 +1,6 @@
 {
   "title": "CausalMediation.jl",
-  "description": "Cross-fitted causal mediation for Julia: interventional, natural, organic, controlled direct, and recanting-twin effects with intermediate confounding (moc) and continuous MTP EIF estimators.",
+  "description": "Cross-fitted causal mediation for Julia: interventional, natural, organic, and controlled direct effects with intermediate confounding (moc) and continuous MTP EIF estimators.",
   "creators": [
     {
       "name": "Babayan, Simon A.",

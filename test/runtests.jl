@@ -94,8 +94,49 @@ using Statistics
             estimator = :onestep, learners = SMALL_N_SL_LEARNERS,
             parallel = false, rng = StableRNG(4),
         )
-        tt = target_trial_mediation(:A, :Y; mediators = [:M], covariates = [:W])
+        tt = target_trial_mediation(
+            :A, :Y;
+            mediators = [:M], covariates = [:W],
+            intervention_d0 = -0.25, intervention_d1 = 0.75,
+        )
         @test tt.effect isa InterventionalMediation
+        @test tt.policy_d0 isa TrialShiftPolicy
+        @test tt.policy_d1 isa TrialShiftPolicy
+        @test tt.policy_d0 != tt.policy_d1
+        @test tt.policy_d0.shift == -0.25
+        @test tt.policy_d1.shift == 0.75
+
+        tt_struct = TargetTrialMediation(
+            :A, :Y;
+            mediators = [:M], covariates = [:W],
+            intervention_d0 = -0.25, intervention_d1 = 0.75,
+        )
+        tt_from_struct = MediationSpec(tt_struct)
+        @test tt_from_struct.policy_d0 == tt.policy_d0
+        @test tt_from_struct.policy_d1 == tt.policy_d1
+
+        df_tt, _ = CausalMediation.simulate_continuous_mtp_mediation(240; rng = StableRNG(94))
+        res_tt = run_mediation(
+            tt, df_tt;
+            folds = 2, n_mc = 16, estimator = :onestep,
+            learners = (:glm, :mean), parallel = false, rng = StableRNG(95),
+        )
+        d_tt = decompose(res_tt)
+        @test isfinite(d_tt.te) && abs(d_tt.te) > 1e-2
+        @test only(unique(res_tt.table.delta)) ≈ 1.0
+
+        tt_same = target_trial_mediation(
+            :A, :Y;
+            mediators = [:M], covariates = [:W],
+            intervention_d0 = 0.5, intervention_d1 = 0.5,
+        )
+        @test tt_same.policy_d0 == tt_same.policy_d1
+        res_same = run_mediation(
+            tt_same, df_tt;
+            folds = 2, n_mc = 8, estimator = :onestep,
+            learners = (:glm, :mean), parallel = false, rng = StableRNG(95),
+        )
+        @test decompose(res_same).te == 0.0
     end
 
     @testset "identify natural vs interventional" begin
@@ -117,6 +158,22 @@ using Statistics
     @testset "riesz stub without Lux" begin
         @test riesz_available() == false
         @test_throws ErrorException fit_riesz_representer(randn(10, 2), randn(10))
+    end
+    if Base.find_package("Lux") !== nothing
+        @eval using Lux
+        @testset "riesz Lux extension" begin
+            @test riesz_available() == true
+            rng_r = StableRNG(707)
+            X_r = randn(rng_r, 80, 3)
+            y_r = 0.5 .* X_r[:, 1] .- 0.3 .* X_r[:, 2] .+ 0.2 .* sin.(X_r[:, 3])
+            fit = fit_riesz_representer(X_r, y_r; hidden = 16, lambda = 1e-3, rng = StableRNG(708))
+            @test fit.kind === :lux_riesz_mlp
+            @test fit.model isa Lux.Chain
+            yhat = fit.predict(X_r)
+            @test length(yhat) == size(X_r, 1)
+            @test all(isfinite, yhat)
+            @test mean(abs2, yhat .- y_r) < 0.05
+        end
     end
 
     @testset "string covariate schema" begin

@@ -77,16 +77,16 @@ function _fit_hierarchical_mechanism(X::Matrix{Float64}, y::Vector{Float64},
         cluster_ids::Vector, prior::CausalTargeted.ClusterGaussianPrior;
         maxiter::Int, tol::Float64, standardize::Bool)
     p = size(X, 2)
-    transform = standardize ? CausalTargeted._freeze_affine_transform(X) :
-        CausalTargeted.FrozenAffineDesignTransform(
+    transform = standardize ? CausalTargeted.MediationSPI.freeze_affine_transform(X) :
+        CausalTargeted.MediationSPI.FrozenAffineDesignTransform(
             Matrix{Float64}(I, p, p), Matrix{Float64}(I, p, p),
-            CausalTargeted._detect_intercept_column(X), zeros(p), ones(p))
-    X_std = CausalTargeted._apply_affine_transform(X, transform)
-    prior_std = CausalTargeted._transform_prior(prior, transform)
-    stats_std = CausalTargeted._cluster_sufficient_stats(X_std, y, cluster_ids)
-    stats_raw = CausalTargeted._cluster_sufficient_stats(X, y, cluster_ids)
-    vi = CausalTargeted._structured_vi_hierarchical_gaussian(stats_std, prior_std; maxiter, tol)
-    state_orig = CausalTargeted._untransform_block_state(vi.state, transform)
+            CausalTargeted.MediationSPI.detect_intercept_column(X), zeros(p), ones(p))
+    X_std = CausalTargeted.MediationSPI.apply_affine_transform(X, transform)
+    prior_std = CausalTargeted.MediationSPI.transform_prior(prior, transform)
+    stats_std = CausalTargeted.MediationSPI.cluster_sufficient_stats(X_std, y, cluster_ids)
+    stats_raw = CausalTargeted.MediationSPI.cluster_sufficient_stats(X, y, cluster_ids)
+    vi = CausalTargeted.MediationSPI.structured_vi_hierarchical_gaussian(stats_std, prior_std; maxiter, tol)
+    state_orig = CausalTargeted.MediationSPI.untransform_block_state(vi.state, transform)
     return (; posterior_mean = state_orig.beta_mean,
         posterior_covariance = state_orig.beta_cov,
         block_state = state_orig,
@@ -438,23 +438,23 @@ function bayesian_mediation_effects(fit::BayesianClusterMediationFit, target;
     end
 
     if correction === :psis
-        lr_z = CausalTargeted._cluster_log_importance_ratios(fit.confounder.stats_raw,
+        lr_z = CausalTargeted.MediationSPI.cluster_log_importance_ratios(fit.confounder.stats_raw,
             fit.confounder.prior, fit.confounder.block_state,
             fit.confounder.residual_shape, fit.confounder.residual_scale,
             fit.confounder.cluster_shape, fit.confounder.cluster_scale,
             dz.beta_draws, dz.σ2_eps, dz.σ2_b)
-        lr_m = CausalTargeted._cluster_log_importance_ratios(fit.mediator.stats_raw,
+        lr_m = CausalTargeted.MediationSPI.cluster_log_importance_ratios(fit.mediator.stats_raw,
             fit.mediator.prior, fit.mediator.block_state,
             fit.mediator.residual_shape, fit.mediator.residual_scale,
             fit.mediator.cluster_shape, fit.mediator.cluster_scale,
             dm.beta_draws, dm.σ2_eps, dm.σ2_b)
-        lr_y = CausalTargeted._cluster_log_importance_ratios(fit.outcome.stats_raw,
+        lr_y = CausalTargeted.MediationSPI.cluster_log_importance_ratios(fit.outcome.stats_raw,
             fit.outcome.prior, fit.outcome.block_state,
             fit.outcome.residual_shape, fit.outcome.residual_scale,
             fit.outcome.cluster_shape, fit.outcome.cluster_scale,
             dy.beta_draws, dy.σ2_eps, dy.σ2_b)
         log_ratios = lr_z .+ lr_m .+ lr_y
-        psis_res = CausalTargeted._psis_weighted_summary(draws, log_ratios; level = Float64(level))
+        psis_res = CausalTargeted.MediationSPI.psis_weighted_summary(draws, log_ratios; level = Float64(level))
         psis_diagnostics = (; passed = psis_res.passed, failures = psis_res.failures,
             khat = psis_res.khat, ess = psis_res.ess, max_mcse_to_sd = psis_res.max_mcse_to_sd)
         estimates = DataFrame(effect = effect_names, mean = psis_res.mean, sd = psis_res.sd,

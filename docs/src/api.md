@@ -130,6 +130,7 @@ simulate_categorical_a_mediation
 
 ```@docs
 TargetTrialMediation
+TrialShiftPolicy
 target_trial_mediation
 fit_riesz_representer
 riesz_available

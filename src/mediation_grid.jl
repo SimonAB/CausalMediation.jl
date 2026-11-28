@@ -45,6 +45,7 @@ function run_mediation_grid(
     handle_missing::Symbol = :drop,
     effect::MediationEffect = InterventionalMediation(),
     weight_truncation::Bool = true,
+    baseline_shift::Real = 0.0,
 )
     estimator = _resolve_mediation_estimator(effect, estimator, moc)
     _reject_recanting_twin(effect)
@@ -77,7 +78,8 @@ function run_mediation_grid(
     a = Float64.(df[!, trt])
     sd_a = std(a)
     L, U = exposure_bounds(a, lower_q, upper_q)
-    a_nat = apply_shift_policy(a, 0.0, L, U)
+    base_shift = Float64(baseline_shift)
+    a_nat = apply_shift_policy(a, base_shift, L, U)
 
     if sparse_exposure_diagnostic(a).sparse &&
        Base.get_extension(CausalTargeted, :CausalTargetedEvoTreesExt) !== nothing
@@ -89,19 +91,20 @@ function run_mediation_grid(
     ) : nothing
 
     strata = get_target_strata(df)
-    jobs = CausalTargeted._parallel_delta_jobs(deltas, strata)
-    base_seed = CausalTargeted._rng_base_seed(rng)
+    jobs = CausalTargeted.MediationSPI.parallel_delta_jobs(deltas, strata)
+    base_seed = CausalTargeted.MediationSPI.rng_base_seed(rng)
     n_jobs = count(d -> !isapprox(d, 0; atol = 1e-12), first.(jobs))
 
     _run_job = function(j)
         d, stratum = jobs[j]
-        local_rng = CausalTargeted._job_rng(base_seed, j, stratum, d)
+        local_rng = CausalTargeted.MediationSPI.job_rng(base_seed, j, stratum, d)
         return _mediation_delta_job(
             d, stratum, df, outcome, trt, covar, mediators, moc, a, a_nat, sd_a,
             L, U, lower_q, upper_q, shift_scale, stratify_by, pooled,
             folds, epochs, local_rng, fold_cache, learners, n_mc, estimator, effect, j, n_jobs,
             ipcw_w,
             weight_truncation,
+            base_shift,
         )
     end
 
@@ -173,6 +176,7 @@ function _mediation_delta_job(
     n_jobs::Int,
     ipcw_w::AbstractVector{<:Real},
     weight_truncation::Bool,
+    baseline_shift::Float64 = 0.0,
 )
     stratum_mask = BitVector(string.(df.STRAT) .== stratum)
     scale_by = pooled ? mean(stratum_mask) : 1.0
@@ -202,9 +206,10 @@ function _mediation_delta_job(
             for lab in ("NDE", "NIE", "TE")
         ]
     end
-    a_shift = apply_shift_policy(a, req, L, U; stratum_mask = pooled ? stratum_mask : nothing)
+    shift1 = baseline_shift + req
+    a_shift = apply_shift_policy(a, shift1, L, U; stratum_mask = pooled ? stratum_mask : nothing)
     add_diag = CausalTargeted.additive_clamp_diagnostics(
-        pooled ? a[stratum_mask] : a, req, L, U,
+        pooled ? a[stratum_mask] : a, shift1, L, U,
     )
     try
         est, se, _ = _effects_dispatch(
@@ -215,7 +220,8 @@ function _mediation_delta_job(
             moc = moc,
             L = L,
             U = U,
-            shift = req,
+            shift = shift1,
+            baseline_shift = baseline_shift,
             fold_cache = fold_cache,
             epochs = epochs,
             ipcw_w = ipcw_w,
@@ -365,6 +371,7 @@ function _effects_dispatch(
             L = get(kw, :L, nothing),
             U = get(kw, :U, nothing),
             shift = get(kw, :shift, nothing),
+            baseline_shift = get(kw, :baseline_shift, 0.0),
             fold_cache = get(kw, :fold_cache, nothing),
             epochs = get(kw, :epochs, 1),
             ipcw_w = get(kw, :ipcw_w, nothing),

@@ -46,7 +46,14 @@ function run_mediation(
         )
     end
 
-    δs = deltas === nothing ? default_deltas() : deltas
+    baseline_shift = spec.policy_d0 isa TrialShiftPolicy ? spec.policy_d0.shift : 0.0
+    δs = if deltas !== nothing
+        deltas
+    elseif spec.policy_d0 isa TrialShiftPolicy
+        [spec.policy_d1.shift - spec.policy_d0.shift]
+    else
+        default_deltas()
+    end
     table = run_mediation_grid(
         data, spec.treatment, spec.outcome;
         covar = spec.covariates,
@@ -64,6 +71,7 @@ function run_mediation(
         lower_q = spec.policy_d0.lower_q,
         upper_q = spec.policy_d0.upper_q,
         shift_scale = spec.policy_d0.scale,
+        baseline_shift = baseline_shift,
         kwargs...,
     )
     est, se, ic = _summarise_grid(table)
@@ -132,10 +140,10 @@ function _run_mediation_discrete(
     covar = columns_present(df, covar)
     mediators = columns_present(df, spec.mediators)
     df = copy(df)
-    df[!, trt] = string.(CausalTargeted._factorise_treatment(df[!, trt]))
+    df[!, trt] = string.(CausalTargeted.MediationSPI.factorise_treatment(df[!, trt]))
     a = collect(df[!, trt])
     covar_schema = CausalTargeted.fit_covariate_schema(df, covar)
-    W = Matrix{Float64}(CausalTargeted._covariate_matrix(covar_schema, df))
+    W = Matrix{Float64}(CausalTargeted.MediationSPI.covariate_matrix(covar_schema, df))
     a0 = string.(apply_discrete_policy(a, W, spec.policy_d0))
     a1 = string.(apply_discrete_policy(a, W, spec.policy_d1))
     df[!, trt] = a

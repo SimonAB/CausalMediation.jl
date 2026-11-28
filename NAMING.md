@@ -12,4 +12,4 @@ Canonical Julia names (no R brand in the public API):
 | `DiscreteTreatmentPolicy` on both arms | factor-`A` recode (interventional only) |
 | `run_mediation` / `run_mediation_grid` | `crumble(...)` |
 
-Legacy CausalTargeted aliases `run_crumble_*` remain soft-deprecated façades.
+CausalTargeted no longer exports legacy `run_crumble_*` mediation façades; CausalMediation.jl is the primary public mediation surface.

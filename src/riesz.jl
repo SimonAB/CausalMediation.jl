@@ -10,10 +10,12 @@ function riesz_available()
 end
 
 """
-    fit_riesz_representer(X, y; kwargs...) -> Any
+    fit_riesz_representer(X, y; hidden=16, lambda=1e-3, rng=Random.default_rng()) -> NamedTuple
 
-Fit a Riesz representer for high-dimensional mediators / moc.
-Requires `using Lux` so the weakdep extension loads. Without Lux, throws.
+Fit a single-hidden-layer `Lux` MLP Riesz-representer scaffold (random hidden
+layer via `Lux.setup` with a closed-form ridge-fitted linear readout) for
+high-dimensional mediators or `moc`. Requires `using Lux` so the weakdep
+extension loads. Without Lux, throws.
 """
 function fit_riesz_representer(X::AbstractMatrix, y::AbstractVector; kwargs...)
     ext = Base.get_extension(@__MODULE__, :CausalMediationLuxExt)

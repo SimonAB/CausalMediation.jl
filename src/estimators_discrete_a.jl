@@ -25,10 +25,10 @@ end
     _predict_sl_cf(sl, df, cols, trt, a_cf; schema)
 
 Predict from fitted outcome or mediator Super Learner `sl` on a counterfactual copy of `df` where column
-`trt` is set to `a_cf` (via `CausalTargeted._counterfactual_frame`), using `schema` for consistent dummy coding.
+`trt` is set to `a_cf` (via `CausalTargeted.MediationSPI.counterfactual_frame`), using `schema` for consistent dummy coding.
 """
 function _predict_sl_cf(sl, df::DataFrame, cols::Vector{Symbol}, trt::Symbol, a_cf; schema)
-    cf = CausalTargeted._counterfactual_frame(df, trt, collect(a_cf))
+    cf = CausalTargeted.MediationSPI.counterfactual_frame(df, trt, collect(a_cf))
     return _predict_sl(sl, cf, cols; treatment = nothing, schema = schema)
 end
 
@@ -71,7 +71,7 @@ function _nested_mediator_outcome_means_factor(
     ]...)
 
     function _q(a_pol, m_mat)
-        cf = CausalTargeted._counterfactual_frame(block, trt, collect(a_pol))
+        cf = CausalTargeted.MediationSPI.counterfactual_frame(block, trt, collect(a_pol))
         for j in 1:n_med
             cf[!, mediators[j]] = m_mat[:, j]
         end
@@ -113,7 +113,7 @@ end
     _discrete_arm_ratio(a_obs, a_pol, W, levels, train_idx, test_idx, rng; ...) -> Vector
 
 Cross-fitted Díaz–Williams treatment density ratio for discrete `A`: ratio of policy `a_pol` to observed `a_obs`
-on the test fold, using `CausalTargeted._fit_discrete_density_ratio` trained on `train_idx`. This classifier
+on the test fold, using `CausalTargeted.MediationSPI.fit_discrete_density_ratio` trained on `train_idx`. This classifier
 route is used for factual-A-dependent recodes; static arms use `_static_factor_arm_ratios` instead.
 """
 function _discrete_arm_ratio(
@@ -130,11 +130,11 @@ function _discrete_arm_ratio(
 )
     identity = all(string(a_obs[i]) == string(a_pol[i]) for i in eachindex(a_obs))
     identity && return ones(length(test_idx))
-    clf = CausalTargeted._fit_discrete_density_ratio(
+    clf = CausalTargeted.MediationSPI.fit_discrete_density_ratio(
         a_obs[train_idx], a_pol[train_idx], W[train_idx, :], levels;
         learners = learners_trt, rng = rng,
     )
-    return CausalTargeted._ratio_from_discrete_classifier(
+    return CausalTargeted.MediationSPI.ratio_from_discrete_classifier(
         clf, a_obs[test_idx], W[test_idx, :], levels;
         trunc = trunc, mtp = mtp, a_policy = a_pol[test_idx],
     )
@@ -252,7 +252,7 @@ function _interventional_effects_discrete_a(
     adjust_schema = CausalTargeted.fit_covariate_schema(schema_df, adjust)
     med_parents_schema = CausalTargeted.fit_covariate_schema(schema_df, med_parents)
     covar_schema = CausalTargeted.fit_covariate_schema(df, covar)
-    W = Matrix{Float64}(CausalTargeted._covariate_matrix(covar_schema, df))
+    W = Matrix{Float64}(CausalTargeted.MediationSPI.covariate_matrix(covar_schema, df))
     inference_status = _mediation_inference_status(
         a0, a1;
         estimator = estimator, ipcw_w = ipcw_w,

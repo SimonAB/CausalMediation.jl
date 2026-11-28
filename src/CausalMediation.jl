@@ -81,7 +81,7 @@ export simulate_mediation, simulate_continuous_mtp_mediation
 export simulate_intermediate_confounding_mediation
 export simulate_recanting_twin_mediation
 export simulate_categorical_a_mediation
-export TargetTrialMediation, target_trial_mediation
+export TargetTrialMediation, TrialShiftPolicy, target_trial_mediation
 export fit_riesz_representer, riesz_available
 
 end

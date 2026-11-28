@@ -1,7 +1,5 @@
 """PPL / bootstrap scalar mediation (graph-agnostic)."""
 
-using GLM
-
 """
     prepare_ppl_mediation_spec(g, treatment, outcome, data, covar, mediators; node_names) -> NamedTuple
     prepare_ppl_mediation_spec(treatment, outcome, data, covar, mediators; kwargs...) -> NamedTuple
@@ -105,7 +103,7 @@ function conjugate_mediation_bootstrap(
         X_b = hcat(ones(n), [Float64.(boot[!, c]) for c in covar_use]...)
 
         Xm = hcat(a_b, [Float64.(boot[!, m]) for m in mediators]..., X_b)
-        β = GLM.coef(lm(Xm, y_b))
+        β = Xm \ y_b
         β_a = β[1]
         β_m = β[2:(1 + length(mediators))]
         β_w = β[(2 + length(mediators)):end]
@@ -114,7 +112,7 @@ function conjugate_mediation_bootstrap(
         μ_m_a1 = zeros(length(mediators), n)
         for (j, m) in enumerate(mediators)
             Xm_j = hcat(a_b, X_b)
-            βj = GLM.coef(lm(Xm_j, Float64.(boot[!, m])))
+            βj = Xm_j \ Float64.(boot[!, m])
             βj_w = βj[2:end]
             βj_a = βj[1]
             μ_m_a0[j, :] .= X_b * βj_w
