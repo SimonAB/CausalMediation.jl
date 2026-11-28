@@ -23,6 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         version:
+          - '1.12'
           - '1.13'
         os:
           - ubuntu-latest
@@ -33,7 +34,7 @@ jobs:
         with:
           version: ${{ matrix.version }}
       - uses: julia-actions/cache@v3
-      # RepresentationSpec / tip APIs live on CausalDynamics main ahead of General 0.4.1.
+      # Develop sibling main branches alongside this checkout so cross-package SPI changes are tested together.
       - name: Test with tip CausalDynamics and CausalTargeted
         run: |
           julia --startup-file=no --threads=auto -e '
@@ -52,3 +53,29 @@ jobs:
           files: lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
+
+  core-only:
+    name: Core-only (extensions unloaded) - Julia 1.13
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: julia-actions/setup-julia@v3
+        with:
+          version: '1.13'
+      - uses: julia-actions/cache@v3
+      - name: Run core-only tests without weakdep extensions
+        run: |
+          julia --startup-file=no --threads=auto -e '
+            using Pkg
+            Pkg.activate(temp=true)
+            Pkg.develop([
+              PackageSpec(url="https://github.com/SimonAB/CausalDynamics.jl.git"),
+              PackageSpec(url="https://github.com/SimonAB/CausalTargeted.jl.git"),
+              PackageSpec(path=pwd()),
+            ])
+            Pkg.add(["Test", "DataFrames", "Graphs", "LinearAlgebra", "Random", "StableRNGs", "Statistics"])
+            include("test/run_core_tests.jl")
+          '

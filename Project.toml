@@ -45,7 +45,8 @@ email = "simon.babayan@glasgow.ac.uk"
 orcid = "0000-0002-4949-1117"
 
 [extras]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test"]
+test = ["Aqua", "Test"]

@@ -10,6 +10,8 @@ using Graphs
 using StableRNGs
 using Statistics
 
+const _CORE_ONLY = get(ENV, "CAUSALMEDIATION_CORE_ONLY", "0") == "1"
+
 @testset "CausalMediation" begin
     include("test_cluster_mediation.jl")
     include("test_bayesian_cluster_mediation.jl")
@@ -159,7 +161,7 @@ using Statistics
         @test riesz_available() == false
         @test_throws ErrorException fit_riesz_representer(randn(10, 2), randn(10))
     end
-    if Base.find_package("Lux") !== nothing
+    if !_CORE_ONLY && Base.find_package("Lux") !== nothing
         @eval using Lux
         @testset "riesz Lux extension" begin
             @test riesz_available() == true
@@ -328,4 +330,7 @@ using Statistics
     include("test_representation_bridge.jl")
     include("test_semantic_paths.jl")
     include("test_review_regressions.jl")
+    if !_CORE_ONLY
+        include("test_aqua.jl")
+    end
 end
